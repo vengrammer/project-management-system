@@ -1,5 +1,7 @@
 import logo from "@/assets/image.png";
 import { Button } from "@/components/ui/button";
+import Login from "@/pages/Login";
+
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -12,9 +14,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-// Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
-  { href: "#", label: "How to use"},
+  { href: "#", label: "Home" },
+  { href: "#", label: "How to use" },
   { href: "#", label: "About" },
 ];
 
@@ -86,15 +88,6 @@ export default function Navbar() {
               </NavigationMenuList>
             </NavigationMenu>
           </div>
-        </div>
-        {/* Right side */}
-        <div className="flex items-center gap-2">
-          <Button asChild className="text-sm" size="sm" variant="ghost">
-            <a href="#">Sign In</a>
-          </Button>
-          <Button asChild className="text-sm" size="sm">
-            <a href="#">Get Started</a>
-          </Button>
         </div>
       </div>
     </header>

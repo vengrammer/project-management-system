@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 import {
@@ -13,9 +13,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function Login() {
+
   const id = useId();
+
   return (
-    <Dialog>
+    <Dialog >
+      <DialogTrigger asChild>
+        <Button variant="ghost" className="border border-black">Sign in</Button>
+      </DialogTrigger>
       <DialogContent>
         <div className="flex flex-col items-center gap-2 rounded" >
           <div
@@ -51,9 +56,9 @@ export default function Login() {
           <Button className="w-full" type="button">
             Sign in
           </Button>
-          <a href="/" className="text-blue-700 inline">Already have an account?</a>
         </form>
       </DialogContent>
+      
     </Dialog>
   );
 }
