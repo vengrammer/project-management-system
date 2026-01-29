@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom"
 import NotFound from "@/components/Notfound"
 import HomeLayout from "@/layout/HomeLayout";
 import Dashboard from "@/pages/Dashboard";
+import Table from "@/pages/Table";
 
 function HomeRoute() {
     return (
@@ -10,6 +11,7 @@ function HomeRoute() {
             <Route element={<HomeLayout />}>
                 <Route path="/" element={<Navigate to="/workspace/dashboard" replace />} />
                 <Route path="/dashboard" element={<Dashboard />} /> 
+                <Route path="/table" element={<Table />} />
             </Route>
             <Route path="*" element={<NotFound />} />
         </Routes>
