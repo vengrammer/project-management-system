@@ -261,7 +261,7 @@ const Table = () => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
 
   return (
-    <div className="w-full max-h-screen  max-w-sreen mx-auto md:p-6 bg-gray-50 min-h-screen">
+    <div className="w-full max-h-screen  max-w-sreen mx-auto md:p-6 bg-gray-200 min-h-screen rounded-2xl">
       <div className="bg-white rounded-lg shadow-lg">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">

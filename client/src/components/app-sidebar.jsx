@@ -49,7 +49,7 @@ const data = {
       items: [
         {
           title: "My projects",
-          url: "#",
+          url: "/workspace/myprojects",
         },
         {
           title: "Assigned to me",

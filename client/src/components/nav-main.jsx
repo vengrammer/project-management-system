@@ -16,16 +16,25 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 
+import { NavLink , useLocation} from "react-router-dom";
+
+
 export function NavMain({
   items
 }) {
+const location = useLocation();
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Action</SidebarGroupLabel>
       {/*trying to add dashboard link*/}
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton><LayoutDashboard size={16} /> <span>Dashboard</span></SidebarMenuButton>
+          <SidebarMenuButton>
+            <LayoutDashboard size={16} />{" "}
+            <NavLink to="/workspace/dashboard">
+              <span>Dashboard</span>
+            </NavLink>
+          </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
       <SidebarMenu>
@@ -34,14 +43,14 @@ export function NavMain({
             key={item.title}
             asChild
             defaultOpen={item.isActive}
-            className="group/collapsible">
+            className="group/collapsible"
+          >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton tooltip={item.title}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
-                  <ChevronRight
-                    className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
@@ -49,9 +58,17 @@ export function NavMain({
                   {item.items?.map((subItem) => (
                     <SidebarMenuSubItem key={subItem.title}>
                       <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
+                        {/*this is the link of the sidebar*/}
+                        <NavLink
+                          to={subItem.url}
+                          className={({ isActive }) =>
+                            isActive
+                              ? "bg-muted text-primary font-medium"
+                              : "text-muted-foreground"
+                          }
+                        >
                           <span>{subItem.title}</span>
-                        </a>
+                        </NavLink>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   ))}

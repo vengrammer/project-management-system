@@ -11,7 +11,7 @@ function HomeRoute() {
             <Route element={<HomeLayout />}>
                 <Route path="/" element={<Navigate to="/workspace/dashboard" replace />} />
                 <Route path="/dashboard" element={<Dashboard />} /> 
-                <Route path="/table" element={<Table />} />
+                <Route path="myprojects" element={<Table />} />
             </Route>
             <Route path="*" element={<NotFound />} />
         </Routes>
