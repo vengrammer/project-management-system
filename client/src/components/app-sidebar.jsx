@@ -3,7 +3,6 @@
 import * as React from "react"
 import {
   BookOpen,
-  Bot,
   Settings2,
   FolderOpenDot,
   FolderGit2,
@@ -49,11 +48,7 @@ const data = {
       items: [
         {
           title: "My projects",
-          url: "/workspace/myprojects",
-        },
-        {
-          title: "Assigned to me",
-          url: "#",
+          url: "/admin/myprojects",
         },
         {
           title: "latest activities",
@@ -87,29 +82,6 @@ const data = {
           url: "#",
         },
 
-      ],
-    },
-    {
-      title: "Assigned to me",
-      url: "#",
-      icon: ClipboardList,
-      items: [
-        {
-          title: "Done tasks",
-          url: "#",
-        },
-        {
-          title: "Ongoing tasks",
-          url: "#",
-        },
-        {
-          title: "Stuck tasks",
-          url: "#",
-        },
-        {
-          title: "Latest updates",
-          url: "#",
-        },
       ],
     },
     {

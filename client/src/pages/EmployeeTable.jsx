@@ -11,8 +11,9 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import FormAddProject from "./FormAddProject";
 
-const Table = () => {
+const ProjectTable = () => {
   // Sample data structure - easily adaptable to your needs
   const sampleProjects = [
     {
@@ -283,13 +284,10 @@ const Table = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            <button
-              onClick={handleAddRow}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus size={20} />
-              Add Project
-            </button>
+            
+            <div>
+              <FormAddProject/>
+            </div>
           </div>
         </div>
 
@@ -483,4 +481,4 @@ const Table = () => {
   );
 };
 
-export default Table;
+export default ProjectTable;

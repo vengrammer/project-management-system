@@ -13,7 +13,7 @@ function App() {
         <EmployeeContextProvider>
           <Routes>
             <Route path="/*" element={<LandingPageRoute />} />
-            <Route path="workspace/*" element={<HomeRoute />} />
+            <Route path="admin/*" element={<HomeRoute />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </EmployeeContextProvider>

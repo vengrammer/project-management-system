@@ -29,12 +29,15 @@ const location = useLocation();
       {/*trying to add dashboard link*/}
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton>
-            <LayoutDashboard size={16} />{" "}
-            <NavLink to="/workspace/dashboard">
+          <SidebarMenuSubButton asChild>
+            <NavLink
+              to="/admin/dashboard"
+              className="flex items-center gap-2"
+            >
+              <LayoutDashboard size={16} />
               <span>Dashboard</span>
             </NavLink>
-          </SidebarMenuButton>
+          </SidebarMenuSubButton>
         </SidebarMenuItem>
       </SidebarMenu>
       <SidebarMenu>
