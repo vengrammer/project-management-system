@@ -37,7 +37,7 @@ const data = {
       name: "Bernales & Associates",
       logo: FolderGit2,
       plan: "Project Management",
-    }
+    },
   ],
   navMain: [
     {
@@ -63,7 +63,7 @@ const data = {
       items: [
         {
           title: "team members",
-          url: "#",
+          url: "/admin/teammembers",
         },
         {
           title: "latest updates",
@@ -81,7 +81,6 @@ const data = {
           title: "done tasks",
           url: "#",
         },
-
       ],
     },
     {
@@ -135,7 +134,7 @@ const data = {
     {
       name: "Archive",
       url: "#",
-      icon: Trash2 ,
+      icon: Trash2,
     },
     {
       name: "Done projects",
@@ -143,7 +142,7 @@ const data = {
       icon: CheckLine,
     },
   ],
-}
+};
 export function AppSidebar({
   ...props
 }) {

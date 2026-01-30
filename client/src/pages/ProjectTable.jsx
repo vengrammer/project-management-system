@@ -266,9 +266,7 @@ const ProjectTable = () => {
       <div className="bg-white rounded-lg shadow-lg">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">
-            Project Management System
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">My Projects</h1>
           {/* Search and Actions */}
           <div className="flex flex-wrap gap-4 items-center justify-between">
             <div className="relative flex-1 min-w-62.5">
@@ -284,9 +282,9 @@ const ProjectTable = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div>
-              <FormAddProject/>
+              <FormAddProject />
             </div>
           </div>
         </div>

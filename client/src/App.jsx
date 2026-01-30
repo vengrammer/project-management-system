@@ -2,7 +2,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPageRoute from "./Router/LandingPageRoute";
 import NotFound from "./components/NotFound";
-import HomeRoute from "./Router/HomeRoute";
+import HomeRoute from "./Router/AdminRoute";
 
 import { AdminContextProvider } from "./context/AdminContextProvider";
 import {EmployeeContextProvider} from "./context/EmployeeContextProvider";
