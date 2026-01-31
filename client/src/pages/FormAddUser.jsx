@@ -46,7 +46,7 @@ export default function FormAddUser() {
       [name]: value,
     }));
   };
- const [showPassword, setShowPassword] = useState(true); 
+  const [showPassword, setShowPassword] = useState(true);
   const id = useId();
 
   return (
@@ -169,7 +169,7 @@ export default function FormAddUser() {
                   id={`${id}-password`}
                   placeholder="Enter your password"
                   required
-                  type={showPassword ?  "password" : "text"}
+                  type={showPassword ? "password" : "text"}
                   className="pr-10"
                 />
               </div>

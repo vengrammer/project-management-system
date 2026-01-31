@@ -132,6 +132,20 @@ const DashboardContent = () => {
       avatar: "OM",
       color: "bg-orange-500",
     },
+    {
+      user: "Olivia Martinez",
+      action: "Uploaded documentation",
+      time: "3 hours ago",
+      avatar: "OM",
+      color: "bg-orange-500",
+    },
+    {
+      user: "Olivia Martinez",
+      action: "Uploaded documentation",
+      time: "3 hours ago",
+      avatar: "OM",
+      color: "bg-orange-500",
+    },
   ];
 
   const upcomingDeadlines = [
@@ -172,7 +186,7 @@ const DashboardContent = () => {
   };
 
   return (
-    <div className="md:p-6 bg-gray-200 min-h-screen rounded-2xl" >
+    <div className="md:p-6 bg-gray-200 min-h-screen rounded-2xl">
       {/* Page Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2 p-2">
@@ -277,7 +291,7 @@ const DashboardContent = () => {
               </div>
             </div>
           </div>
-
+          {/*recent project */}
           <div className="p-2 md:p-6 space-y-4 max-h-150 overflow-y-auto">
             {recentProjects.map((project) => (
               <div
@@ -332,6 +346,35 @@ const DashboardContent = () => {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Team Activity */}
+          <div className="bg-white border border-gray-200 p-3 md:p-6 ">
+            <h2 className="text-lg font-bold text-gray-900 mb-6">
+              Recent Activity
+            </h2>
+            <div className="space-y-4 max-h-70 overflow-auto">
+              {teamActivity.map((activity, index) => (
+                <div key={index} className="flex items-start gap-3">
+                  <div
+                    className={`w-8 h-8 p-3 rounded-full ${activity.color} flex items-center justify-center text-white text-xs font-semibold flex-0`}
+                  >
+                    {activity.avatar}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-900 font-medium">
+                      {activity.user}
+                    </p>
+                    <p className="text-xs text-gray-600 truncate">
+                      {activity.action}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {activity.time}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -419,34 +462,6 @@ const DashboardContent = () => {
                           : "bg-red-500"
                     }`}
                   ></div>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Team Activity */}
-          <div className="bg-white border border-gray-200 rounded-lg p-3 md:p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">
-              Recent Activity
-            </h2>
-            <div className="space-y-4">
-              {teamActivity.map((activity, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div
-                    className={`w-8 h-8 p-3 rounded-full ${activity.color} flex items-center justify-center text-white text-xs font-semibold flex-0`}
-                  >
-                    {activity.avatar}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900 font-medium">
-                      {activity.user}
-                    </p>
-                    <p className="text-xs text-gray-600 truncate">
-                      {activity.action}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {activity.time}
-                    </p>
-                  </div>
                 </div>
               ))}
             </div>

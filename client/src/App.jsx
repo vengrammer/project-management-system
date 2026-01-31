@@ -6,6 +6,7 @@ import HomeRoute from "./Router/AdminRoute";
 
 import { AdminContextProvider } from "./context/AdminContextProvider";
 import {EmployeeContextProvider} from "./context/EmployeeContextProvider";
+import ProjectDetailsPage from "./pages/ProjectDetailsPage";
 function App() {
   return (
     <BrowserRouter>
@@ -15,6 +16,7 @@ function App() {
             <Route path="/*" element={<LandingPageRoute />} />
             <Route path="admin/*" element={<HomeRoute />} />
             <Route path="*" element={<NotFound />} />
+            <Route path="projectdetails" element={<ProjectDetailsPage />}/>
           </Routes>
         </EmployeeContextProvider>
       </AdminContextProvider>

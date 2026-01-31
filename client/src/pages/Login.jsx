@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import { Lock, User, Eye,  EyeOff } from "lucide-react";
-
-
+import { Lock, User, Eye, EyeOff } from "lucide-react";
 
 export default function LoginUI() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
