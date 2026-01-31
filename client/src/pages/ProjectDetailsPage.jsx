@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AddMembers from "./AddMembersForm";
 import {
   ArrowLeft,
   Calendar,
@@ -22,6 +23,7 @@ import {
   Eye,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import AddTaskForm from "./AddTaskForm";
 
 const ProjectDetailsPage = () => {
   // Project data
@@ -144,8 +146,6 @@ const ProjectDetailsPage = () => {
     { id: 13, name: "Sarah Wilson", role: "Business Analyst", avatar: "SW" },
   ]);
 
-  // Dialog state for adding new task
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -216,6 +216,9 @@ const ProjectDetailsPage = () => {
   };
 
   const navigate = useNavigate();
+  // Dialog state for adding new task
+
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -263,14 +266,9 @@ const ProjectDetailsPage = () => {
                 </span>
               </div>
             </div>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-              <Edit2 size={18} />
-              Edit Project
-            </button>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-              <UserRoundPlus size={18} />
-              Add Members
-            </button>
+            {/* Buttons for edit project and add member*/}
+            <AddTaskForm/>
+            <AddMembers/>
           </div>
 
           {/* Progress Bar */}
@@ -346,13 +344,7 @@ const ProjectDetailsPage = () => {
                       completed
                     </p>
                   </div>
-                  <button
-                    onClick={() => setIsAddTaskOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <Plus size={18} />
-                    Add Task
-                  </button>
+                  <AddTaskForm/>
                 </div>
               </div>
               {/*all task value*/}
@@ -506,7 +498,7 @@ const ProjectDetailsPage = () => {
         </div>
       </div>
       {/* Add Task Dialog */}
-      {isAddTaskOpen && (
+      {/*{isAddTaskOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -670,9 +662,9 @@ const ProjectDetailsPage = () => {
             </form>
           </div>
         </div>
-      )}
+      )}*/}
     </div>
   );
-};
+};;
 
 export default ProjectDetailsPage;
