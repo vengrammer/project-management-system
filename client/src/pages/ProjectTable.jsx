@@ -10,6 +10,7 @@ import {
   Search,
   Plus,
   Trash2,
+  Eye,
 } from "lucide-react";
 import FormAddProject from "./FormAddProject";
 
@@ -368,10 +369,17 @@ const ProjectTable = () => {
                       )}
                     </td>
                   ))}
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="flex flex-row gap-3 px-3 py-4 whitespace-nowrap">
                     <button
                       onClick={() => handleDeleteRow(row.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                      className="p-2 text-green-600 hover:text-white hover:bg-green-700 rounded transition-colors cursor-pointer"
+                      title="Delete row"
+                    >
+                      <Eye size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRow(row.id)}
+                      className="p-2 text-red-600 hover:text-white hover:bg-red-700 rounded transition-colors cursor-pointer"
                       title="Delete row"
                     >
                       <Trash2 size={16} />

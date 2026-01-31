@@ -11,7 +11,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import FormAddProject from "./FormAddProject";
+import FormAddUser from "./FormAddUser";
 
 const EmployeeTable = () => {
   // Sample data structure - easily adaptable to your needs
@@ -267,7 +267,7 @@ const EmployeeTable = () => {
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">
-            Team Members
+            Super Admins
           </h1>
           {/* Search and Actions */}
           <div className="flex flex-wrap gap-4 items-center justify-between">
@@ -286,7 +286,7 @@ const EmployeeTable = () => {
             </div>
 
             <div>
-              <FormAddProject />
+              <FormAddUser/>
             </div>
           </div>
         </div>

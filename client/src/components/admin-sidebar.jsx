@@ -9,7 +9,8 @@ import {
   Trash2,
   CheckLine,
   Users,
-  ClipboardList
+  ClipboardList,
+  CircleX
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -57,74 +58,20 @@ const data = {
       ],
     },
     {
-      title: "Employees",
+      title: "Users",
       url: "#",
       icon: Users,
       items: [
         {
-          title: "team members",
-          url: "/admin/teammembers",
+          title: "Super Admins",
+          url: "/admin/superadmin",
         },
         {
-          title: "latest updates",
+          title: "Admin",
           url: "#",
         },
         {
-          title: "ongoing tasks",
-          url: "#",
-        },
-        {
-          title: "stuck tasks",
-          url: "#",
-        },
-        {
-          title: "done tasks",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
+          title: "Employees",
           url: "#",
         },
       ],
@@ -132,14 +79,20 @@ const data = {
   ],
   projects: [
     {
+      name: "Done Projects",
+      url: "#",
+      icon: CheckLine,
+    },
+    {
+      name: "Failed project",
+      url: "#",
+      icon: CircleX,
+    },
+    ,
+    {
       name: "Archive",
       url: "#",
       icon: Trash2,
-    },
-    {
-      name: "Done projects",
-      url: "#",
-      icon: CheckLine,
     },
   ],
 };

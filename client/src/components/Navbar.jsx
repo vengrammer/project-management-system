@@ -1,7 +1,5 @@
 import logo from "@/assets/image.png";
 import { Button } from "@/components/ui/button";
-import Login from "@/pages/Login";
-
 import {
   NavigationMenu,
   NavigationMenuItem,
