@@ -6,6 +6,7 @@ import Dashboard from "@/pages/Dashboard";
 import ProjectTable from "@/pages/ProjectTable";
 import SuperAdminsTable from "@/pages/SuperAdminsTable";
 
+
 function HomeRoute() {
     return (
       <Routes>
@@ -17,6 +18,7 @@ function HomeRoute() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="myprojects" element={<ProjectTable />} />
           <Route path="superadmin" element={<SuperAdminsTable />} />
+          
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AddTaskForm from "./AddTaskForm";
+import FormEditProject from "./FormEditProject";
 
 const ProjectDetailsPage = () => {
   // Project data
@@ -103,7 +104,7 @@ const ProjectDetailsPage = () => {
       completedDate: null,
       progress: 0,
     },
-    ,
+    
     {
       id: 6,
       title: "Mobile Responsive Design",
@@ -115,7 +116,7 @@ const ProjectDetailsPage = () => {
       completedDate: null,
       progress: 0,
     },
-    ,
+    
     {
       id: 7,
       title: "Mobile Responsive Design",
@@ -146,36 +147,36 @@ const ProjectDetailsPage = () => {
     { id: 13, name: "Sarah Wilson", role: "Business Analyst", avatar: "SW" },
   ]);
 
-  const [newTask, setNewTask] = useState({
-    title: "",
-    description: "",
-    priority: "Medium",
-    assignedTo: "",
-    dueDate: "",
-    status: "Not Started",
-    progress: 0,
-  });
+  // const [newTask, setNewTask] = useState({
+  //   title: "",
+  //   description: "",
+  //   priority: "Medium",
+  //   assignedTo: "",
+  //   dueDate: "",
+  //   status: "Not Started",
+  //   progress: 0,
+  // });
 
   // Handle add task
-  const handleAddTask = (e) => {
-    e.preventDefault();
-    const task = {
-      id: Math.max(...tasks.map((t) => t.id)) + 1,
-      ...newTask,
-      completedDate: null,
-    };
-    setTasks([...tasks, task]);
-    setIsAddTaskOpen(false);
-    setNewTask({
-      title: "",
-      description: "",
-      priority: "Medium",
-      assignedTo: "",
-      dueDate: "",
-      status: "Not Started",
-      progress: 0,
-    });
-  };
+  // const handleAddTask = (e) => {
+  //   e.preventDefault();
+  //   const task = {
+  //     id: Math.max(...tasks.map((t) => t.id)) + 1,
+  //     ...newTask,
+  //     completedDate: null,
+  //   };
+  //   setTasks([...tasks, task]);
+  //   setIsAddTaskOpen(false);
+  //   setNewTask({
+  //     title: "",
+  //     description: "",
+  //     priority: "Medium",
+  //     assignedTo: "",
+  //     dueDate: "",
+  //     status: "Not Started",
+  //     progress: 0,
+  //   });
+  // };
 
   // Handle delete task
   const handleDeleteTask = (id) => {
@@ -218,7 +219,7 @@ const ProjectDetailsPage = () => {
   const navigate = useNavigate();
   // Dialog state for adding new task
 
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  // const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -266,13 +267,21 @@ const ProjectDetailsPage = () => {
                 </span>
               </div>
             </div>
+            {/**/}
+
+
             {/* Buttons for edit project and add member*/}
-            <AddTaskForm/>
+            <FormEditProject/>
             <AddMembers/>
+
+
+
+
+
           </div>
 
           {/* Progress Bar */}
-          <div className="mb-4">
+          <div className="mb-4"> 
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700">
                 Overall Progress
@@ -481,7 +490,7 @@ const ProjectDetailsPage = () => {
                         </div>
                         <div className="pl-3">
                           <button
-                            onClick={() => handleDeleteRow(row.id)}
+                            // onClick={() => handleDeleteRow(row.id)}
                             className="py-3 px-3 text-red-600 hover:text-white hover:bg-red-700 rounded transition-colors cursor-pointer"
                             title="Delete row"
                           >

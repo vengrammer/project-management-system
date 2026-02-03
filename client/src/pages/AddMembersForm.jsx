@@ -56,8 +56,9 @@ function AddMembers() {
       {/* Button to open modal */}
       <button
         onClick={() => setIsAddMemberOpen(true)}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg flex"
       >
+        <Plus/>
         Add Member
       </button>
 
@@ -212,7 +213,7 @@ function AddMembers() {
               <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={() => setIsAddTaskOpen(false)}
+                  onClick={() => setIsAddMemberOpen(false)}
                   className="px-6 py-2 cursor-pointer border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   Cancel

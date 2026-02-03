@@ -7,6 +7,8 @@ import HomeRoute from "./Router/AdminRoute";
 import { AdminContextProvider } from "./context/AdminContextProvider";
 import {EmployeeContextProvider} from "./context/EmployeeContextProvider";
 import ProjectDetailsPage from "./pages/ProjectDetailsPage";
+import TaskActivityPage from "@/pages/TaskActivityPage";
+
 function App() {
   return (
     <BrowserRouter>
@@ -17,6 +19,7 @@ function App() {
             <Route path="admin/*" element={<HomeRoute />} />
             <Route path="*" element={<NotFound />} />
             <Route path="projectdetails" element={<ProjectDetailsPage />}/>
+            <Route path="taskactivity" element={<TaskActivityPage/>}/>
           </Routes>
         </EmployeeContextProvider>
       </AdminContextProvider>
