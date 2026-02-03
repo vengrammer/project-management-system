@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Lock, User, Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginUI() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -79,18 +81,19 @@ export default function LoginUI() {
                 {/* Input */}
                 <input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type="password"
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
-                  className="w-full caret-black pl-14 pr-14 py-3.5 bg-white border border-white text-black text-sm
-                 placeholder:text-gray-500 focus:outline-none focus:border-black
-                 focus:ring-1 focus:ring-black transition-all duration-300"
+                  className="w-full pl-14 caret-black pr-2 py-3.5 bg-white border border-white text-black text-sm
+    placeholder:text-gray-500 focus:outline-none focus:border-black
+    focus:ring-1 focus:ring-black transition-all duration-300"
                 />
 
                 {/* Eye toggle */}
-                <button
+                {/*<button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-black cursor-pointer"
@@ -100,7 +103,7 @@ export default function LoginUI() {
                   ) : (
                     <Eye className="w-6 h-6" />
                   )}
-                </button>
+                </button>*/}
               </div>
             </div>
 
@@ -108,6 +111,7 @@ export default function LoginUI() {
             <button
               type="submit"
               disabled={isLoading}
+              onClick={() => navigate("/admin")}
               className=" w-full px-4 py-4 bg-[#023586] hover:bg-[#0547b0] text-white rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-lime-300/30 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group"
             >
               <span className="relative z-10">

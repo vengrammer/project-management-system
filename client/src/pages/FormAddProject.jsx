@@ -53,6 +53,24 @@ export default function FormAddProject() {
     // Add your submit logic here
   };
 
+  const employees = [
+    { id: 1, name: "Alice Johnson" },
+    { id: 2, name: "Bob Smith" },
+    { id: 3, name: "Carol Williams" },
+    { id: 4, name: "David Brown" },
+    { id: 5, name: "Eva Martinez" },
+    { id: 6, name: "Frank Lee" },
+    { id: 7, name: "Grace Kim" },
+    { id: 8, name: "Henry Clark" },
+  ];
+
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+
+  const toggleEmployee = (id) => {
+    setSelectedEmployees((prev) =>
+      prev.includes(id) ? prev.filter((empId) => empId !== id) : [...prev, id],
+    );
+  };
   return (
     <div className="max-w-500 rounded">
       <Dialog className="min-w-200">
@@ -150,6 +168,33 @@ export default function FormAddProject() {
                   />
                 </div>
 
+                {/*employee depends on */}
+                <div className="space-y-2">
+                  <Label htmlFor={`${id}-status`}>
+                    Status <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) =>
+                      handleInputChange("status", value)
+                    }
+                    required
+                  >
+                    <SelectTrigger id={`${id}-status`}>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Planning">Planning</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="On Hold">On Hold</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
+                      <SelectItem value="Not Started">Not Started</SelectItem>
+                      <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Department dropdown*/}
                 <div className="space-y-2">
                   <Label htmlFor={`${id}-department`}>
                     Department <span className="text-red-500">*</span>
@@ -177,29 +222,29 @@ export default function FormAddProject() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-status`}>
-                    Status <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) =>
-                      handleInputChange("status", value)
-                    }
-                    required
-                  >
-                    <SelectTrigger id={`${id}-status`}>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Planning">Planning</SelectItem>
-                      <SelectItem value="In Progress">In Progress</SelectItem>
-                      <SelectItem value="On Hold">On Hold</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                      <SelectItem value="Not Started">Not Started</SelectItem>
-                      <SelectItem value="Cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/*employee dropdown */}
+                <Label htmlFor={`${id}-department`}>
+                  Department <span className="text-red-500 ">*</span>
+                </Label>
+                <div className="col-span-full">
+                  <div className="w-full bg-gray-200 h-50 overflow-auto rounded py-3 px-5">
+                    {employees.map((emp) => (
+                      <label
+                        key={emp.id}
+                        className="flex items-center gap-3 py-1.5 px-2 rounded hover:bg-gray-300 cursor-pointer transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedEmployees.includes(emp.id)}
+                          onChange={() => toggleEmployee(emp.id)}
+                          className="w-4 h-4 accent-blue-600"
+                        />
+                        <span className="text-sm font-medium text-gray-800">
+                          {emp.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

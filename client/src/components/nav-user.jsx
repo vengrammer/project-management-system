@@ -28,11 +28,15 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
+import { useNavigate } from "react-router-dom"
+
 export function NavUser({
   user
 }) {
   const { isMobile } = useSidebar()
 
+  const navigate = useNavigate("/")
+  {/*user data*/}
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -86,7 +90,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <LogOut />
-              Log out
+              <button onClick={() => navigate('/')}>Logout</button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
