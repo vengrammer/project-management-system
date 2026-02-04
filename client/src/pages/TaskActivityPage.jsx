@@ -10,6 +10,7 @@ import {
   Trash2,
   Pencil,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // ─── sample task & team data ──────────────────────────────
 const TASK = {
@@ -98,7 +99,7 @@ function getStatus(val) {
 function Avatar({ initials, size = "w-9 h-9", text = "text-sm" }) {
   return (
     <div
-      className={`${size} rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold ${text} flex-shrink-0`}
+      className={`${size} rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold ${text} shrink-0`}
     >
       {initials}
     </div>
@@ -162,6 +163,7 @@ export default function TaskActivityPage() {
   const [selectedStatus, setSelectedStatus] = useState("In Progress");
   const [progress, setProgress] = useState(70);
   const [comment, setComment] = useState("");
+  const navigate = useNavigate();
 
   // latest progress from updates or current
   const latestProgress =
@@ -192,7 +194,10 @@ export default function TaskActivityPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 py-6 sm:px-6">
         {/* back */}
-        <button className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors">
+        <button
+          onClick={() => navigate("/projectdetails", { replace: true })}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors"
+        >
           <ArrowLeft size={16} /> Back
         </button>
 
@@ -217,8 +222,8 @@ export default function TaskActivityPage() {
               <p className="text-xs text-gray-500">{TASK.assignee.role}</p>
             </div>
             {/* assign the task status*/}
-            <button className="ml-auto bg-green-500 hover:bg-green-600 text-white rounded px-4 py-2 cursor-pointer" >
-                Done
+            <button className="ml-auto bg-green-500 hover:bg-green-600 text-white rounded px-4 py-2 cursor-pointer">
+              Done
             </button>
           </div>
         </div>
@@ -314,7 +319,7 @@ export default function TaskActivityPage() {
             </p>
           </div>
 
-          <div className="divide-y divide-gray-100 max-h-100 overflow-scroll">
+          <div className="divide-y divide-gray-100 max-h-100 overflow-y-scroll">
             {[...updates].reverse().map((item) => {
               const st = getStatus(item.status);
               const Icon = st.icon;

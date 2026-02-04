@@ -1,0 +1,12 @@
+# Ignore client and server dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Env files
+.env
+
+# TypeScript
+*.tsbuildinfo

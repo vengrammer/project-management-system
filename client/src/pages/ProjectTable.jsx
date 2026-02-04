@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Edit2,
   Save,
@@ -172,6 +173,9 @@ const ProjectTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [columnFilters, setColumnFilters] = useState({});
 
+  const navigate = useNavigate();
+
+
   // Get dynamic columns from data
   const columns =
     data.length > 0 ? Object.keys(data[0]).filter((key) => key !== "id") : [];
@@ -244,14 +248,14 @@ const ProjectTable = () => {
     }
   };
 
-  // Add new row
-  const handleAddRow = () => {
-    const newRow = {
-      id: Math.max(...data.map((d) => d.id)) + 1,
-      ...columns.reduce((acc, col) => ({ ...acc, [col]: "" }), {}),
-    };
-    setData([...data, newRow]);
-  };
+  // // Add new row
+  // const handleAddRow = () => {
+  //   const newRow = {
+  //     id: Math.max(...data.map((d) => d.id)) + 1,
+  //     ...columns.reduce((acc, col) => ({ ...acc, [col]: "" }), {}),
+  //   };
+  //   setData([...data, newRow]);
+  // };
 
   // Delete row
   const handleDeleteRow = (id) => {
@@ -371,7 +375,9 @@ const ProjectTable = () => {
                   ))}
                   <td className="flex flex-row gap-3 px-3 py-4 whitespace-nowrap">
                     <button
-                      onClick={() => handleDeleteRow(row.id)}
+                      onClick={() =>
+                        navigate("/projectdetails", { replace: true })
+                      }
                       className="p-2 text-green-600 hover:text-white hover:bg-green-700 rounded transition-colors cursor-pointer"
                       title="Delete row"
                     >

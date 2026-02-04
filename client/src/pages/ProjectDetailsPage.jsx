@@ -226,7 +226,7 @@ const ProjectDetailsPage = () => {
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* Back Button */}
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/admin/myprojects")}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
         >
           <ArrowLeft size={20} />
@@ -269,19 +269,13 @@ const ProjectDetailsPage = () => {
             </div>
             {/**/}
 
-
             {/* Buttons for edit project and add member*/}
-            <FormEditProject/>
-            <AddMembers/>
-
-
-
-
-
+            <FormEditProject />
+            <AddMembers />
           </div>
 
           {/* Progress Bar */}
-          <div className="mb-4"> 
+          <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700">
                 Overall Progress
@@ -353,7 +347,7 @@ const ProjectDetailsPage = () => {
                       completed
                     </p>
                   </div>
-                  <AddTaskForm/>
+                  <AddTaskForm />
                 </div>
               </div>
               {/*all task value*/}
@@ -402,7 +396,9 @@ const ProjectDetailsPage = () => {
                       </div>
                       <div className="flex flex-row gap-2">
                         <button
-                          onClick={() => handleDeleteTask(task.id)}
+                          onClick={() =>
+                            navigate("/taskactivity", { replace: true })
+                          }
                           className="p-2 text-blue-600 hover:bg-blue-700 hover:text-white rounded-lg transition-colors cursor-pointer"
                         >
                           <Eye size={18} />
