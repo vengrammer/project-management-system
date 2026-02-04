@@ -113,6 +113,11 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

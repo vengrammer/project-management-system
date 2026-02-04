@@ -9,8 +9,11 @@ const app = express();
 app.use(express.json());
 
 // Admin routes
-app.use("/api/admin", AdminRouter);
 app.use("/api/employee", EmployeeRouter);
 app.use("/api/testing", testingRouter);
+
+
+//Fo the admin
+app.use("/api/admin", AdminRouter);
 
 export default app;

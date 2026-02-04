@@ -1,3 +1,4 @@
+//for creating the account
 import { useId, useState} from "react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
@@ -190,7 +191,7 @@ export default function FormAddUser() {
           </div>
           <div className="flex justify-between gap-2"></div>
           <Button className="w-full" type="button">
-            Sign Up
+            Create Account
           </Button>
         </form>
       </DialogContent>
