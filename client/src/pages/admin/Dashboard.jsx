@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import {motion} from "framer-motion"
 import {
   BarChart3,
   TrendingUp,
@@ -186,7 +187,12 @@ const DashboardContent = () => {
   };
 
   return (
-    <div className="md:p-6 bg-gray-200 min-h-screen rounded-2xl">
+    <motion.div
+      initial={{ y: 100, opacity: 0 }} // start below
+      animate={{ y: 0, opacity: 1 }} // move to normal position
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      className="md:p-6 bg-gray-200 min-h-screen rounded-2xl"
+    >
       {/* Page Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2 p-2">
@@ -198,7 +204,12 @@ const DashboardContent = () => {
       </div>
 
       {/* Top Stats Grid */}
-      <div className="p-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+      <motion.div
+        initial={{ y: 100, opacity: 0 }} // start below
+        animate={{ y: 0, opacity: 1 }} // move to normal position
+        transition={{ duration: 0.8, ease: "easeInOut" }}
+        className="p-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6"
+      >
         {/* Total Projects */}
         <div className="bg-white border border-gray-200 rounded-lg p-6 md:p-6 hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between mb-4">
@@ -263,10 +274,12 @@ const DashboardContent = () => {
           </h3>
           <p className="text-sm text-gray-600">Total Budget</p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div    
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+      >
         {/* Projects List - Takes 2 columns */}
         <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg overflow-hidden">
           <div className="p-6 border-b border-gray-200">
@@ -468,7 +481,7 @@ const DashboardContent = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 export default DashboardContent;

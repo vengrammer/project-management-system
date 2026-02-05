@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Edit2,
   Save,
@@ -267,7 +268,11 @@ const ProjectTable = () => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
 
   return (
-    <div className="w-full max-h-screen  max-w-sreen mx-auto md:p-6 bg-gray-200 min-h-screen rounded-2xl">
+    <motion.div
+    initial={{ y: 100, opacity: 0 }} // start below
+            animate={{ y: 0, opacity: 1 }} // move to normal position
+            transition={{ duration: 0.8, ease: "easeInOut" }} 
+            className="w-full max-h-screen  max-w-sreen mx-auto md:p-6 bg-gray-200 min-h-screen rounded-2xl">
       <div className="bg-white rounded-lg shadow-lg">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
@@ -489,7 +494,7 @@ const ProjectTable = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

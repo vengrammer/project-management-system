@@ -2,9 +2,9 @@
 import { Routes, Route, Navigate } from "react-router-dom"
 import NotFound from "@/components/Notfound"
 import HomeLayout from "@/layout/HomeLayout";
-import Dashboard from "@/pages/Dashboard";
-import ProjectTable from "@/pages/ProjectTable";
-import SuperAdminsTable from "@/pages/SuperAdminsTable";
+import Dashboard from "@/pages/admin/Dashboard";
+import ProjectTable from "@/pages/admin/MyProjectTable";
+import SuperAdminsTable from "@/pages/admin/SuperAdminsTable";
 
 
 function HomeRoute() {

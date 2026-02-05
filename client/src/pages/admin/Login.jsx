@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Lock, User, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {motion} from "framer-motion"
 
 export default function LoginUI() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
 
   const navigate = useNavigate();
 
@@ -22,7 +24,12 @@ export default function LoginUI() {
   return (
     <div className="flex items-center justify-center p-6 relative overflow-hidden">
       {/* Login Container */}
-      <div className="w-full md:w-200 max-w-md relative z-10 animate-slide-up">
+      <motion.div
+        initial={{ y: 100, opacity: 0 }} // start below
+        animate={{ y: 0, opacity: 1 }} // move to normal position
+        transition={{ duration: 0.8, ease: "easeInOut" }}
+        className="w-full md:w-200 max-w-md relative z-10 animate-slide-up"
+      >
         <div className="bg-blue-500 backdrop-blur-2xl borderrounded-3xl p-12 relative overflow-hidden">
           {/* Top gradient line */}
           <div className="absolute top-0 left-0 right-0 h-1px bg-linear-to-r  opacity-30" />
@@ -81,7 +88,7 @@ export default function LoginUI() {
                 {/* Input */}
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -93,7 +100,7 @@ export default function LoginUI() {
                 />
 
                 {/* Eye toggle */}
-                {/*<button
+                <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-black cursor-pointer"
@@ -103,7 +110,7 @@ export default function LoginUI() {
                   ) : (
                     <Eye className="w-6 h-6" />
                   )}
-                </button>*/}
+                </button>
               </div>
             </div>
 
@@ -121,9 +128,9 @@ export default function LoginUI() {
             </button>
           </form>
         </div>
-      </div>
+      </motion.div>
 
-      <style jsx>{`
+      {/* <style jsx>{`
         @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=DM+Sans:wght@400;500;700&display=swap");
 
         .font-serif {
@@ -166,7 +173,7 @@ export default function LoginUI() {
         .animate-slide-up {
           animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
-      `}</style>
+      `}</style> */}
     </div>
   );
 }

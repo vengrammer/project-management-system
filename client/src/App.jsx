@@ -6,23 +6,25 @@ import HomeRoute from "./Router/AdminRoute";
 
 import { AdminContextProvider } from "./context/AdminContextProvider";
 import {EmployeeContextProvider} from "./context/EmployeeContextProvider";
-import ProjectDetailsPage from "./pages/ProjectDetailsPage";
-import TaskActivityPage from "@/pages/TaskActivityPage";
+import ProjectDetailsPage from "./pages/admin/ProjectDetailsPage";
+import TaskActivityPage from "@/pages/admin/TaskActivityPage";
+
 
 function App() {
   return (
     <BrowserRouter>
-      <AdminContextProvider>
-        <EmployeeContextProvider>
-          <Routes>
-            <Route path="/*" element={<LandingPageRoute />} />
-            <Route path="admin/*" element={<HomeRoute />} />
-            <Route path="*" element={<NotFound />} />
-            <Route path="projectdetails" element={<ProjectDetailsPage />}/>
-            <Route path="taskactivity" element={<TaskActivityPage/>}/>
-          </Routes>
-        </EmployeeContextProvider>
-      </AdminContextProvider>
+
+        <AdminContextProvider>
+          <EmployeeContextProvider>
+            <Routes>
+              <Route path="/*" element={<LandingPageRoute />} />
+              <Route path="admin/*" element={<HomeRoute />} />
+              <Route path="*" element={<NotFound />} />
+              <Route path="projectdetails" element={<ProjectDetailsPage />} />
+              <Route path="taskactivity" element={<TaskActivityPage />} />
+            </Routes>
+          </EmployeeContextProvider>
+        </AdminContextProvider>
     </BrowserRouter>
   );
 }

@@ -50,6 +50,10 @@ export default function FormAddUser() {
   const [showPassword, setShowPassword] = useState(true);
   const id = useId();
 
+  //logic for the creating account
+  
+
+
   return (
     <Dialog>
       <DialogTrigger asChild>
