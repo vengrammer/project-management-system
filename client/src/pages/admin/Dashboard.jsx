@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+
 import {motion} from "framer-motion"
 import {
   BarChart3,
@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 
 const DashboardContent = () => {
-  const [timeRange, setTimeRange] = useState("week");
 
   // Dashboard data
   const stats = {

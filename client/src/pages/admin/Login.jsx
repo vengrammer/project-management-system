@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Lock, User, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import {motion} from "framer-motion"
+
 
 export default function LoginUI() {
   const [username, setUsername] = useState("");
@@ -17,19 +17,14 @@ export default function LoginUI() {
     // Simulate login
     setTimeout(() => {
       setIsLoading(false);
-      console.log("Login attempt:", { email, password, rememberMe });
+      console.log("Login attempt:", { password});
     }, 1500);
   };
 
   return (
     <div className="flex items-center justify-center p-6 relative overflow-hidden">
       {/* Login Container */}
-      <motion.div
-        initial={{ y: 100, opacity: 0 }} // start below
-        animate={{ y: 0, opacity: 1 }} // move to normal position
-        transition={{ duration: 0.8, ease: "easeInOut" }}
-        className="w-full md:w-200 max-w-md relative z-10 animate-slide-up"
-      >
+      <div>
         <div className="bg-blue-500 backdrop-blur-2xl borderrounded-3xl p-12 relative overflow-hidden">
           {/* Top gradient line */}
           <div className="absolute top-0 left-0 right-0 h-1px bg-linear-to-r  opacity-30" />
@@ -128,7 +123,7 @@ export default function LoginUI() {
             </button>
           </form>
         </div>
-      </motion.div>
+      </div>
 
       {/* <style jsx>{`
         @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=DM+Sans:wght@400;500;700&display=swap");

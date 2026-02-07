@@ -25,8 +25,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import AddTaskForm from "./AddTaskForm";
 import FormEditProject from "./FormEditProject";
-import { motion } from "framer-motion";
-
 const ProjectDetailsPage = () => {
   // Project data
   const [project] = useState({
@@ -223,10 +221,7 @@ const ProjectDetailsPage = () => {
   // const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
 
   return (
-    <motion.div
-    initial={{ y: 100, opacity: 0 }} // start below
-            animate={{ y: 0, opacity: 1 }} // move to normal position
-            transition={{ duration: 0.8, ease: "easeInOut" }} 
+    <div
        className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* Back Button */}
@@ -675,7 +670,7 @@ const ProjectDetailsPage = () => {
           </div>
         </div>
       )}*/}
-    </motion.div>
+    </div>
   );
 };;
 
