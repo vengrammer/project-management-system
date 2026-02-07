@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "manager", "user"],
       default: ["user"],
     },
+    position: { type: String },
     email: {
       type: String,
       unique: true,

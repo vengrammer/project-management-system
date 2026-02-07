@@ -1,4 +1,4 @@
-//fulname, department,role,email,username,password
+//userdata = fulname, department,role,email,username,password
 export const userSchema = `#graphql
     
     type User {
@@ -6,6 +6,7 @@ export const userSchema = `#graphql
         fullname: String
         department: String
         role: String
+        position: String
         email: String
         createdAt: String
         updatedAt: String
@@ -14,7 +15,7 @@ export const userSchema = `#graphql
     type Query {
         users: [User]!
         user(id: ID!): Response!
-        searchUser(fullname: String, email: String, department: String, role: String): [User!]!
+        searchUser(fullname: String, email: String,position: String, department: String, role: String): [User!]!
     }
 
     type Response {
@@ -27,6 +28,7 @@ export const userSchema = `#graphql
             fullname: String!
             email: String!
             password: String!
+            position: String!
             username: String!
             department: String!
             role: String!

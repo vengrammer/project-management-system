@@ -3,7 +3,7 @@ import { userValidator } from "../validator/user.validator.js";
 // data = fullname, department, role, email, username, password, timestamps
 export const userResolvers = {
   Query: {
-    //Return all user
+    //Return all user 
     users: async () => {
       try {
         const users = await User.find();
@@ -15,6 +15,7 @@ export const userResolvers = {
           fullname: user.fullname,
           email: user.email,
           department: user.department,
+          position: user.position,
           role: user.role,
           createdAt: user.createdAt.toISOString(),
           updatedAt: user.updatedAt.toISOString(),

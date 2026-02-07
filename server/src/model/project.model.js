@@ -1,20 +1,13 @@
 import mongoose from "mongoose";
-
+//project = title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
 const projectSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
-      trim: true,
-      minlength: 3,
-      maxlength: 100,
     },
 
     description: {
       type: String,
-      trim: true,
-      minlength: 3,
-      maxlength: 500,
     },
 
     priority: {
@@ -33,10 +26,6 @@ const projectSchema = new mongoose.Schema(
 
     department: {
       type: String,
-      required: true,
-      trim: true,
-      minlength: 3,
-      maxlength: 100,
     },
 
     progress: {
@@ -57,7 +46,6 @@ const projectSchema = new mongoose.Schema(
     budget: {
       type: Number,
       required: true,
-      min: 0,
     },
 
     startDate: {
