@@ -1,11 +1,10 @@
 
 import { Routes, Route, Navigate } from "react-router-dom"
 import NotFound from "@/components/Notfound"
-import HomeLayout from "@/layout/HomeLayout";
+import HomeLayout from "@/layout/AdminLayout";
 import Dashboard from "@/pages/admin/Dashboard";
 import ProjectTable from "@/pages/admin/MyProjectTable";
-import SuperAdminsTable from "@/pages/admin/SuperAdminsTable";
-
+import SuperAdminsTable from "@/pages/admin/SuperAdminsTable"; 
 
 function HomeRoute() {
     return (
@@ -18,7 +17,6 @@ function HomeRoute() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="myprojects" element={<ProjectTable />} />
           <Route path="superadmin" element={<SuperAdminsTable />} />
-          
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

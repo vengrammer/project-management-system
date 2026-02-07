@@ -150,6 +150,14 @@ export default function FormAddUser() {
                 </Select>
               </div>
             </div>
+            <div className="*:not-first:mt-2">
+              <Label htmlFor={`${id}-email`}>Category</Label>
+              <Input
+                id={`${id}-email`}
+                placeholder="e.g network engineer"
+                required
+              />
+            </div>
 
             <div className="*:not-first:mt-2">
               <Label htmlFor={`${id}-email`}>Email address</Label>

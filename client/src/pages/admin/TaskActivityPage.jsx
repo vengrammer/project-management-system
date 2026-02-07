@@ -11,6 +11,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {motion} from "framer-motion";
 
 // ─── sample task & team data ──────────────────────────────
 const TASK = {
@@ -191,7 +192,12 @@ export default function TaskActivityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div
+      initial={{ y: 100, opacity: 0 }} // start below
+      animate={{ y: 0, opacity: 1 }} // move to normal position
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      className="min-h-screen bg-gray-50"
+    >
       <div className="max-w-3xl mx-auto px-4 py-6 sm:px-6">
         {/* back */}
         <button
@@ -392,6 +398,6 @@ export default function TaskActivityPage() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

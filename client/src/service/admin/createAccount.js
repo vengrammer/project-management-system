@@ -1,5 +1,5 @@
 import axios from "axios";
-import { SERVER_URL } from "hooks/serverUrl";
+import { SERVER_URL } from "@/hooks/serverUrl";
 const createAccount = async ({
     fullname,
     department,

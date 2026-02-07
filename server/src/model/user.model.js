@@ -1,37 +1,26 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+//fulname, department,role,email,username,password,timestamps
 const userSchema = new mongoose.Schema(
   {
-    fullname: {
+    fullname: { type: String },
+    department: { type: String }, // array now
+    role: {
       type: String,
-      required: true,
-      trim: true,
-      minlength: 3,
-      maxlength: 100,
+      enum: ["admin", "manager", "user"],
+      default: ["user"],
     },
-    department: { type: String, required: true, trim: true },
-    role: { type: String, enum: ["admin", "manager", "user"], default: "user" },
     email: {
       type: String,
-      required: true,
       unique: true,
-      lowercase: true,
       trim: true,
-      match: [
-        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-        "Please enter a valid email",
-      ],
     },
     username: {
       type: String,
-      required: true,
       unique: true,
-      trim: true,
-      minlength: 3,
-      maxlength: 30,
     },
-    password: { type: String, required: true, minlength: 6, select: false },
+    password: { type: String, select: false },
   },
   { timestamps: true },
 );

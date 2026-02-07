@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import FormAddUser from "./FormAddUser";
+import {motion} from "framer-motion"
 
 const EmployeeTable = () => {
   // Sample data structure - easily adaptable to your needs
@@ -262,7 +263,11 @@ const EmployeeTable = () => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
 
   return (
-    <div className="w-full max-h-screen  max-w-sreen mx-auto md:p-6 bg-gray-200 min-h-screen rounded-2xl">
+    <motion.div 
+     initial={{ y: 100, opacity: 0 }} // start below
+      animate={{ y: 0, opacity: 1 }} // move to normal position
+      transition={{ duration: 0.8, ease: "easeInOut" }} 
+    className="w-full max-h-screen  max-w-sreen mx-auto md:p-6 bg-gray-200 min-h-screen rounded-2xl">
       <div className="bg-white rounded-lg shadow-lg">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
@@ -477,7 +482,7 @@ const EmployeeTable = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -16,24 +16,32 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 
-import { NavLink , useLocation} from "react-router-dom";
-
+import { NavLink } from "react-router-dom";
+import FormAddUser from "@/pages/admin/FormAddUser";
 
 export function NavMain({
   items
 }) {
-const location = useLocation();
+// const location = useLocation();
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Action</SidebarGroupLabel>
+      {/*create a add user button*/}
+      <div className="p-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuSubButton asChild>
+              <FormAddUser />
+            </SidebarMenuSubButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </div>
+
       {/*trying to add dashboard link*/}
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuSubButton asChild>
-            <NavLink
-              to="/admin/dashboard"
-              className="flex items-center gap-2"
-            >
+            <NavLink to="/admin/dashboard" className="flex items-center gap-2">
               <LayoutDashboard size={16} />
               <span>Dashboard</span>
             </NavLink>
