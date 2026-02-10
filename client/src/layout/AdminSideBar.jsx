@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Outlet, Link } from "react-router-dom";
+import React, { useState} from "react";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import {
   Menu,
   X,
@@ -12,9 +12,9 @@ import {
   Building2,
 } from "lucide-react";
 
-export default function SampleSidebar() {
+export default function AdminSideBar() {
   const [isOpen, setIsOpen] = useState(false);
-
+  const navigate = useNavigate();
 
   // Toggle sidebar on mobile
   const toggleSidebar = () => {
@@ -85,7 +85,7 @@ export default function SampleSidebar() {
 
             <li>
               <Link
-                to="/settings"
+                to="/admin/department"
                 className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
                 onClick={() => setIsOpen(false)}
               >
@@ -132,8 +132,7 @@ export default function SampleSidebar() {
 
           <button
             onClick={() => {
-              // Add your logout logic here
-              console.log("Logout clicked");
+              navigate('/')
             }}
             className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
           >

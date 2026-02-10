@@ -3,7 +3,7 @@ export const userSchema = `#graphql
     type User {
         id: ID
         fullname: String
-        department: String
+        department: Department
         role: String
         position: String
         email: String

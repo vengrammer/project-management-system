@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+//name, members, description,isActive,cretedby
 const departmentSchema = new mongoose.Schema(
   {
     name: {
@@ -8,14 +8,6 @@ const departmentSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
-    members: [
-      {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        }
-      },
-    ],
     description: {
       type: String,
     },

@@ -1,12 +1,14 @@
+import Department from "../../model/department.model.js";
 import User from "../../model/user.model.js";
 import { userValidator } from "../validator/user.validator.js";
+
 // data = fullname, department, role, email, username, password, timestamps
 export const userResolvers = {
   Query: {
-    //Return all user 
+    //Return all user
     users: async () => {
       try {
-        const users = await User.find();
+        const users = await User.find().populate("department");
         return users.map((user) => ({
           id: user.id,
           fullname: user.fullname,
@@ -25,7 +27,7 @@ export const userResolvers = {
     //return user by id
     user: async (_, { id }) => {
       try {
-        const user = await User.findById(id);
+        const user = await User.findById(id).populate("department");
         if (!user) {
           throw new Error("Cannot find user");
         }
@@ -39,15 +41,16 @@ export const userResolvers = {
       try {
         // Build a dynamic filter only with provided arguments
         const filter = {};
-            if (args.fullname)
-              filter.fullname = { $regex: args.fullname, $options: "i" };
-            if (args.email)
-              filter.email = { $regex: args.email, $options: "i" };
-            if (args.department)
-              filter.department = { $regex: args.department, $options: "i" };
-            if (args.role) filter.role = { $regex: args.role, $options: "i" };
+        if (args.fullname)
+          filter.fullname = { $regex: args.fullname, $options: "i" };
+        if (args.email) filter.email = { $regex: args.email, $options: "i" };
+        if (args.department)
+          filter.department = { $regex: args.department, $options: "i" };
+        if (args.role) filter.role = { $regex: args.role, $options: "i" };
 
-        const searchResults = await User.find(filter).select("-password");
+        const searchResults = await User.find(filter)
+          .populate("department")
+          .select("-password");
 
         if (searchResults.length === 0) {
           console.log("No user found");
@@ -68,7 +71,17 @@ export const userResolvers = {
       }
     },
   },
-
+  User: {
+    department: async (parent) => {
+      try {
+        if (!parent.department) return null;
+        const department = await Department.findById(parent.department);
+        return department;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+  },
   Mutation: {
     createUser: async (_, args) => {
       try {
@@ -78,8 +91,8 @@ export const userResolvers = {
           email: args.email,
           username: args.username,
           password: args.password,
-          department: args.username,
-          role: args.role || ["user"],
+          department: args.department,
+          role: args.role || "user",
         });
         return {
           user: {
