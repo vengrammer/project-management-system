@@ -8,7 +8,7 @@ export const userResolvers = {
       try {
         const users = await User.find();
         if (!users) {
-          throw new Error("Faild to fetch all users");
+          throw new Error("No user found!");
         }
         return users.map((user) => ({
           id: user.id,
@@ -17,6 +17,7 @@ export const userResolvers = {
           department: user.department,
           position: user.position,
           role: user.role,
+          status: user.status,
           createdAt: user.createdAt.toISOString(),
           updatedAt: user.updatedAt.toISOString(),
         }));
@@ -31,9 +32,9 @@ export const userResolvers = {
         if (!user) {
           throw new Error("Cannot find user");
         }
-        return { message: "User found", user: user };
+        return user;
       } catch (error) {
-        console.log("user find", error);
+        console.log("Error User Find", error);
       }
     },
     //search user by their data
@@ -84,7 +85,6 @@ export const userResolvers = {
           role: args.role || ["user"],
         });
         return {
-          message: "User created successfully",
           user: {
             id: newUser._id,
             fullname: newUser.fullname,

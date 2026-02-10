@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
       default: ["user"],
     },
     position: { type: String },
+    status: { type: String },
     email: {
       type: String,
       unique: true,

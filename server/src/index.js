@@ -1,11 +1,10 @@
 import app from "./App.js";
 import connectDB from "./config/db.js";
 
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 
 connectDB();
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+http: app.listen(PORT, () => {
   console.log(`graphql running at http://localhost:${PORT}/graphql`);
 });
