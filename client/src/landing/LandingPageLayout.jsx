@@ -7,7 +7,6 @@ function LandingPageLayout() {
   return (
     <>
       <div>
-        <Navbar />
         <div className="w-full bg-cover bg-center min-h-screen" style={{ backgroundImage: `url(${background})` }}>
           <Outlet />
         </div>

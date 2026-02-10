@@ -1,40 +1,48 @@
 import React, { useState } from "react";
 import { Lock, User, Eye, EyeOff } from "lucide-react";
+import {motion} from "framer-motion"
 import { useNavigate } from "react-router-dom";
-
 
 export default function LoginUI() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false)
-
-  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate()
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
+
     // Simulate login
     setTimeout(() => {
       setIsLoading(false);
-      console.log("Login attempt:", { password});
+      console.log("Login attempt:", { username, password });
     }, 1500);
   };
 
   return (
-    <div className="flex items-center justify-center p-6 relative overflow-hidden">
+    <motion.div
+      initial={{ y: 100, opacity: 0 }} // start below
+      animate={{ y: 0, opacity: 1 }} // move to normal position
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      className="min-h-screen w-full flex items-center justify-center p-6"
+    >
       {/* Login Container */}
-      <div>
-        <div className="bg-blue-500 backdrop-blur-2xl borderrounded-3xl p-12 relative overflow-hidden">
-          {/* Top gradient line */}
-          <div className="absolute top-0 left-0 right-0 h-1px bg-linear-to-r  opacity-30" />
+      <div className="w-full max-w-md relative z-10 animate-fade-in">
+        <div className="bg-linear-to-br from-blue-600 to-blue-700 backdrop-blur-2xl rounded-3xl p-10 sm:p-12 shadow-2xl shadow-blue-900/50 relative overflow-hidden border border-white/10">
+          {/* Decorative top line */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent" />
+
+          {/* Subtle inner glow */}
+          <div className="absolute inset-0 bg-linear-to-b from-white/5 to-transparent pointer-events-none" />
 
           {/* Header */}
-          <div className="mb-12">
-            <h1 className="text-4xl font-serif font-semibold text-white mb-2 tracking-tight">
+          <div className="mb-10 relative">
+            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 tracking-tight">
               Welcome back
             </h1>
-            <p className="text-white-100 text-sm tracking-wide">
+            <p className="text-blue-100 text-sm tracking-wide">
               Sign in to continue to your account
             </p>
           </div>
@@ -42,16 +50,16 @@ export default function LoginUI() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Username Field */}
-            <div>
+            <div className="group">
               <label
                 htmlFor="username"
-                className="block text-xs font-medium text-white uppercase tracking-wider mb-2"
+                className="block text-xs font-semibold text-blue-100 uppercase tracking-wider mb-3"
               >
-                username
+                Username
               </label>
 
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-black w-6 h-6 pointer-events-none" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none transition-colors group-focus-within:text-blue-600" />
 
                 <input
                   id="username"
@@ -60,115 +68,87 @@ export default function LoginUI() {
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter your username"
                   required
-                  className="w-full caret-black pl-13 pr-4 py-3.5 bg-white border border-white text-black text-sm
-                 placeholder:text-gray-500 focus:outline-none focus:border-black
-                 focus:ring-1 focus:ring-black transition-all duration-300"
+                  className="w-full pl-12 pr-4 py-3.5 bg-white/95 hover:bg-white rounded-xl text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all duration-300 shadow-sm"
                 />
               </div>
             </div>
 
             {/* Password Field */}
-            <div>
+            <div className="group">
               <label
                 htmlFor="password"
-                className="block text-xs font-medium text-white uppercase tracking-wider mb-2"
+                className="block text-xs font-semibold text-blue-100 uppercase tracking-wider mb-3"
               >
                 Password
               </label>
 
               <div className="relative">
-                {/* Lock icon */}
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-black w-6 h-6 pointer-events-none" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none transition-colors group-focus-within:text-blue-600" />
 
-                {/* Input */}
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
-                  className="w-full pl-14 caret-black pr-2 py-3.5 bg-white border border-white text-black text-sm
-    placeholder:text-gray-500 focus:outline-none focus:border-black
-    focus:ring-1 focus:ring-black transition-all duration-300"
+                  className="w-full pl-12 pr-14 py-3.5 bg-white/95 hover:bg-white rounded-xl text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all duration-300 shadow-sm"
                 />
 
-                {/* Eye toggle */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-black cursor-pointer"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {!showPassword ? (
-                    <EyeOff className="w-6 h-6" />
+                  {showPassword ? (
+                    <Eye className="w-5 h-5" />
                   ) : (
-                    <Eye className="w-6 h-6" />
+                    <EyeOff className="w-5 h-5" />
                   )}
                 </button>
               </div>
             </div>
 
-            {/* Submit Button */}
+          {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              onClick={() => navigate("/admin")}
-              className=" w-full px-4 py-4 bg-[#023586] hover:bg-[#0547b0] text-white rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-lime-300/30 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group"
+              onClick={() => navigate('/admin/dashboard')}
+              className="w-full px-6 py-4 bg-linear-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 text-white rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 hover:shadow-lg hover:shadow-blue-900/50 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group mt-8"
             >
-              <span className="relative z-10">
-                {isLoading ? "Signing in..." : "Sign In"}
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </span>
-              <div className="absolute inset-0 bg-white/30 transform scale-0 group-hover:scale-100 transition-transform duration-500 rounded-xl" />
+              <div className="absolute inset-0 bg-white/10 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-xl" />
             </button>
           </form>
+
         </div>
+
       </div>
-
-      {/* <style jsx>{`
-        @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=DM+Sans:wght@400;500;700&display=swap");
-
-        .font-serif {
-          font-family: "Fraunces", serif;
-        }
-
-        @keyframes float {
-          0%,
-          100% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(30px, -30px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-        }
-
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(40px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-float {
-          animation: float 20s ease-in-out infinite;
-        }
-
-        .animate-float-delayed {
-          animation: float 20s ease-in-out infinite;
-          animation-delay: 7s;
-        }
-
-        .animate-slide-up {
-          animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-      `}</style> */}
-    </div>
+    </motion.div>
   );
 }

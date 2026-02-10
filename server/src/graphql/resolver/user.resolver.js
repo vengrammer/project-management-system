@@ -7,9 +7,6 @@ export const userResolvers = {
     users: async () => {
       try {
         const users = await User.find();
-        if (!users) {
-          throw new Error("No user found!");
-        }
         return users.map((user) => ({
           id: user.id,
           fullname: user.fullname,

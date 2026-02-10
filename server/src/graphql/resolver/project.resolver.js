@@ -8,6 +8,13 @@ export const projectResolvers = {
       try {
         const projects = await Project.find();
 
+        const formatDateWithTime = (date) => {
+          if (!date) return undefined;
+          const d = new Date(date);
+          d.setHours(16, 0, 0, 0); // 4:00 PM
+          return d.toISOString();
+        };
+
         return projects.map((project) => ({
           id: project._id.toString(),
           title: project.title,
@@ -18,8 +25,8 @@ export const projectResolvers = {
           progress: project.progress,
           tags: project.tags,
           budget: project.budget,
-          startDate: project.startDate?.toISOString(),
-          endDate: project.endDate?.toISOString(),
+          startDate: formatDateWithTime(project.startDate),
+          endDate: formatDateWithTime(project.endDate),
           createdAt: project.createdAt?.toISOString(),
           updatedAt: project.updatedAt?.toISOString(),
         }));

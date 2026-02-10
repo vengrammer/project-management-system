@@ -1,103 +1,55 @@
 import { Eye, Pen, Trash, Trash2 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {motion} from "framer-motion"
-//import { useNavigate } from "react-router-dom";
-export default function ProjectTable() {
-    //const navigate = useNavigate();
-  // Sample data - replace with your actual data
-  const [projects, setProjects] = useState([
-    {
-      id: "1",
-      title: "Website Redesign",
-      description: "Modernize company website",
-      priority: "High",
-      status: "In Progress",
-      department: "IT",
-      progress: 65,
-      tags: ["design", "web"],
-      budget: 50000,
-      startDate: "2024-01-15",
-      endDate: "2024-06-30",
-      createdAt: "2024-01-10",
-      updatedAt: "2024-02-05",
-    },
-    {
-      id: "2",
-      title: "Marketing Campaign",
-      description: "Q1 product launch campaign",
-      priority: "Medium",
-      status: "Planning",
-      department: "Marketing",
-      progress: 30,
-      tags: ["marketing", "social"],
-      budget: 25000,
-      startDate: "2024-02-01",
-      endDate: "2024-04-30",
-      createdAt: "2024-01-20",
-      updatedAt: "2024-02-01",
-    },
-    {
-      id: "3",
-      title: "Infrastructure Upgrade",
-      description: "Server and network improvements",
-      priority: "High",
-      status: "In Progress",
-      department: "IT",
-      progress: 80,
-      tags: ["infrastructure", "security"],
-      budget: 100000,
-      startDate: "2023-11-01",
-      endDate: "2024-03-31",
-      createdAt: "2023-10-25",
-      updatedAt: "2024-02-06",
-    },
-    {
-      id: "4",
-      title: "Mobile App Development",
-      description: "Build customer-facing mobile app",
-      priority: "High",
-      status: "In Progress",
-      department: "IT",
-      progress: 45,
-      tags: ["mobile", "app"],
-      budget: 75000,
-      startDate: "2024-01-01",
-      endDate: "2024-08-31",
-      createdAt: "2023-12-15",
-      updatedAt: "2024-02-07",
-    },
+import axios from "axios";
+import { GRAPHQL_URL } from "@/config/api";
 
-    {
-      id: "5",
-      title: "Employee Training Program",
-      description: "Quarterly skills development",
-      priority: "Low",
-      status: "Planning",
-      department: "HR",
-      progress: 15,
-      tags: ["training", "development"],
-      budget: 10000,
-      startDate: "2024-03-01",
-      endDate: "2024-05-31",
-      createdAt: "2024-02-01",
-      updatedAt: "2024-02-05",
-    },
-    {
-      id: "6",
-      title: "Mobile App Development",
-      description: "Build customer-facing mobile app",
-      priority: "High",
-      status: "In Progress",
-      department: "IT",
-      progress: 45,
-      tags: ["mobile", "app"],
-      budget: 75000,
-      startDate: "2024-01-01",
-      endDate: "2024-08-31",
-      createdAt: "2023-12-15",
-      updatedAt: "2024-02-07",
-    },
-  ]);
+export default function ProjectTable() {
+  
+  const GET_PROJECTS = `
+  query Projects {
+    projects {
+      id
+      title
+      description
+      priority
+      status
+      department
+      progress
+      tags
+      budget
+      startDate
+      endDate
+      createdAt
+      updatedAt
+    }
+  }
+  `;
+  const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    const getAllProjects = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.post(
+          GRAPHQL_URL,
+          { query: GET_PROJECTS },
+          { headers: { "Content-Type": "application/json" } },
+        );
+         if (!response?.data?.data?.projects?.length === 0) {
+           console.log("No projects found");
+           return;
+         }
+         setProjects(response?.data?.data?.projects);
+      } catch (error) {
+        console.log("theres an error here", error.message);
+      }finally{
+        setLoading(false);
+      }
+    };
+    getAllProjects()
+  }, [GET_PROJECTS]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -140,15 +92,16 @@ export default function ProjectTable() {
 
   // Helper functions
   const getPriorityColor = (priority) => {
-    if (priority === "High") return "bg-red-100 text-red-800";
-    if (priority === "Medium") return "bg-yellow-100 text-yellow-800";
+    if (priority === "high") return "bg-red-100 text-red-800";
+    if (priority === "medium") return "bg-yellow-100 text-yellow-800";
+    if (priority === "low") return "bg-green-100 text-yellow-800";
     return "bg-green-100 text-green-800";
   };
 
   const getStatusColor = (status) => {
-    if (status === "In Progress") return "bg-blue-100 text-blue-800";
-    if (status === "Planning") return "bg-purple-100 text-purple-800";
-    if (status === "Completed") return "bg-green-100 text-green-800";
+    if (status === "in progress") return "bg-blue-100 text-blue-800";
+    if (status === "not started") return "bg-purple-100 text-purple-800";
+    if (status === "completed") return "bg-green-100 text-green-800";
     return "bg-gray-100 text-gray-800";
   };
 
@@ -198,7 +151,7 @@ export default function ProjectTable() {
         <div className="divide-y divide-gray-200 h-150 overflow-auto">
           {currentProjects.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
-              No projects found
+            {loading ? "loading.." : "No projects found"}
             </div>
           ) : (
             currentProjects.map((project) => (
@@ -221,14 +174,14 @@ export default function ProjectTable() {
                   </div>
                   <div>
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(project.status)}`}
+                      className={`px-2 py-1 text-sm font-medium rounded-full ${getStatusColor(project.status)}`}
                     >
                       {project.status}
                     </span>
                   </div>
                   <div>
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(project.priority)}`}
+                      className={`px-2 py-1 text-sm font-medium rounded-full ${getPriorityColor(project.priority)}`}
                     >
                       {project.priority}
                     </span>

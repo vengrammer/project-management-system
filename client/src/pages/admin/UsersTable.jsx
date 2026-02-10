@@ -43,12 +43,12 @@ export default function AdminTable() {
           { headers: { "Content-Type": "application/json" } },
         );
 
-        // if (result.data.data.users.length == 0) {
-        //   console.log("No users found");
-        //   return;
-        // }
+          if (!result?.data?.data?.users?.length === 0) {
+            console.log("No users found");
+            return;
+          }
 
-        setUsers(result.data.data.users); // <-- must access data.data.users
+        setUsers(result.data.data.users); 
       } catch (error) {
         console.log("theres an error here", error.message);
       } finally {
@@ -185,14 +185,14 @@ export default function AdminTable() {
                   </div>
                   <div>
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getUserColor(user.role)}`}
+                      className={`px-2 py-1 text-sm font-medium rounded-full ${getUserColor(user.role)}`}
                     >
                       {user.role}
                     </span>
                   </div>
                   <div>
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}
+                      className={`px-2 py-1 text-sm font-medium rounded-full ${getStatusColor(user.status)}`}
                     >
                       {user.status}
                     </span>
