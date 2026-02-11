@@ -11,22 +11,24 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import { GRAPHQL_URL } from "@/config/api.js";
 
-export default function AdminTable() {
+export default function UsersTable() {
   //GET ALL THE USERS
   const GET_USERS = `
-  query Query {
-    users {
-      id
-      fullname
-      department
-      role
-      position
-      email
-      status
-      createdAt
-      updatedAt
+  query Users {
+  users {
+    id
+    fullname
+    role
+    position
+    email
+    status
+    createdAt
+    updatedAt
+    department {
+      name
     }
   }
+}
 `;
 
   const [users, setUsers] = useState([]);
@@ -43,21 +45,21 @@ export default function AdminTable() {
           { headers: { "Content-Type": "application/json" } },
         );
 
-          if (!result?.data?.data?.users?.length === 0) {
-            console.log("No users found");
-            return;
-          }
+        if (!result?.data?.data?.users || result.data.data.users.length === 0) {
+          console.log("No users found");
+          return;
+        }
 
-        setUsers(result.data.data.users); 
+        setUsers(result.data.data.users);
       } catch (error) {
-        console.log("theres an error here", error.message);
+        console.log("Error fetching users:", error.message);
       } finally {
         setLoading(false);
       }
     };
 
     getAllUsers();
-  }, [GET_USERS]);
+  }, []);
 
   console.log("rusults", users);
 
@@ -71,7 +73,7 @@ export default function AdminTable() {
     return (
       user.fullname?.toLowerCase().includes(search) ||
       user.email?.toLowerCase().includes(search) ||
-      user.department?.toLowerCase().includes(search) ||
+      user.department?.name?.toLowerCase().includes(search) ||
       user.role?.toLowerCase().includes(search) ||
       user.status?.toLowerCase().includes(search)
     );
@@ -110,8 +112,8 @@ export default function AdminTable() {
   };
 
   const getStatusColor = (status) => {
-    if (status === "active") return "bg-green-100 text-blue-800";
-    if (status === "inactive") return "bg-red-100 text-purple-800";
+    if (status === true) return "bg-green-100 text-blue-800";
+    if (status === false) return "bg-red-100 text-purple-800";
     return "bg-gray-100 text-gray-800";
   };
 
@@ -145,7 +147,7 @@ export default function AdminTable() {
         </div>
 
         {/* Grid Header - Hidden on mobile */}
-        <div className="hidden lg:grid lg:grid-cols-7 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase">
+        <div className="hidden md:grid md:grid-cols-7 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase">
           <div>Full name</div>
           <div>Email</div>
           <div>Role</div>
@@ -161,26 +163,33 @@ export default function AdminTable() {
             <div className="px-6 py-8 text-center text-gray-500">
               Loading users...
             </div>
-          ) : currentUsers.length === 0 ? (
+          ) : users.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
               No User found
             </div>
+          ) : currentUsers.length === 0 ? (
+            <div className="px-6 py-8 text-center text-gray-500">
+              No results for "{searchTerm}"
+            </div>
           ) : (
             currentUsers.map((user) => (
-              <div key={user.id} className="hover:bg-gray-50 transition-colors">
+              <div
+                key={user.id}
+                className="border-b hover:bg-gray-50 transition-colors"
+              >
                 {/* Desktop Grid Layout */}
-                <div className="hidden lg:grid lg:grid-cols-7 gap-2 px-6 py-4 items-center">
+                <div className="hidden md:grid md:grid-cols-7 gap-2 px-6 py-4 items-center">
                   {/* row for the data*/}
                   <div>
                     <div className="font-medium text-gray-900 truncate">
                       {user.fullname}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {user.department}
+                      {user.department?.name || "No Department"}
                     </div>
                   </div>
 
-                  <div className="text-sm text-gray-700 pl-auto truncate">
+                  <div className="text-sm text-gray-700 truncate">
                     {user.email}
                   </div>
                   <div>
@@ -194,7 +203,7 @@ export default function AdminTable() {
                     <span
                       className={`px-2 py-1 text-sm font-medium rounded-full ${getStatusColor(user.status)}`}
                     >
-                      {user.status}
+                      {user?.status ? "active" : "inactive"}
                     </span>
                   </div>
                   <div className="text-sm text-gray-700">{user.createdAt}</div>
@@ -224,7 +233,7 @@ export default function AdminTable() {
                 </div>
 
                 {/* Mobile Card Layout */}
-                <div className="lg:hidden p-4 space-y-3">
+                <div className="md:hidden p-4 space-y-3">
                   <div className="flex flex-col items-start w-full">
                     {/* Top Row */}
                     <div className="flex flex-row items-center justify-between w-full">
@@ -236,7 +245,7 @@ export default function AdminTable() {
                         <span
                           className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}
                         >
-                          {user.status}
+                          {user?.status ? "active" : "inactive"}
                         </span>
 
                         <span
@@ -249,26 +258,22 @@ export default function AdminTable() {
 
                     {/* Bottom Row */}
                     <p className="text-sm text-gray-500 mt-1">
-                      {user.department}
+                      {user.department?.name || "No Department"}
                     </p>
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="flex text-sm text-gray-600 font-medium">
-                        <CalendarPlus2 size={20} className="p-1" />
-                        {user.createdAt}
-                      </span>
+                    <div className="text-sm text-gray-600 font-medium">
+                      {user.email}
                     </div>
                   </div>
 
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="flex text-sm text-gray-600 font-medium">
-                        <CalendarArrowUp size={20} className="p-1" />{" "}
-                        {user.updatedAt}
-                      </span>
-                    </div>
+                  <div className="text-sm text-gray-600">
+                    Created: {user.createdAt}
+                  </div>
+
+                  <div className="text-sm text-gray-600">
+                    Updated: {user.updatedAt}
                   </div>
                   {/*button for the mobile action*/}
                   <div className="flex gap-2 pt-2 border-t border-gray-100">

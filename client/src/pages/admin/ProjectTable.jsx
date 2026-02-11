@@ -16,7 +16,6 @@ export default function ProjectTable() {
       status
       department
       progress
-      tags
       budget
       startDate
       endDate

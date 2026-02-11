@@ -1,6 +1,5 @@
 //projectData = title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
 export const projectSchema = `#graphql
-
       type Project {
         id: ID!
         title: String
@@ -9,7 +8,6 @@ export const projectSchema = `#graphql
         status: String
         department: String
         progress: Int
-        tags: [String]
         budget: Int
         startDate: String
         endDate: String

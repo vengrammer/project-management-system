@@ -1,4 +1,3 @@
-//userdata = fulname, department,role,email,username,password
 export const userSchema = `#graphql
     type User {
         id: ID
@@ -7,10 +6,11 @@ export const userSchema = `#graphql
         role: String
         position: String
         email: String
-        status: String
+        status: Boolean
         createdAt: String
         updatedAt: String
     }
+    
     type ReturnMessage {
         message: String
         user: User!
@@ -19,7 +19,7 @@ export const userSchema = `#graphql
     type Query {
         users: [User]!
         user(id: ID!): User
-        searchUser(fullname: String, email: String,position: String, department: String, role: String): ReturnMessage!
+        searchUser(fullname: String, email: String, position: String, department: String, role: String): [User]!
     }
 
     type Mutation {
@@ -29,8 +29,9 @@ export const userSchema = `#graphql
             password: String!
             position: String!
             username: String!
+            status: Boolean!
             department: String!
-            role: String!
+            role: String
         ): ReturnMessage!
     }
 `;

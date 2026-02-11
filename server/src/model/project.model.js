@@ -34,20 +34,10 @@ const projectSchema = new mongoose.Schema(
       max: 100,
       default: 0,
     },
-
-    tags: [
-      {
-        type: String,
-        trim: true,
-        lowercase: true,
-      },
-    ],
-
     budget: {
       type: Number,
       required: true,
     },
-
     startDate: {
       type: Date,
       required: true,

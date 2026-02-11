@@ -23,7 +23,6 @@ export const projectResolvers = {
           status: project.status,
           department: project.department,
           progress: project.progress,
-          tags: project.tags,
           budget: project.budget,
           startDate: formatDateWithTime(project.startDate),
           endDate: formatDateWithTime(project.endDate),

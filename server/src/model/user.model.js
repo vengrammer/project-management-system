@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-//fulname, department,role,email,username,password,timestamps
+//fulname, department,role,email,status,username,password,timestamps
 const userSchema = new mongoose.Schema(
   {
     fullname: { type: String },
@@ -15,7 +15,10 @@ const userSchema = new mongoose.Schema(
       default: ["user"],
     },
     position: { type: String },
-    status: { type: String },
+    status: {
+      type: Boolean,
+      default: true,
+    },
     email: {
       type: String,
       unique: true,

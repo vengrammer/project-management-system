@@ -1,4 +1,4 @@
-import {mergeTypeDefs, mergeResolvers} from "@graphql-tools/merge"
+import { mergeTypeDefs, mergeResolvers } from "@graphql-tools/merge";
 
 //import for the schema
 import { userSchema } from "./schema/user.schema.js";
@@ -10,22 +10,6 @@ import { userResolvers } from "./resolver/user.resolver.js";
 import { projectResolvers } from "./resolver/project.resolver.js";
 import { departmentResolver } from "./resolver/department.resolver.js";
 
-// const typeDefs = `
-//   type Query
-//   type Mutation
-//   ${userSchema},
-//   ${projectSchema}
-// `;
-
-// const resolvers = {
-//   Query: {
-//     ...userResolvers.Query,
-//     ...projectResolvers.Query,
-//   },
-//   Mutation: {
-//     ...userResolvers.Mutation,
-//   },
-// };
 
 const rootSchema = `
   type Query{
@@ -35,7 +19,16 @@ const rootSchema = `
     _empty: String
   }`;
 
-const typeDefs = mergeTypeDefs([rootSchema,userSchema, projectSchema, departmentSchema]);
-const resolvers = mergeResolvers([userResolvers,projectResolvers, departmentResolver]);
+const typeDefs = mergeTypeDefs([
+  rootSchema,
+  userSchema,
+  projectSchema,
+  departmentSchema,
+]);
+const resolvers = mergeResolvers([
+  userResolvers,
+  projectResolvers,
+  departmentResolver,
+]);
 
 export { typeDefs, resolvers };

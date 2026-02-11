@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-//name, members, description,isActive,cretedby
+//name, members, description,isActive
 const departmentSchema = new mongoose.Schema(
   {
     name: {
@@ -14,10 +14,6 @@ const departmentSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
     },
   },
   {

@@ -39,46 +39,40 @@ export const userResolvers = {
     //search user by their data
     searchUser: async (_, args) => {
       try {
-        // Build a dynamic filter only with provided arguments
         const filter = {};
         if (args.fullname)
           filter.fullname = { $regex: args.fullname, $options: "i" };
         if (args.email) filter.email = { $regex: args.email, $options: "i" };
-        if (args.department)
-          filter.department = { $regex: args.department, $options: "i" };
+        if (args.position)
+          filter.position = { $regex: args.position, $options: "i" };
         if (args.role) filter.role = { $regex: args.role, $options: "i" };
+
+        // Handle department search properly
+        if (args.department) {
+          const dept = await Department.findOne({
+            name: { $regex: args.department, $options: "i" },
+          });
+          if (dept) filter.department = dept._id;
+        }
 
         const searchResults = await User.find(filter)
           .populate("department")
           .select("-password");
-
-        if (searchResults.length === 0) {
-          console.log("No user found");
-        }
 
         return searchResults.map((user) => ({
           id: user._id.toString(),
           fullname: user.fullname,
           email: user.email,
           department: user.department,
+          position: user.position,
           role: user.role,
+          status: user.status,
           createdAt: user.createdAt?.toISOString() || null,
           updatedAt: user.updatedAt?.toISOString() || null,
         }));
       } catch (error) {
         console.error("Search error:", error);
         throw new Error("Failed to search users");
-      }
-    },
-  },
-  User: {
-    department: async (parent) => {
-      try {
-        if (!parent.department) return null;
-        const department = await Department.findById(parent.department);
-        return department;
-      } catch (error) {
-        console.log(error);
       }
     },
   },
@@ -91,22 +85,28 @@ export const userResolvers = {
           email: args.email,
           username: args.username,
           password: args.password,
+          position: args.position,
+          status: args.status || true,
           department: args.department,
           role: args.role || "user",
         });
         return {
+          message: "User created successfully",
           user: {
             id: newUser._id,
             fullname: newUser.fullname,
             email: newUser.email,
             department: newUser.department,
+            position: newUser.position,
             role: newUser.role,
+            status: newUser.status,
             createdAt: newUser.createdAt.toISOString(),
             updatedAt: newUser.updatedAt.toISOString(),
           },
         };
       } catch (error) {
-        console.log("create user:", error);
+        console.error("Create user error:", error);
+        throw new Error(error.message || "Failed to create user");
       }
     },
   },

@@ -13,23 +13,21 @@ import { GRAPHQL_URL } from "@/config/api.js";
 
 export default function DepartmentTable() {
   //GET ALL THE USERS
-  const GET_USERS = `
-  query Query {
-    users {
-      id
-      fullname
-      department
-      role
-      position
-      email
-      status
-      createdAt
-      updatedAt
-    }
-  }
-`;
+  const GET_DEPARTMENT = `
+      query Departments {
+        departments {
+          id
+          name
+          description
+          isActive
+          createdBy
+          createdAt
+          updatedAt
+        }
+      }
+    `;
 
-  const [users, setUsers] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -39,16 +37,16 @@ export default function DepartmentTable() {
 
         const result = await axios.post(
           GRAPHQL_URL,
-          { query: GET_USERS },
+          { query: GET_DEPARTMENT },
           { headers: { "Content-Type": "application/json" } },
         );
 
-          if (!result?.data?.data?.users?.length === 0) {
-            console.log("No users found");
-            return;
-          }
+        if (!result?.data?.data?.departments?.length === 0) {
+          console.log("No departmentss found");
+          return;
+        }
 
-        setUsers(result.data.data.users); 
+        setDepartments(result.data.data.departments);
       } catch (error) {
         console.log("theres an error here", error.message);
       } finally {
@@ -57,23 +55,21 @@ export default function DepartmentTable() {
     };
 
     getAllUsers();
-  }, [GET_USERS]);
+  }, [GET_DEPARTMENT]);
 
-  console.log("rusults", users);
+  console.log("rusults", departments);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Search filter - use actual fetched data (users)
-  const filteredUsers = users.filter((user) => {
+  // Search filter - use actual fetched data (departmentss)
+  const filteredUsers = departments.filter((departments) => {
     const search = searchTerm.toLowerCase();
     return (
-      user.fullname?.toLowerCase().includes(search) ||
-      user.email?.toLowerCase().includes(search) ||
-      user.department?.toLowerCase().includes(search) ||
-      user.role?.toLowerCase().includes(search) ||
-      user.status?.toLowerCase().includes(search)
+      departments.name?.toLowerCase().includes(search) ||
+      departments.description?.toLowerCase().includes(search) ||
+      departments.isActive?.toLowerCase().includes(search)
     );
   });
 
@@ -84,34 +80,34 @@ export default function DepartmentTable() {
   const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
   // Actions
-  const handleView = (user) => {
-    console.log("View user:", user);
-    alert(`Viewing: ${user.fullname}`);
+  const handleView = (departments) => {
+    console.log("View departments:", departments);
+    alert(`Viewing: ${departments.name}`);
   };
 
-  const handleEdit = (user) => {
-    console.log("Edit user:", user);
-    alert(`Editing: ${user.fullname}`);
+  const handleEdit = (departments) => {
+    console.log("Edit departments:", departments);
+    alert(`Editing: ${departments.name}`);
   };
 
   const handleDelete = (id) => {
-    if (confirm("Are you sure you want to delete this user?")) {
-      setUsers(users.filter((u) => u.id !== id));
-      console.log("Deleted user:", id);
+    if (confirm("Are you sure you want to delete this departments?")) {
+      setDepartments(departments.filter((u) => u.id !== id));
+      console.log("Deleted departments:", id);
     }
   };
 
   // // Helper functions
-  const getUserColor = (role) => {
-    if (role === "admin") return "bg-red-100 text-red-800";
-    if (role === "hr") return "bg-blue-100 text-blue-800";
-    if (role === "user") return "bg-green-100 text-green-800";
-    return "bg-green-100 text-green-800";
-  };
+  // const getActiveColor = (isActive) => {
+  //   if (isActive === "admin") return "bg-red-100 text-red-800";
+  //   if (isActive === "hr") return "bg-blue-100 text-blue-800";
+  //   if (isActive === "departments") return "bg-green-100 text-green-800";
+  //   return "bg-green-100 text-green-800";
+  // };
 
-  const getStatusColor = (status) => {
-    if (status === "active") return "bg-green-100 text-blue-800";
-    if (status === "inactive") return "bg-red-100 text-purple-800";
+  const getStatusColor = (isActive) => {
+    if (isActive === true) return "bg-green-100 text-blue-800";
+    if (isActive === false) return "bg-red-100 text-purple-800";
     return "bg-gray-100 text-gray-800";
   };
 
@@ -134,7 +130,7 @@ export default function DepartmentTable() {
 
           <input
             type="text"
-            placeholder="Search by fullname, email, department, role, or status..."
+            placeholder="Search by name, email, department, role, or status..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -145,13 +141,12 @@ export default function DepartmentTable() {
         </div>
 
         {/* Grid Header - Hidden on mobile */}
-        <div className="hidden lg:grid lg:grid-cols-7 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase">
-          <div>Full name</div>
-          <div>Email</div>
-          <div>Role</div>
+        <div className="hidden lg:grid lg:grid-cols-6 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase">
+          <div>Title</div>
           <div>Status</div>
-          <div>Created At</div>
-          <div>Updated At</div>
+          <div>Created By</div>
+          <div>createdAt</div>
+          <div> updatedAt</div>
           <div>Actions</div>
         </div>
 
@@ -159,63 +154,59 @@ export default function DepartmentTable() {
         <div className="divide-y divide-gray-200 h-150 overflow-auto">
           {loading ? (
             <div className="px-6 py-8 text-center text-gray-500">
-              Loading users...
+              Loading departmentss...
             </div>
           ) : currentUsers.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
-              No User found
+              No Department found
             </div>
           ) : (
-            currentUsers.map((user) => (
-              <div key={user.id} className="hover:bg-gray-50 transition-colors">
+            currentUsers.map((departments) => (
+              <div
+                key={departments.id}
+                className="hover:bg-gray-50 transition-colors"
+              >
                 {/* Desktop Grid Layout */}
-                <div className="hidden lg:grid lg:grid-cols-7 gap-2 px-6 py-4 items-center">
+                <div className="hidden lg:grid lg:grid-cols-6 gap-2 px-6 py-4 items-center">
                   {/* row for the data*/}
                   <div>
                     <div className="font-medium text-gray-900 truncate">
-                      {user.fullname}
+                      {departments.name}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {user.department}
+                      {departments.description}
                     </div>
                   </div>
-
-                  <div className="text-sm text-gray-700 pl-auto truncate">
-                    {user.email}
-                  </div>
                   <div>
                     <span
-                      className={`px-2 py-1 text-sm font-medium rounded-full ${getUserColor(user.role)}`}
+                      className={`px-2 py-1 text-sm font-medium rounded-full ${getStatusColor(departments.isActive)}`}
                     >
-                      {user.role}
+                      {departments?.isActive}
                     </span>
                   </div>
-                  <div>
-                    <span
-                      className={`px-2 py-1 text-sm font-medium rounded-full ${getStatusColor(user.status)}`}
-                    >
-                      {user.status}
-                    </span>
+                  <div className="text-sm text-gray-700">
+                    {departments.createdAt}
                   </div>
-                  <div className="text-sm text-gray-700">{user.createdAt}</div>
-                  <div className="text-sm text-gray-700">{user.updatedAt}</div>
+                  <div className="text-sm text-gray-700">
+                    {departments.updatedAt}
+                  </div>
 
                   {/* button for the desktop view*/}
                   <div className="flex gap-3">
                     <button
-                      onClick={() => handleView(user)}
+                      onClick={() => handleView(departments)}
                       className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:cursor-pointer"
                     >
                       <Eye size={22} />
                     </button>
                     <button
-                      onClick={() => handleEdit(user)}
+                      onClick={() => handleEdit(departments)}
                       className="text-green-600 hover:text-green-800 text-sm font-medium hover:cursor-pointer"
                     >
                       <Pen size={22} />
                     </button>
                     <button
-                      onClick={() => handleDelete(user.id)}
+                      onClick={() => handleDelete(departments.id)}
                       className="text-red-600 hover:text-red-800 text-sm font-medium hover:cursor-pointer"
                     >
                       <Trash2 size={22} />
@@ -229,27 +220,27 @@ export default function DepartmentTable() {
                     {/* Top Row */}
                     <div className="flex flex-row items-center justify-between w-full">
                       <h3 className="font-medium text-gray-900">
-                        {user.fullname}
+                        {departments.name}
                       </h3>
 
                       <div className="flex gap-2">
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(departments.status)}`}
                         >
-                          {user.status}
+                          {departments.status}
                         </span>
 
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${getUserColor(user.role)}`}
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${getUserColor(departments.role)}`}
                         >
-                          {user.role}
+                          {departments.role}
                         </span>
                       </div>
                     </div>
 
                     {/* Bottom Row */}
                     <p className="text-sm text-gray-500 mt-1">
-                      {user.department}
+                      {departments.description}
                     </p>
                   </div>
 
@@ -257,7 +248,7 @@ export default function DepartmentTable() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="flex text-sm text-gray-600 font-medium">
                         <CalendarPlus2 size={20} className="p-1" />
-                        {user.createdAt}
+                        {departments.createdAt}
                       </span>
                     </div>
                   </div>
@@ -266,26 +257,26 @@ export default function DepartmentTable() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="flex text-sm text-gray-600 font-medium">
                         <CalendarArrowUp size={20} className="p-1" />{" "}
-                        {user.updatedAt}
+                        {departments.updatedAt}
                       </span>
                     </div>
                   </div>
                   {/*button for the mobile action*/}
                   <div className="flex gap-2 pt-2 border-t border-gray-100">
                     <button
-                      onClick={() => handleView(user)}
+                      onClick={() => handleView(departments)}
                       className="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 py-2 rounded-lg text-sm font-medium"
                     >
                       View
                     </button>
                     <button
-                      onClick={() => handleEdit(user)}
+                      onClick={() => handleEdit(departments)}
                       className="flex-1 bg-green-50 text-green-600 hover:bg-green-100 py-2 rounded-lg text-sm font-medium"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(user.id)}
+                      onClick={() => handleDelete(departments.id)}
                       className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 py-2 rounded-lg text-sm font-medium"
                     >
                       Delete
@@ -302,7 +293,7 @@ export default function DepartmentTable() {
           <div className="text-sm text-gray-600">
             Showing {startIndex + 1} to{" "}
             {Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length}{" "}
-            users
+            departmentss
           </div>
 
           <div className="flex gap-2">
