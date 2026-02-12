@@ -2,7 +2,7 @@
 
 const departmentSchema = `#graphql
     type Department {
-        id: ID
+        id: ID!
         name: String
         users: [User]
         description: String

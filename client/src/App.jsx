@@ -8,12 +8,10 @@ import { AdminContextProvider } from "./context/AdminContextProvider";
 import {EmployeeContextProvider} from "./context/EmployeeContextProvider";
 import ProjectDetailsPage from "./pages/admin/ProjectDetailsPage";
 import TaskActivityPage from "@/pages/admin/TaskActivityPage";
-
-
 function App() {
   return (
     <BrowserRouter>
-
+      
         <AdminContextProvider>
           <EmployeeContextProvider>
             <Routes>

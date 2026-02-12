@@ -8,7 +8,7 @@ import UsersTable from "@/pages/admin/UsersTable";
 import ProjectTable from "@/pages/admin/ProjectTable";
 import AdminSidebar from "@/layout/AdminSideBar";
 import DepartmentTable from "@/pages/admin/DepartmentTable";
-
+import PracticeComponent from "@/pages/admin/PracticeComponent";
 function HomeRoute() {
     return (
       <Routes>
@@ -18,9 +18,10 @@ function HomeRoute() {
             element={<Navigate to="/admin/dashboard" replace />}
           />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="myprojects" element={<ProjectTable />} />
+          <Route path="projects" element={<ProjectTable />} />
           <Route path="users" element={<UsersTable />} />
           <Route path="department" element={<DepartmentTable />} />
+          <Route path="practice" element={<PracticeComponent />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

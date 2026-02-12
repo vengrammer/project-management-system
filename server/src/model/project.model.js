@@ -2,6 +2,19 @@ import mongoose from "mongoose";
 //project = title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
 const projectSchema = new mongoose.Schema(
   {
+    // department: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Department",
+    //   required: true,
+    // },
+
+    // // Multiple users assigned to this project
+    // users: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "User",
+    //   },
+    // ],
     title: {
       type: String,
     },
@@ -34,6 +47,7 @@ const projectSchema = new mongoose.Schema(
       max: 100,
       default: 0,
     },
+
     budget: {
       type: Number,
       required: true,

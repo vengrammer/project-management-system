@@ -1,5 +1,7 @@
-import React, { useState} from "react";
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import logo from "../assets/logo.png"
+
 import {
   Menu,
   X,
@@ -15,6 +17,12 @@ import {
 export default function AdminSideBar() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Remove async - not needed for simple path checking
+  const isActive = (route) => {
+    return location.pathname.includes(route);
+  };
 
   // Toggle sidebar on mobile
   const toggleSidebar = () => {
@@ -43,8 +51,15 @@ export default function AdminSideBar() {
         `}
       >
         {/* Logo/Header */}
-        <div className="p-6 border-b">
-          <h1 className="text-2xl font-bold text-gray-800">My App</h1>
+        <div className="p-6 border-b flex items-center gap-3">
+          <img
+            src={logo}
+            alt="logo"
+            className="w-10 h-10 rounded-full object-cover"
+          />
+          <h1 className="text-xl font-bold text-gray-800">
+            Project Management
+          </h1>
         </div>
 
         {/* Navigation Links */}
@@ -53,7 +68,11 @@ export default function AdminSideBar() {
             <li>
               <Link
                 to="/admin/dashboard"
-                className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
+                  isActive("/admin/dashboard")
+                    ? "bg-blue-100 text-blue-600"
+                    : ""
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 <LayoutDashboard size={20} />
@@ -63,8 +82,10 @@ export default function AdminSideBar() {
 
             <li>
               <Link
-                to="/admin/myprojects"
-                className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                to="/admin/projects"
+                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
+                  isActive("/admin/projects") ? "bg-blue-100 text-blue-600" : ""
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 <FolderOpenDot size={20} />
@@ -75,7 +96,9 @@ export default function AdminSideBar() {
             <li>
               <Link
                 to="/admin/users"
-                className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
+                  isActive("/admin/users") ? "bg-blue-100 text-blue-600" : ""
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 <UserCheck size={20} />
@@ -86,7 +109,11 @@ export default function AdminSideBar() {
             <li>
               <Link
                 to="/admin/department"
-                className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
+                  isActive("/admin/department")
+                    ? "bg-blue-100 text-blue-600"
+                    : ""
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 <Building2 size={20} />
@@ -96,8 +123,10 @@ export default function AdminSideBar() {
 
             <li>
               <Link
-                to="/settings"
-                className="flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                to="/admin/practice"
+                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
+                  isActive("/settings") ? "bg-blue-100 text-blue-600" : ""
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 <Users size={20} />
@@ -123,7 +152,9 @@ export default function AdminSideBar() {
           {/* Account Links */}
           <Link
             to="/profile"
-            className="flex items-center gap-3 px-4 py-2 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors mb-1"
+            className={`flex items-center gap-3 px-4 py-2 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors mb-1 ${
+              isActive("/profile") ? "bg-blue-100 text-blue-600" : ""
+            }`}
             onClick={() => setIsOpen(false)}
           >
             <User size={18} />
@@ -132,7 +163,7 @@ export default function AdminSideBar() {
 
           <button
             onClick={() => {
-              navigate('/')
+              navigate("/");
             }}
             className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
           >
@@ -150,7 +181,12 @@ export default function AdminSideBar() {
         ></div>
       )}
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-6 md:p-8">
+      <main
+        className="flex-1 overflow-y-auto p-6 md:p-8"
+        style={{
+          minHeight: "calc(100vh - 1px)",
+        }}
+      >
         <Outlet />
       </main>
     </div>

@@ -6,6 +6,7 @@ export const departmentResolver = {
     departments: async () => {
       try {
         const departments = await Department.find();
+        
         return departments;
       } catch (error) {
         console.log("error", error);

@@ -30,5 +30,5 @@ const resolvers = mergeResolvers([
   projectResolvers,
   departmentResolver,
 ]);
-
+ 
 export { typeDefs, resolvers };

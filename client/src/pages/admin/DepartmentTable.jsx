@@ -1,136 +1,113 @@
-import {
-  CalendarArrowUp,
-  CalendarPlus2,
-  Eye,
-  Pen,
-  Trash,
-  Trash2,
-} from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { Eye, Pen, Trash2, Users } from "lucide-react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import axios from "axios";
-import { GRAPHQL_URL } from "@/config/api.js";
+import { useQuery } from "@apollo/client/react";
+import toast, { Toaster } from "react-hot-toast";
+import { gql } from "@apollo/client";
+
+const GET_DEPARTMENT = gql`
+  query Departments {
+    departments {
+      id
+      isActive
+      name
+      description
+      users {
+        id
+      }
+    }
+  }
+`;
 
 export default function DepartmentTable() {
-  //GET ALL THE USERS
-  const GET_DEPARTMENT = `
-      query Departments {
-        departments {
-          id
-          name
-          description
-          isActive
-          createdBy
-          createdAt
-          updatedAt
-        }
-      }
-    `;
-
-  const [departments, setDepartments] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const getAllUsers = async () => {
-      try {
-        setLoading(true);
-
-        const result = await axios.post(
-          GRAPHQL_URL,
-          { query: GET_DEPARTMENT },
-          { headers: { "Content-Type": "application/json" } },
-        );
-
-        if (!result?.data?.data?.departments?.length === 0) {
-          console.log("No departmentss found");
-          return;
-        }
-
-        setDepartments(result.data.data.departments);
-      } catch (error) {
-        console.log("theres an error here", error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getAllUsers();
-  }, [GET_DEPARTMENT]);
-
-  console.log("rusults", departments);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Search filter - use actual fetched data (departmentss)
-  const filteredUsers = departments.filter((departments) => {
+  // Get the department data
+  const { loading, error, data } = useQuery(GET_DEPARTMENT);
+
+  // Handle loading state
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="loading loading-spinner loading-xl"></span>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    toast.error(`Error: ${error.message}`);
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Toaster />
+        <div className="text-red-600">Failed to load departments</div>
+      </div>
+    );
+  }
+
+  // Extract departments from response
+  const departments = data?.departments || [];
+
+  // Search filter
+  const filteredDepartments = departments.filter((dept) => {
     const search = searchTerm.toLowerCase();
     return (
-      departments.name?.toLowerCase().includes(search) ||
-      departments.description?.toLowerCase().includes(search) ||
-      departments.isActive?.toLowerCase().includes(search)
+      dept.name?.toLowerCase().includes(search) ||
+      dept.description?.toLowerCase().includes(search)
     );
   });
 
   // Pagination
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredDepartments.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+  const currentDepartments = filteredDepartments.slice(startIndex, endIndex);
 
   // Actions
-  const handleView = (departments) => {
-    console.log("View departments:", departments);
-    alert(`Viewing: ${departments.name}`);
+  const handleView = (department) => {
+    console.log("View department:", department);
+    alert(`Viewing: ${department.name}`);
   };
 
-  const handleEdit = (departments) => {
-    console.log("Edit departments:", departments);
-    alert(`Editing: ${departments.name}`);
+  const handleEdit = (department) => {
+    console.log("Edit department:", department);
+    alert(`Editing: ${department.name}`);
   };
 
   const handleDelete = (id) => {
-    if (confirm("Are you sure you want to delete this departments?")) {
-      setDepartments(departments.filter((u) => u.id !== id));
-      console.log("Deleted departments:", id);
+    if (window.confirm("Are you sure you want to delete this department?")) {
+      console.log("Delete department:", id);
+      toast.success("Department deleted successfully");
     }
   };
 
-  // // Helper functions
-  // const getActiveColor = (isActive) => {
-  //   if (isActive === "admin") return "bg-red-100 text-red-800";
-  //   if (isActive === "hr") return "bg-blue-100 text-blue-800";
-  //   if (isActive === "departments") return "bg-green-100 text-green-800";
-  //   return "bg-green-100 text-green-800";
-  // };
-
   const getStatusColor = (isActive) => {
-    if (isActive === true) return "bg-green-100 text-blue-800";
-    if (isActive === false) return "bg-red-100 text-purple-800";
-    return "bg-gray-100 text-gray-800";
+    return isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
   };
 
   return (
     <motion.div
-      initial={{ y: 100, opacity: 0 }} // start below
-      animate={{ y: 0, opacity: 1 }} // move to normal position
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeInOut" }}
       className="w-full md:p-2 max-w-8xl mx-auto"
     >
+      <Toaster position="top-right" />
       <div className="bg-white rounded-lg shadow">
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-            <h1 className="text-2xl font-bold text-gray-800">Department</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Departments</h1>
             <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">
-              + Department
+              + Add Department
             </button>
           </div>
 
           <input
             type="text"
-            placeholder="Search by name, email, department, role, or status..."
+            placeholder="Search by name or description..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -140,146 +117,89 @@ export default function DepartmentTable() {
           />
         </div>
 
-        {/* Grid Header - Hidden on mobile */}
-        <div className="hidden lg:grid lg:grid-cols-6 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase">
-          <div>Title</div>
+        {/* Grid Header*/}
+        <div className="hidden lg:grid lg:grid-cols-5 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase">
+          <div>Department</div>
+          <div>Description</div>
           <div>Status</div>
-          <div>Created By</div>
-          <div>createdAt</div>
-          <div> updatedAt</div>
+          <div>Members</div>
           <div>Actions</div>
         </div>
 
         {/* Grid Body */}
-        <div className="divide-y divide-gray-200 h-150 overflow-auto">
-          {loading ? (
+        <div className="divide-y divide-gray-200 max-h-150 overflow-auto">
+          {currentDepartments.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
-              Loading departmentss...
-            </div>
-          ) : currentUsers.length === 0 ? (
-            <div className="px-6 py-8 text-center text-gray-500">
-              No Department found
+              No departments found
             </div>
           ) : (
-            currentUsers.map((departments) => (
+            currentDepartments.map((department) => (
               <div
-                key={departments.id}
-                className="hover:bg-gray-50 transition-colors"
+                key={department.id}
+                className="hover:bg-gray-50 transition-colors p-4 lg:px-6 lg:py-4"
               >
-                {/* Desktop Grid Layout */}
-                <div className="hidden lg:grid lg:grid-cols-6 gap-2 px-6 py-4 items-center">
-                  {/* row for the data*/}
-                  <div>
-                    <div className="font-medium text-gray-900 truncate">
-                      {departments.name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {departments.description}
-                    </div>
-                  </div>
-                  <div>
+                <div className="lg:grid lg:grid-cols-5 lg:gap-2 lg:items-center space-y-3 lg:space-y-0">
+                  {/* Department Name  */}
+                  <div className="flex flex-row items-center justify-between lg:justify-start lg:block">
+                    <h3 className="font-medium text-gray-900 truncate">
+                      {department.name}
+                    </h3>
+                    {/* Status badge*/}
                     <span
-                      className={`px-2 py-1 text-sm font-medium rounded-full ${getStatusColor(departments.isActive)}`}
+                      className={`lg:hidden px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(department.isActive)}`}
                     >
-                      {departments?.isActive}
+                      {department.isActive ? "Active" : "Inactive"}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-700">
-                    {departments.createdAt}
-                  </div>
-                  <div className="text-sm text-gray-700">
-                    {departments.updatedAt}
+
+                  {/* Description */}
+                  <div className="text-sm text-gray-500 lg:text-gray-500">
+                    {department.description}
                   </div>
 
-                  {/* button for the desktop view*/}
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => handleView(departments)}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:cursor-pointer"
+                  {/* Status*/}
+                  <div className="hidden lg:block">
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(department.isActive)}`}
                     >
-                      <Eye size={22} />
+                      {department.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+
+                  {/* Members count */}
+                  <div className="flex items-center text-sm text-gray-600 lg:text-gray-700 gap-2">
+                    <Users size={16} className="lg:w-4.5 lg:h-4.5" />
+                    <span>
+                      {department.users?.length || 0}{" "}
+                      {department.users?.length === 1 ? "member" : "members"}
+                    </span>
+                  </div>
+
+                  {/* Actions*/}
+                  <div className="flex gap-2 pt-2 border-t border-gray-100 lg:border-t-0 lg:pt-0 lg:gap-3">
+                    <button
+                      onClick={() => handleView(department)}
+                      className="flex-1 lg:flex-none bg-blue-50 lg:bg-transparent text-blue-600 hover:bg-blue-100 lg:hover:bg-transparent lg:hover:text-blue-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
+                      title="View"
+                    >
+                      <span className="lg:hidden">View</span>
+                      <Eye size={20} className="hidden lg:block" />
                     </button>
                     <button
-                      onClick={() => handleEdit(departments)}
-                      className="text-green-600 hover:text-green-800 text-sm font-medium hover:cursor-pointer"
+                      onClick={() => handleEdit(department)}
+                      className="flex-1 lg:flex-none bg-green-50 lg:bg-transparent text-green-600 hover:bg-green-100 lg:hover:bg-transparent lg:hover:text-green-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
+                      title="Edit"
                     >
-                      <Pen size={22} />
+                      <span className="lg:hidden">Edit</span>
+                      <Pen size={20} className="hidden lg:block" />
                     </button>
                     <button
-                      onClick={() => handleDelete(departments.id)}
-                      className="text-red-600 hover:text-red-800 text-sm font-medium hover:cursor-pointer"
+                      onClick={() => handleDelete(department.id)}
+                      className="flex-1 lg:flex-none bg-red-50 lg:bg-transparent text-red-600 hover:bg-red-100 lg:hover:bg-transparent lg:hover:text-red-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
+                      title="Delete"
                     >
-                      <Trash2 size={22} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Mobile Card Layout */}
-                <div className="lg:hidden p-4 space-y-3">
-                  <div className="flex flex-col items-start w-full">
-                    {/* Top Row */}
-                    <div className="flex flex-row items-center justify-between w-full">
-                      <h3 className="font-medium text-gray-900">
-                        {departments.name}
-                      </h3>
-
-                      <div className="flex gap-2">
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(departments.status)}`}
-                        >
-                          {departments.status}
-                        </span>
-
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${getUserColor(departments.role)}`}
-                        >
-                          {departments.role}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Bottom Row */}
-                    <p className="text-sm text-gray-500 mt-1">
-                      {departments.description}
-                    </p>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="flex text-sm text-gray-600 font-medium">
-                        <CalendarPlus2 size={20} className="p-1" />
-                        {departments.createdAt}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="flex text-sm text-gray-600 font-medium">
-                        <CalendarArrowUp size={20} className="p-1" />{" "}
-                        {departments.updatedAt}
-                      </span>
-                    </div>
-                  </div>
-                  {/*button for the mobile action*/}
-                  <div className="flex gap-2 pt-2 border-t border-gray-100">
-                    <button
-                      onClick={() => handleView(departments)}
-                      className="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 py-2 rounded-lg text-sm font-medium"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={() => handleEdit(departments)}
-                      className="flex-1 bg-green-50 text-green-600 hover:bg-green-100 py-2 rounded-lg text-sm font-medium"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(departments.id)}
-                      className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 py-2 rounded-lg text-sm font-medium"
-                    >
-                      Delete
+                      <span className="lg:hidden">Delete</span>
+                      <Trash2 size={20} className="hidden lg:block" />
                     </button>
                   </div>
                 </div>
@@ -288,46 +208,57 @@ export default function DepartmentTable() {
           )}
         </div>
 
-        {/* Pagination */}
-        <div className="px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-gray-600">
-            Showing {startIndex + 1} to{" "}
-            {Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length}{" "}
-            departmentss
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-            >
-              Previous
-            </button>
-
-            <div className="flex gap-1">
-              {[...Array(totalPages)].map((_, index) => (
-                <button
-                  key={index + 1}
-                  onClick={() => setCurrentPage(index + 1)}
-                  className={`px-3 py-1 rounded-lg text-sm ${
-                    currentPage === index + 1
-                      ? "bg-blue-600 text-white"
-                      : "border border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              ))}
+        {/* Pagination*/}
+        {totalPages > 1 && (
+          <div className="px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to{" "}
+              {Math.min(endIndex, filteredDepartments.length)} of{" "}
+              {filteredDepartments.length} departments
             </div>
 
-            <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-            >
-              Next
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Previous
+              </button>
+
+              <div className="flex gap-1">
+                {[...Array(totalPages)].map((_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => setCurrentPage(index + 1)}
+                    className={`px-3 py-1 rounded-lg text-sm ${
+                      currentPage === index + 1
+                        ? "bg-blue-600 text-white"
+                        : "border border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Total count footer */}
+        <div className="px-4 md:px-6 py-4 border-t border-gray-200">
+          <div className="text-sm text-gray-600">
+            Total: {filteredDepartments.length}{" "}
+            {filteredDepartments.length === 1 ? "department" : "departments"}
+            {searchTerm && ` (filtered from ${departments.length} total)`}
           </div>
         </div>
       </div>
