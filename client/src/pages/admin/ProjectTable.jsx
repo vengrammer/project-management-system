@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { useQuery } from "@apollo/client/react";
 import toast, { Toaster } from "react-hot-toast";
 import { gql } from "@apollo/client";
+import FormAddProjectModal from "./FormAddProjectModal";
 
 export default function ProjectTable() {
   const GET_PROJECTS = gql`
@@ -20,13 +21,13 @@ export default function ProjectTable() {
         description
         priority
         status
-        department
+        department {
+          name
+        }
         progress
         budget
         startDate
         endDate
-        createdAt
-        updatedAt
       }
     }
   `;
@@ -67,7 +68,7 @@ export default function ProjectTable() {
     return (
       project.title?.toLowerCase().includes(search) ||
       project.description?.toLowerCase().includes(search) ||
-      project.department?.toLowerCase().includes(search) ||
+      project.department?.name?.toLowerCase().includes(search) ||
       project.status?.toLowerCase().includes(search)
     );
   });
@@ -116,8 +117,6 @@ export default function ProjectTable() {
     return colors[status?.toLowerCase()] || "bg-gray-100 text-gray-800";
   };
 
-  
-
   return (
     <motion.div
       initial={{ y: 100, opacity: 0 }}
@@ -131,9 +130,10 @@ export default function ProjectTable() {
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
             <h1 className="text-2xl font-bold text-gray-800">Projects</h1>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">
-              + New Project
-            </button>
+            <FormAddProjectModal />
+            {/* <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">
+              
+            </button> */}
           </div>
 
           <input
@@ -151,7 +151,7 @@ export default function ProjectTable() {
         {/* Grid Header - Hidden on mobile */}
         <div className="hidden lg:grid lg:grid-cols-9 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase">
           <div>Title</div>
-          <div>Department</div>
+          <div>Description</div>
           <div>Status</div>
           <div>Priority</div>
           <div>Progress</div>
@@ -186,7 +186,7 @@ export default function ProjectTable() {
                         {project.title}
                       </div>
                       <div className="text-sm text-gray-500 mt-1 lg:mt-0">
-                        {project.description}
+                        {project.department?.name}
                       </div>
                     </div>
                   </div>
@@ -197,7 +197,7 @@ export default function ProjectTable() {
                       Department:{" "}
                     </span>
                     <span className="font-medium lg:font-normal">
-                      {project.department}
+                      {project.description}
                     </span>
                   </div>
 

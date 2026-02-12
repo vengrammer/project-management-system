@@ -1,4 +1,4 @@
-//projectData = title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
+//project =  projectmanager,users, title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
 export const projectSchema = `#graphql
       type Project {
         id: ID!
@@ -6,15 +6,35 @@ export const projectSchema = `#graphql
         description: String
         priority: String
         status: String
-        department: String
+        client: String
+        department: Department
+        projectManager: User
+        users: [User]
         progress: Int
         budget: Int
         startDate: String
         endDate: String
-        createdAt: String
-        updatedAt: String
     }
     type Query {
         projects: [Project]!
+    }
+    type Message {
+        message: String
+        project: Project
+    }
+    type Mutation {
+        createProject(
+            title: String!
+            description: String
+            client: String
+            priority: String!
+            status: String
+            department: ID!
+            budget: Int
+            projectManager: ID
+            users: [ID]
+            startDate: String
+            endDate: String
+        ): Message
     }
 `;

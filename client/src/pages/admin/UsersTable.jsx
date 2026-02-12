@@ -21,7 +21,6 @@ export default function UsersTable() {
       }
     }
   `;
-
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -43,7 +42,7 @@ export default function UsersTable() {
     toast.error(`Error: ${error.message}`);
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Toaster />
+        <Toaster position="top-right" />
         <div className="text-red-600">Failed to load users</div>
       </div>
     );
@@ -111,7 +110,7 @@ export default function UsersTable() {
       transition={{ duration: 0.8, ease: "easeInOut" }}
       className="w-full md:p-2 max-w-8xl mx-auto"
     >
-      <Toaster position="top-right" />
+      <Toaster position="top-left" />
       <div className="bg-white rounded-lg shadow">
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">

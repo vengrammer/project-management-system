@@ -30,7 +30,7 @@ export const userSchema = `#graphql
             position: String!
             username: String!
             status: Boolean!
-            department: String!
+            department: ID!
             role: String
         ): ReturnMessage!
     }

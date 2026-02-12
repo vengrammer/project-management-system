@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
     },
     password: { type: String, select: false },
   },
-  { timestamps: true },
+  { timestamps: true, versionKey: false },
 );
 
 // 🔐 HASH PASSWORD BEFORE SAVE

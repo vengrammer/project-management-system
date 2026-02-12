@@ -1,27 +1,36 @@
 import mongoose from "mongoose";
-//project = title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
+//project =  projectmanager,users, title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
 const projectSchema = new mongoose.Schema(
   {
-    // department: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "Department",
-    //   required: true,
-    // },
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
+      required: true,
+      index: true,
+    },
 
-    // // Multiple users assigned to this project
-    // users: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "User",
-    //   },
-    // ],
+    projectManager: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    users: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
     title: {
       type: String,
+      required: true,
     },
 
-    description: {
-      type: String,
-    },
+    client: String,
+
+    description: String,
 
     priority: {
       type: String,
@@ -37,10 +46,6 @@ const projectSchema = new mongoose.Schema(
       index: true,
     },
 
-    department: {
-      type: String,
-    },
-
     progress: {
       type: Number,
       min: 0,
@@ -52,6 +57,7 @@ const projectSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+
     startDate: {
       type: Date,
       required: true,
@@ -69,7 +75,7 @@ const projectSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // adds createdAt & updatedAt
+    timestamps: true,
     versionKey: false,
   },
 );

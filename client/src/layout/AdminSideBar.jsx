@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-import logo from "../assets/logo.png"
+import logo from "../assets/logo.png";
 
 import {
   Menu,
@@ -52,11 +52,13 @@ export default function AdminSideBar() {
       >
         {/* Logo/Header */}
         <div className="p-6 border-b flex items-center gap-3">
-          <img
-            src={logo}
-            alt="logo"
-            className="w-10 h-10 rounded-full object-cover"
-          />
+          <div className="flex size-14 shrink-0 items-center justify-center rounded-full border border-gray-200">
+            <img
+              src={logo}
+              alt="Logo"
+              className="h-12 w-12 object-contain rounded-full"
+            />
+          </div>
           <h1 className="text-xl font-bold text-gray-800">
             Project Management
           </h1>

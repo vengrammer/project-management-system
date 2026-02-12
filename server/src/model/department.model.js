@@ -18,6 +18,7 @@ const departmentSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    versionKey: false,
   },
 );
 
