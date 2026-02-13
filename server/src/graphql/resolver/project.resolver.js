@@ -7,9 +7,9 @@ export const projectResolvers = {
     projects: async () => {
       try {
         const projects = await Project.find()
-          .populate("users") // ✅ correct field name
+          .populate("users")
           .populate("department")
-          .populate("projectManager"); // populate projectManager (matches model field)
+          .populate("projectManager"); 
 
         const formattedDate = (date) => {
           return date?.toLocaleString("en-US", {
@@ -27,8 +27,10 @@ export const projectResolvers = {
           status: project.status,
           department: project.department,
           progress: project.progress,
+          client: project.client,
           budget: project.budget,
-          users: project.users, // ✅ already populated
+          users: project.users,
+          projectManager: project.projectManager,
           startDate: formattedDate(project.startDate),
           endDate: formattedDate(project.endDate),
           createdAt: project.createdAt?.toISOString(),
@@ -43,7 +45,7 @@ export const projectResolvers = {
   Mutation: {
     createProject: async (_, args) => {
       try {
-        const created = await Project.create({
+        const newProject = await Project.create({
           title: args.title,
           description: args.description,
           client: args.client,
@@ -56,33 +58,7 @@ export const projectResolvers = {
           startDate: args.startDate,
           endDate: args.endDate,
         });
-
-        const formattedDate = (date) =>
-          date?.toLocaleString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          });
-
-        const project = {
-          id: created._id.toString(),
-          title: created.title,
-          description: created.description,
-          priority: created.priority,
-          status: created.status,
-          client: created.client,
-          department: created.department,
-          projectManager: created.projectManager,
-          users: created.users,
-          progress: created.progress,
-          budget: created.budget,
-          startDate: formattedDate(created.startDate),
-          endDate: formattedDate(created.endDate),
-          createdAt: created.createdAt?.toISOString(),
-          updatedAt: created.updatedAt?.toISOString(),
-        };
-
-        return { message: "Project created successfully", project };
+        return { message: "Project created successfully", project: newProject };
       } catch (error) {
         console.error("Create project error:", error);
         throw new Error(error.message || "Failed to create project");

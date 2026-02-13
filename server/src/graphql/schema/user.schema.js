@@ -18,6 +18,7 @@ export const userSchema = `#graphql
 
     type Query {
         users: [User]!
+        userRoleManager: [User]
         user(id: ID!): User
         searchUser(fullname: String, email: String, position: String, department: String, role: String): [User]!
     }

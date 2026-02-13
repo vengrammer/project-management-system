@@ -36,6 +36,19 @@ export const userResolvers = {
         console.log("Error User Find", error);
       }
     },
+    //get all the user with a role manager
+    userRoleManager: async () => {
+      try{
+        const managers = await User.find({role: "manager"})
+        if (!managers) {
+          throw new Error("No manager found!");
+        }
+        return managers;
+      }catch(error){
+         console.error("Get the manager error:", error);
+         throw new Error("Failed to show users manager");
+      }
+    },
     //search user by their data
     searchUser: async (_, args) => {
       try {

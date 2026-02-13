@@ -5,14 +5,12 @@ const projectSchema = new mongoose.Schema(
     department: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
-      required: true,
       index: true,
     },
 
     projectManager: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
       index: true,
     },
 
@@ -55,20 +53,19 @@ const projectSchema = new mongoose.Schema(
 
     budget: {
       type: Number,
-      required: true,
     },
 
     startDate: {
       type: Date,
-      required: true,
     },
 
     endDate: {
       type: Date,
-      required: true,
       validate: {
         validator(value) {
-          return !this.startDate || value >= this.startDate;
+          // validate only when both dates are provided
+          if (!value || !this.startDate) return true;
+          return value >= this.startDate;
         },
         message: "End date must be after start date",
       },

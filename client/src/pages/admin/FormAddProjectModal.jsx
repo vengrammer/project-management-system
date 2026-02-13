@@ -3,9 +3,10 @@ import { X, Plus } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 import { gql } from "@apollo/client";
-import { useQuery } from "@apollo/client/react";
-import toast, { Toaster } from "react-hot-toast";
+import { useMutation, useQuery } from "@apollo/client/react";
+import { Toaster, toast } from "react-hot-toast";
 
+//query to get the departments
 const GET_DEPARTMENTS = gql`
   query Departments {
     departments {
@@ -16,6 +17,48 @@ const GET_DEPARTMENTS = gql`
         fullname
         position
       }
+    }
+  }
+`;
+//query to get the user manager
+const GET_USER_MANAGER = gql`
+  query UserRoleManager {
+    userRoleManager {
+      id
+      fullname
+      position
+    }
+  }
+`;
+//query to CREATE the project
+const CREATE_PROJECT = gql`
+  mutation CreateProject(
+    $title: String!
+    $priority: String!
+    $status: String!
+    $department: ID!
+    $description: String
+    $client: String
+    $budget: Int
+    $projectManager: ID
+    $users: [ID]
+    $startDate: String
+    $endDate: String
+  ) {
+    createProject(
+      title: $title
+      priority: $priority
+      status: $status
+      department: $department
+      description: $description
+      client: $client
+      budget: $budget
+      projectManager: $projectManager
+      users: $users
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      message
     }
   }
 `;
@@ -32,11 +75,7 @@ export default function FormAddProjectModal() {
     department: "",
     status: "",
     priority: "",
-    progress: "",
-    tags: "",
     projectManager: "",
-    assignee: "",
-    teamSize: "",
     budget: "",
     startDate: "",
     endDate: "",
@@ -50,47 +89,6 @@ export default function FormAddProjectModal() {
   const [managerSearch, setManagerSearch] = useState("");
   const [departmentSearch, setDepartmentSearch] = useState("");
   const [teamMemberSearch, setTeamMemberSearch] = useState("");
-
-  // Sample data
-  const projectManagers = [
-    { id: 1, name: "John Smith" },
-    { id: 2, name: "Sarah Johnson" },
-    { id: 3, name: "Michael Brown" },
-    { id: 4, name: "Emily Davis" },
-    { id: 5, name: "David Wilson" },
-  ];
-
-  // const departments = [
-  //   { id: 1, name: "IT" },
-  //   { id: 2, name: "Development" },
-  //   { id: 3, name: "Design" },
-  //   { id: 4, name: "Marketing" },
-  //   { id: 5, name: "Sales" },
-  //   { id: 6, name: "HR" },
-  //   { id: 7, name: "Finance" },
-  //   { id: 8, name: "Operations" },
-  // ];
-
-  // const employees = [
-  //   { id: 1, name: "Alice Johnson" },
-  //   { id: 2, name: "Bob Smith" },
-  //   { id: 3, name: "Carol Williams" },
-  //   { id: 4, name: "David Brown" },
-  //   { id: 5, name: "Eva Martinez" },
-  //   { id: 6, name: "Frank Lee" },
-  //   { id: 7, name: "Grace Kim" },
-  //   { id: 8, name: "Henry Clark" },
-  // ];
-
-  // Filter functions
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    console.log("Selected employees:", selectedEmployees);
-    // Add your submit logic here
-    setIsOpen(false);
-  };
 
   const handleClose = () => {
     setIsOpen(false);
@@ -125,25 +123,105 @@ export default function FormAddProjectModal() {
     };
   }, [isOpen]);
 
-  //GET THE DEPARTMENT AND THERE USERS
-  const { loading, error, data } = useQuery(GET_DEPARTMENTS);
+  //HERE IS THE ALL QUERRY------------#######################################
 
-  // Handle loading state
-  if (loading) {
+  //GET THE DEPARTMENT AND THERE USERS
+  const {
+    loading: loadindDepartments,
+    error: errorDepartments,
+    data: dataDepartments,
+  } = useQuery(GET_DEPARTMENTS);
+
+  //GET THE USER WITH A ROLE OF MANAGER
+  const {
+    loading: loadingUserManager,
+    error: errorUserManager,
+    data: dataUserManager,
+  } = useQuery(GET_USER_MANAGER);
+
+  // CREATE PROJECT
+  const [createProject, { loading: loadingCreateProject }] = useMutation(
+    CREATE_PROJECT,
+    {
+      onCompleted: () => {
+        toast.success("Project created successfully",
+        );
+        // reset form and selection
+        setFormData({
+          projectName: "",
+          description: "",
+          client: "",
+          department: "",
+          status: "",
+          priority: "",
+          projectManager: "",
+          budget: "",
+          startDate: "",
+          endDate: "",
+        });
+        setSelectedEmployees([]);
+        setManagerSearch("");
+        setDepartmentSearch("");
+      },
+      onError: () => {
+        toast.error("Failed to create project");
+      },
+      // refresh project list (server query name)
+      refetchQueries: ["projects"],
+    },
+  );
+
+  const handleSubmit = (e) => {
+
+    e.preventDefault();
+    // ensure numeric budget and send correct values
+    createProject({
+      variables: {
+        title: formData.projectName,
+        description: formData.description,
+        client: formData.client,
+        department: formData.department,
+        status: formData.status,
+        priority: formData.priority,
+        projectManager: formData.projectManager,
+        budget: parseInt(formData.budget, 10) || 0,
+        users: selectedEmployees,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+      },
+    });
+  };
+
+  //show the error and loading when getting the department
+  if (loadindDepartments) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <span className="loading loading-spinner loading-xl"></span>
       </div>
     );
   }
-
-  // Handle error state
-  if (error) {
-    toast.error(`Error: ${error.message}`);
+  if (errorDepartments) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Toaster />
         <div className="text-red-600">Failed to load projects</div>
+      </div>
+    );
+  }
+
+  //show the error and loading when getting the user manager
+  if (loadingUserManager) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="loading loading-spinner loading-xl"></span>
+      </div>
+    );
+  }
+  if (errorUserManager) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Toaster />
+        <div className="text-red-600">Failed to load User Manager</div>
       </div>
     );
   }
@@ -154,21 +232,16 @@ export default function FormAddProjectModal() {
     );
   };
 
-  // clear selected members when department changes
-  // useEffect(() => {
-  //   setSelectedEmployees([]);
-  // }, [formData.department]);
-
-  const filteredManagers = projectManagers.filter((manager) =>
-    manager.name.toLowerCase().includes(managerSearch.toLowerCase()),
+  const filteredManagers = dataUserManager.userRoleManager?.filter((manager) =>
+    manager.fullname?.toLowerCase().includes(managerSearch.toLowerCase()),
   );
 
-  const filteredDepartments = data.departments?.filter((dept) =>
+  const filteredDepartments = dataDepartments.departments?.filter((dept) =>
     dept.name.toLowerCase().includes(departmentSearch.toLowerCase()),
   );
 
   // build team-member list from the selected department
-  const selectedDept = data.departments?.find(
+  const selectedDept = dataDepartments.departments?.find(
     (d) => d.id === formData.department || d.name === formData.department,
   );
   const teamUsers = selectedDept?.users || [];
@@ -185,6 +258,7 @@ export default function FormAddProjectModal() {
   return (
     <>
       {/* Trigger Button */}
+      <Toaster />
       <button
         onClick={() => setIsOpen(true)}
         className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -234,7 +308,7 @@ export default function FormAddProjectModal() {
               </p>
             </div>
 
-            {/* Modal Body - Scrollable */}
+            {/* Modal Body */}
             <div className="flex-1 overflow-y-auto p-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Basic Information Section */}
@@ -309,10 +383,9 @@ export default function FormAddProjectModal() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                       >
                         <option value="">Select status</option>
-                        <option value="Planning">Not Started</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Cancelled">Cancelled</option>
+                        <option value="not started">Not Started</option>
+                        <option value="in progress">In Progress</option>
+                        <option value="completed">Completed</option>
                       </select>
                     </div>
 
@@ -453,13 +526,12 @@ export default function FormAddProjectModal() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                       >
                         <option value="">Select priority</option>
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                        <option value="Critical">Critical</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
                       </select>
                     </div>
-
+                    {/* project manager dropdown */}
                     <div className="space-y-2 relative" ref={managerRef}>
                       <label className="block text-sm font-medium text-gray-700">
                         Project Manager <span className="text-red-500">*</span>
@@ -468,7 +540,7 @@ export default function FormAddProjectModal() {
                         <input
                           type="text"
                           placeholder="Search project manager..."
-                          value={managerSearch || formData.projectManager}
+                          value={managerSearch}
                           onChange={(e) => {
                             setManagerSearch(e.target.value);
                             setShowManagerDropdown(true);
@@ -486,14 +558,14 @@ export default function FormAddProjectModal() {
                                   onClick={() => {
                                     handleInputChange(
                                       "projectManager",
-                                      manager.name,
+                                      manager?.id,
                                     );
-                                    setManagerSearch("");
+                                    setManagerSearch(manager?.fullname);
                                     setShowManagerDropdown(false);
                                   }}
                                   className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
                                 >
-                                  {manager.name}
+                                  {manager?.fullname}
                                 </div>
                               ))
                             ) : (
@@ -561,9 +633,10 @@ export default function FormAddProjectModal() {
               <button
                 type="submit"
                 onClick={handleSubmit}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                disabled={loadingCreateProject}
+                className={`px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors ${loadingCreateProject ? "opacity-60 cursor-not-allowed" : ""}`}
               >
-                Create Project
+                {loadingCreateProject ? "Creating..." : "Create Project"}
               </button>
             </div>
           </div>
