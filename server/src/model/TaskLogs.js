@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-
-const commentSchema = mongoose.Schema(
+//content, task,status,author
+const taskLogSchema = mongoose.Schema(
   {
     content: {
       type: String,
@@ -9,16 +9,20 @@ const commentSchema = mongoose.Schema(
       minlength: 1,
       maxlength: 1000,
     },
-
+    status: {
+      type: String,
+      enum: ["in progress", "done", "stuck"],
+      default: "in progress",
+    },
     task: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Task",
       required: true,
       index: true,
     },
 
     author: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
@@ -29,5 +33,5 @@ const commentSchema = mongoose.Schema(
   },
 );
 
-const Comment = mongoose.model("Comment", commentSchema)
-export default Comment;
+const TaskLog = mongoose.model("TaskLog", taskLogSchema);
+export default TaskLog;
