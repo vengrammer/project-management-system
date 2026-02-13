@@ -9,7 +9,7 @@ export const projectResolvers = {
         const projects = await Project.find()
           .populate("users")
           .populate("department")
-          .populate("projectManager"); 
+          .populate("projectManager")
 
         const formattedDate = (date) => {
           return date?.toLocaleString("en-US", {

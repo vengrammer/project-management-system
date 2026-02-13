@@ -4,11 +4,13 @@ import { mergeTypeDefs, mergeResolvers } from "@graphql-tools/merge";
 import { userSchema } from "./schema/user.schema.js";
 import { projectSchema } from "./schema/project.schema.js";
 import departmentSchema from "./schema/department.schema.js";
+import taskSchema from "./schema/task.schema.js";
 
 //import for the resolver
 import { userResolvers } from "./resolver/user.resolver.js";
 import { projectResolvers } from "./resolver/project.resolver.js";
 import { departmentResolver } from "./resolver/department.resolver.js";
+import taskResolver from "./resolver/task.resolver.js";
 
 
 const rootSchema = `
@@ -24,11 +26,13 @@ const typeDefs = mergeTypeDefs([
   userSchema,
   projectSchema,
   departmentSchema,
+  taskSchema,
 ]);
 const resolvers = mergeResolvers([
   userResolvers,
   projectResolvers,
   departmentResolver,
+  taskResolver,
 ]);
  
 export { typeDefs, resolvers };

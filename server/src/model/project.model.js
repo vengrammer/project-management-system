@@ -7,13 +7,11 @@ const projectSchema = new mongoose.Schema(
       ref: "Department",
       index: true,
     },
-
     projectManager: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       index: true,
     },
-
     users: [
       {
         type: mongoose.Schema.Types.ObjectId,

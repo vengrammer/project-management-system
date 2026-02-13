@@ -27,8 +27,8 @@ export const projectSchema = `#graphql
             title: String!
             description: String
             client: String
-            priority: String!
-            status: String!
+            priority: String
+            status: String
             department: ID
             budget: Int
             projectManager: ID

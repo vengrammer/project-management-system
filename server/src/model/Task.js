@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+//title,description,project,assignedTo,priority,status,dueDate
 const taskSchema = mongoose.Schema(
   {
     title: {
@@ -12,19 +13,18 @@ const taskSchema = mongoose.Schema(
 
     description: {
       type: String,
-      trim: true,
       maxlength: 1000,
     },
 
     project: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Project",
       required: true,
       index: true,
     },
 
     assignedTo: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
 
