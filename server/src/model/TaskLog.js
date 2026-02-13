@@ -12,23 +12,8 @@ const taskLogSchema = mongoose.Schema(
       type: String,
       enum: ["in_progress", "done", "stuck"],
       required: true,
-    },
-
-    progress: {
-      type: Number,
-      min: 0,
-      max: 100,
-      default: 0,
-    },
-
-    oldValue: {
-      type: Schema.Types.Mixed,
-    },
-
-    newValue: {
-      type: Schema.Types.Mixed,
-    },
-
+    },  
+    comments: {type: String, required: true},
     performedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

@@ -28,12 +28,6 @@ const taskSchema = mongoose.Schema(
       ref: "User",
     },
 
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-
     priority: {
       type: String,
       enum: ["low", "medium", "high"],
@@ -50,14 +44,6 @@ const taskSchema = mongoose.Schema(
     dueDate: {
       type: Date,
     },
-
-    tags: [
-      {
-        type: String,
-        trim: true,
-        lowercase: true,
-      },
-    ],
   },
   {
     timestamps: true,

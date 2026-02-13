@@ -8,8 +8,7 @@ function LandingPageRoute() {
         <Routes>
             <Route element={<LandingPageLayout />}>
                 <Route path="/" element={<Navigate to="/landingpage" replace />} />
-                <Route path="landingpage" element={<LandingPageHome />} />
-                
+                <Route path="landingpage" element={<LandingPageHome />} />      
             </Route>
             <Route path="*" element={<NotFound />} />
         </Routes>

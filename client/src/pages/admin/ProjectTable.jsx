@@ -10,15 +10,17 @@ import { motion } from "framer-motion";
 import { useQuery } from "@apollo/client/react";
 import toast, { Toaster } from "react-hot-toast";
 import { gql } from "@apollo/client";
+import { useNavigate } from "react-router-dom";
 import FormAddProjectModal from "./FormAddProjectModal";
 
+
 export default function ProjectTable() {
+  const navigate = useNavigate();
   const GET_PROJECTS = gql`
     query Projects {
       projects {
         id
         title
-        description
         priority
         status
         department {
@@ -74,15 +76,16 @@ export default function ProjectTable() {
   });
 
   // Pagination
-  //const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentProjects = filteredProjects.slice(startIndex, endIndex);
 
   // Actions
   const handleView = (project) => {
-    console.log("View project:", project);
-    alert(`Viewing: ${project.title}`);
+    navigate("/projectdetails");
+    // console.log("View project:", project);
+    // alert(`Viewing: ${project.title}`);
   };
 
   const handleEdit = (project) => {
@@ -124,7 +127,6 @@ export default function ProjectTable() {
       transition={{ duration: 0.8, ease: "easeInOut" }}
       className="w-full md:p-2 max-w-8xl mx-auto"
     >
-      <Toaster position="top-right" />
       <div className="bg-white rounded-lg shadow">
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
@@ -151,7 +153,7 @@ export default function ProjectTable() {
         {/* Grid Header - Hidden on mobile */}
         <div className="hidden lg:grid lg:grid-cols-9 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase">
           <div>Title</div>
-          <div>Description</div>
+          <div>Department</div>
           <div>Status</div>
           <div>Priority</div>
           <div>Progress</div>
@@ -182,11 +184,8 @@ export default function ProjectTable() {
                   {/* Title & Description */}
                   <div className="flex flex-row items-start justify-between lg:justify-start lg:block">
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900">
-                        {project.title}
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1 lg:mt-0">
-                        {project.department?.name}
+                      <div className="font-medium text-gray-900 wrap-break-word">
+                        {project.title ? project.title : "No project title"}
                       </div>
                     </div>
                   </div>
@@ -197,7 +196,9 @@ export default function ProjectTable() {
                       Department:{" "}
                     </span>
                     <span className="font-medium lg:font-normal">
-                      {project.description}
+                      {project.department?.name
+                        ? project.department?.name
+                        : "No department"}
                     </span>
                   </div>
 
@@ -206,7 +207,7 @@ export default function ProjectTable() {
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(project.status)}`}
                     >
-                      {project.status}
+                      {project.status ? project.status : "No status"}
                     </span>
                   </div>
 
@@ -215,7 +216,7 @@ export default function ProjectTable() {
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(project.priority)}`}
                     >
-                      {project.priority}
+                      {project.priority ? project.priority : "No Priority"}
                     </span>
                   </div>
 
@@ -232,7 +233,6 @@ export default function ProjectTable() {
                       {project.priority || "No priority"}
                     </span>
                   </div>
-
                   {/* Progress */}
                   <div className="lg:col-span-1">
                     <div className="flex items-center justify-between mb-1 lg:hidden">
@@ -258,7 +258,7 @@ export default function ProjectTable() {
                   <div className="text-sm text-gray-700">
                     <span className="text-gray-500 lg:hidden">Budget: </span>
                     <span className="font-medium lg:font-normal">
-                      ${project.budget?.toLocaleString() || "0"}
+                      {project.budget?.toLocaleString() || "0"}
                     </span>
                   </div>
 
@@ -292,7 +292,7 @@ export default function ProjectTable() {
                   <div className="flex gap-2 pt-2 border-t border-gray-100 lg:border-t-0 lg:pt-0 lg:gap-3">
                     <button
                       onClick={() => handleView(project)}
-                      className="flex-1 lg:flex-none bg-blue-50 lg:bg-transparent text-blue-600 hover:bg-blue-100 lg:hover:bg-transparent lg:hover:text-blue-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
+                      className="flex-1 cursor-pointer lg:flex-none bg-blue-50 lg:bg-transparent text-blue-600 hover:bg-blue-100 lg:hover:bg-transparent lg:hover:text-blue-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
                       title="View"
                     >
                       <span className="lg:hidden">View</span>
@@ -300,7 +300,7 @@ export default function ProjectTable() {
                     </button>
                     <button
                       onClick={() => handleEdit(project)}
-                      className="flex-1 lg:flex-none bg-green-50 lg:bg-transparent text-green-600 hover:bg-green-100 lg:hover:bg-transparent lg:hover:text-green-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
+                      className="flex-1 cursor-pointer lg:flex-none bg-green-50 lg:bg-transparent text-green-600 hover:bg-green-100 lg:hover:bg-transparent lg:hover:text-green-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
                       title="Edit"
                     >
                       <span className="lg:hidden">Edit</span>
@@ -308,7 +308,7 @@ export default function ProjectTable() {
                     </button>
                     <button
                       onClick={() => handleDelete(project.id)}
-                      className="flex-1 lg:flex-none bg-red-50 lg:bg-transparent text-red-600 hover:bg-red-100 lg:hover:bg-transparent lg:hover:text-red-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
+                      className="flex-1 cursor-pointer lg:flex-none bg-red-50 lg:bg-transparent text-red-600 hover:bg-red-100 lg:hover:bg-transparent lg:hover:text-red-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
                       title="Delete"
                     >
                       <span className="lg:hidden">Delete</span>
@@ -321,7 +321,7 @@ export default function ProjectTable() {
           )}
         </div>
 
-        {/* Pagination - Only show if more than 1 page
+        {/* Pagination - Only show if more than 1 page */}
         {totalPages > 1 && (
           <div className="px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-gray-600">
@@ -348,16 +348,15 @@ export default function ProjectTable() {
               </button>
             </div>
           </div>
-        )} */}
-
-        {/* Total count footer */}
+        )}
+        {/* Total count footer
         <div className="px-4 md:px-6 py-4 border-t border-gray-200">
           <div className="text-sm text-gray-600">
             Total: {filteredProjects.length}{" "}
             {filteredProjects.length === 1 ? "project" : "projects"}
             {searchTerm && ` (filtered from ${projects.length} total)`}
           </div>
-        </div>
+        </div> */}
       </div>
     </motion.div>
   );
