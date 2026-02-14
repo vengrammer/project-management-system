@@ -4,7 +4,7 @@ const taskSchema = `#graphql
         id: ID!
         title: String!
         description: String
-        project: Project!
+        project: Project
         assignedTo: User
         priority: String
         status: String
@@ -13,6 +13,7 @@ const taskSchema = `#graphql
     type Query {
         task(id: ID!): Task
         tasks: [Task]
+        taskByProject(id: ID!): [Task]
     }
     type Mutation {
         createTask(

@@ -42,13 +42,6 @@ const projectSchema = new mongoose.Schema(
       index: true,
     },
 
-    progress: {
-      type: Number,
-      min: 0,
-      max: 100,
-      default: 0,
-    },
-
     budget: {
       type: Number,
     },

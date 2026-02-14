@@ -26,7 +26,10 @@ export default function ProjectTable() {
         department {
           name
         }
-        progress
+        projectManager {
+          id
+          fullname
+        }
         budget
         startDate
         endDate
@@ -156,7 +159,7 @@ export default function ProjectTable() {
           <div>Department</div>
           <div>Status</div>
           <div>Priority</div>
-          <div>Progress</div>
+          <div>Project Manager</div>
           <div>Budget</div>
           <div>Start Date</div>
           <div>End Date</div>
@@ -233,25 +236,13 @@ export default function ProjectTable() {
                       {project.priority || "No priority"}
                     </span>
                   </div>
-                  {/* Progress */}
-                  <div className="lg:col-span-1">
-                    <div className="flex items-center justify-between mb-1 lg:hidden">
-                      <span className="text-sm text-gray-500">Progress</span>
-                      <span className="text-sm text-gray-600 font-medium">
-                        {project.progress}%
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full"
-                          style={{ width: `${project.progress}%` }}
-                        ></div>
-                      </div>
-                      <span className="hidden lg:block text-sm text-gray-600 whitespace-nowrap">
-                        {project.progress}%
-                      </span>
-                    </div>
+
+                  {/* Budget */}
+                  <div className="text-sm text-gray-700">
+                    <span className="text-gray-500 lg:hidden">PM: </span>
+                    <span className="font-medium lg:font-normal">
+                      {project.projectManager.fullname ? project.projectManager.fullname : "No PM" }
+                    </span>
                   </div>
 
                   {/* Budget */}

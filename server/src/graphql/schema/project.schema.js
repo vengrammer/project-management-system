@@ -10,7 +10,6 @@ export const projectSchema = `#graphql
         department: Department
         projectManager: User
         users: [User]
-        progress: Int
         budget: Int
         startDate: String
         endDate: String

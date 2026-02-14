@@ -28,6 +28,20 @@ const taskResolver = {
         throw new Error(error.message || "Failed to fetch task");
       }
     },
+
+    //return all thas based on the project id
+    taskByProject: async (_, { id }) => {
+      try {
+        const task = await Task.find({ project: id })
+          .populate("project")
+          .populate("assignedTo");
+        if (!task) throw new Error("Task not found");
+        return task;
+      } catch (error) {
+        console.log("error in getting the task", error);
+        throw new Error(error.message || "Failed to fetch task by project id");
+      }
+    },
   },
 
   Mutation: {

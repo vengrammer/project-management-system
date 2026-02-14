@@ -56,10 +56,10 @@ function AddMembers() {
       {/* Button to open modal */}
       <button
         onClick={() => setIsAddMemberOpen(true)}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg flex"
+        className="px-2 py-2 bg-blue-600 text-white rounded-lg flex"
       >
         <Plus/>
-        Add Member
+        Member
       </button>
 
       {/* Modal */}
