@@ -83,7 +83,7 @@ export default function ProjectTable() {
 
   // Actions
   const handleView = (project) => {
-    navigate("/projectdetails");
+    navigate(`/projectdetails/${project.id}`);
     // console.log("View project:", project);
     // alert(`Viewing: ${project.title}`);
   };

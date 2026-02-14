@@ -18,7 +18,7 @@ function App() {
               <Route path="/*" element={<LandingPageRoute />} />
               <Route path="admin/*" element={<HomeRoute />} />
               <Route path="*" element={<NotFound />} />
-              <Route path="projectdetails" element={<ProjectDetailsPage />} />
+              <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
               <Route path="taskactivity" element={<TaskActivityPage />} />
             </Routes>
           </EmployeeContextProvider>

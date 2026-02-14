@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-//content, task,status,author
+// content, task, status, author
+
 const taskLogSchema = mongoose.Schema(
   {
     content: {
@@ -11,8 +12,8 @@ const taskLogSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["in progress", "done", "stuck"],
-      default: "in progress",
+      enum: ["in_progress", "done", "stuck"],
+      default: "in_progress",
     },
     task: {
       type: mongoose.Schema.Types.ObjectId,
@@ -32,6 +33,10 @@ const taskLogSchema = mongoose.Schema(
     versionKey: false,
   },
 );
+
+// Add index for faster queries by task and author
+taskLogSchema.index({ task: 1, author: 1 });
+taskLogSchema.index({ createdAt: -1 });
 
 const TaskLog = mongoose.model("TaskLog", taskLogSchema);
 export default TaskLog;

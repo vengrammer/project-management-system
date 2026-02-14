@@ -9,7 +9,7 @@ export const projectResolvers = {
         const projects = await Project.find()
           .populate("users")
           .populate("department")
-          .populate("projectManager")
+          .populate("projectManager");
 
         const formattedDate = (date) => {
           return date?.toLocaleString("en-US", {
@@ -39,6 +39,45 @@ export const projectResolvers = {
       } catch (error) {
         console.error("Return projects error:", error);
         throw new Error("Failed to fetch projects");
+      }
+    },
+    project: async (_, { id }) => {
+      try {
+        const project = await Project.findById(id)
+          .populate("users")
+          .populate("department")
+          .populate("projectManager");
+
+        const formattedDate = (date) => {
+          return date?.toLocaleString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+        };
+
+        if (!project) return null;
+
+        return {
+          id: project._id.toString(),
+          title: project.title,
+          description: project.description,
+          priority: project.priority,
+          status: project.status,
+          department: project.department,
+          progress: project.progress,
+          client: project.client,
+          budget: project.budget,
+          users: project.users,
+          projectManager: project.projectManager,
+          startDate: formattedDate(project.startDate),
+          endDate: formattedDate(project.endDate),
+          createdAt: project.createdAt?.toISOString(),
+          updatedAt: project.updatedAt?.toISOString(),
+        };
+      } catch (error) {
+        console.error("Return project error:", error);
+        throw new Error("Failed to fetch project");
       }
     },
   },
