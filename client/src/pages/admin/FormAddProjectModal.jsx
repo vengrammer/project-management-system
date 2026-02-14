@@ -4,7 +4,8 @@ import logo from "@/assets/logo.png";
 
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { Toaster, toast } from "react-hot-toast";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 //to refresh the table of projects
 const GET_PROJECTS = gql`
@@ -18,7 +19,6 @@ const GET_PROJECTS = gql`
       department {
         name
       }
-      progress
       budget
       startDate
       endDate
@@ -164,7 +164,8 @@ export default function FormAddProjectModal() {
     CREATE_PROJECT,
     {
       onCompleted: () => {
-        toast.success("Project created successfully");
+        const msg = "Project created successfully";
+        toast.success(msg);
         // reset form and selection
         setFormData({
           projectName: "",
@@ -181,6 +182,7 @@ export default function FormAddProjectModal() {
         setSelectedEmployees([]);
         setManagerSearch("");
         setDepartmentSearch("");
+        setIsOpen(false);
       },
       onError: () => {
         toast.error("Failed to create project");
@@ -222,7 +224,6 @@ export default function FormAddProjectModal() {
   if (errorDepartments) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Toaster />
         <div className="text-red-600">Failed to load projects</div>
       </div>
     );
@@ -239,7 +240,6 @@ export default function FormAddProjectModal() {
   if (errorUserManager) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Toaster />
         <div className="text-red-600">Failed to load User Manager</div>
       </div>
     );
@@ -277,39 +277,13 @@ export default function FormAddProjectModal() {
   return (
     <>
       {/* Trigger Button */}
-      <Toaster
+      <ToastContainer
         position="bottom-right"
-        reverseOrder={false}
-        gutter={12}
-        containerStyle={{
-          bottom: 20,
-          right: 20,
-        }}
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: "#1e293b",
-            color: "#fff",
-            borderRadius: "12px",
-            padding: "16px",
-            fontSize: "14px",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-          },
-
-          success: {
-            iconTheme: {
-              primary: "#22c55e",
-              secondary: "#fff",
-            },
-          },
-
-          error: {
-            iconTheme: {
-              primary: "#ef4444",
-              secondary: "#fff",
-            },
-          },
-        }}
+        autoClose={4000}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        draggable
       />
       <button
         onClick={() => setIsOpen(true)}
@@ -687,7 +661,9 @@ export default function FormAddProjectModal() {
               <button
                 type="submit"
                 disabled={loadingCreateProject}
-                className={`px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors ${loadingCreateProject ? "opacity-60 cursor-not-allowed" : ""}`}
+                className={`px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors ${
+                  loadingCreateProject ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               >
                 {loadingCreateProject ? "Creating..." : "Create Project"}
               </button>

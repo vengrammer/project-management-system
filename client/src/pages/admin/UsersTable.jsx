@@ -2,7 +2,8 @@ import { Eye, Pen, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@apollo/client/react";
-import toast, { Toaster } from "react-hot-toast";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { gql } from "@apollo/client";
 
 export default function UsersTable() {
@@ -42,7 +43,6 @@ export default function UsersTable() {
     toast.error(`Error: ${error.message}`);
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Toaster position="top-right" />
         <div className="text-red-600">Failed to load users</div>
       </div>
     );
@@ -64,7 +64,7 @@ export default function UsersTable() {
   });
 
   // Pagination
- // const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  // const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentUsers = filteredUsers.slice(startIndex, endIndex);
@@ -110,7 +110,15 @@ export default function UsersTable() {
       transition={{ duration: 0.8, ease: "easeInOut" }}
       className="w-full md:p-2 max-w-8xl mx-auto"
     >
-      <Toaster position="top-left" />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={4000}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="dark"
+      />
       <div className="bg-white rounded-lg shadow">
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
@@ -173,12 +181,16 @@ export default function UsersTable() {
                     {/* Role & Status badges*/}
                     <div className="flex gap-2 md:hidden">
                       <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                          user.status,
+                        )}`}
                       >
                         {user.status ? "Active" : "Inactive"}
                       </span>
                       <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(user.role)}`}
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(
+                          user.role,
+                        )}`}
                       >
                         {user.role}
                       </span>
@@ -198,7 +210,9 @@ export default function UsersTable() {
                   {/* Role  */}
                   <div className="hidden md:block">
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(user.role)}`}
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(
+                        user.role,
+                      )}`}
                     >
                       {user.role}
                     </span>
@@ -207,7 +221,9 @@ export default function UsersTable() {
                   {/* Status */}
                   <div className="hidden md:block">
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                        user.status,
+                      )}`}
                     >
                       {user.status ? "Active" : "Inactive"}
                     </span>

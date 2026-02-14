@@ -2,7 +2,8 @@ import { Eye, Pen, Trash2, Users } from "lucide-react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@apollo/client/react";
-import toast, { Toaster } from "react-hot-toast";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { gql } from "@apollo/client";
 
 const GET_DEPARTMENT = gql`
@@ -41,7 +42,6 @@ export default function DepartmentTable() {
     toast.error(`Error: ${error.message}`);
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Toaster />
         <div className="text-red-600">Failed to load departments</div>
       </div>
     );
@@ -94,7 +94,15 @@ export default function DepartmentTable() {
       transition={{ duration: 0.8, ease: "easeInOut" }}
       className="w-full md:p-2 max-w-8xl mx-auto"
     >
-      <Toaster position="top-right" />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={4000}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="dark"
+      />
       <div className="bg-white rounded-lg shadow">
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
@@ -146,7 +154,9 @@ export default function DepartmentTable() {
                     </h3>
                     {/* Status badge*/}
                     <span
-                      className={`lg:hidden px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(department.isActive)}`}
+                      className={`lg:hidden px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                        department.isActive,
+                      )}`}
                     >
                       {department.isActive ? "Active" : "Inactive"}
                     </span>
@@ -160,7 +170,9 @@ export default function DepartmentTable() {
                   {/* Status*/}
                   <div className="hidden lg:block">
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(department.isActive)}`}
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                        department.isActive,
+                      )}`}
                     >
                       {department.isActive ? "Active" : "Inactive"}
                     </span>

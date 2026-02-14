@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+
 import AddMembers from "./AddMembersForm";
 import {
   ArrowLeft,
@@ -14,12 +14,14 @@ import {
   Pencil,
   Eye,
 } from "lucide-react";
+
 import { useNavigate, useParams } from "react-router-dom";
 import AddTaskForm from "./AddTaskForm";
 import FormEditProject from "./FormEditProject";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
-import { Toaster } from "react-hot-toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const GET_PROJECTS = gql`
   query Project($projectId: ID!) {
@@ -117,143 +119,9 @@ const formatDate = (date) => {
 const ProjectDetailsPage = () => {
   const { id } = useParams();
 
-  // Tasks data
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      title: "Design Homepage Mockup",
-      description: "Create initial design concepts for the new homepage",
-      status: "Completed",
-      priority: "High",
-      assignedTo: "John Doe",
-      dueDate: "2024-02-05",
-      completedDate: "2024-02-04",
-      progress: 100,
-    },
-    {
-      id: 2,
-      title: "Implement Product Catalog",
-      description:
-        "Build the product catalog with filtering and search functionality",
-      status: "In Progress",
-      priority: "High",
-      assignedTo: "Jane Smith",
-      dueDate: "2024-02-20",
-      completedDate: null,
-      progress: 75,
-    },
-    {
-      id: 3,
-      title: "Shopping Cart Integration",
-      description: "Integrate shopping cart with payment gateway",
-      status: "In Progress",
-      priority: "Critical",
-      assignedTo: "Mike Johnson",
-      dueDate: "2024-02-25",
-      completedDate: null,
-      progress: 40,
-    },
-    {
-      id: 4,
-      title: "User Authentication System",
-      description: "Implement secure login and registration system",
-      status: "Not Started",
-      priority: "Medium",
-      assignedTo: "Emily Davis",
-      dueDate: "2024-03-01",
-      completedDate: null,
-      progress: 0,
-    },
-    {
-      id: 5,
-      title: "Mobile Responsive Design",
-      description: "Ensure all pages are mobile-friendly",
-      status: "Not Started",
-      priority: "High",
-      assignedTo: "Tom Brown",
-      dueDate: "2024-03-10",
-      completedDate: null,
-      progress: 0,
-    },
-
-    {
-      id: 6,
-      title: "Mobile Responsive Design",
-      description: "Ensure all pages are mobile-friendly",
-      status: "Not Started",
-      priority: "High",
-      assignedTo: "Tom Brown",
-      dueDate: "2024-03-10",
-      completedDate: null,
-      progress: 0,
-    },
-
-    {
-      id: 7,
-      title: "Mobile Responsive Design",
-      description: "Ensure all pages are mobile-friendly",
-      status: "Not Started",
-      priority: "High",
-      assignedTo: "Tom Brown",
-      dueDate: "2024-03-10",
-      completedDate: null,
-      progress: 0,
-    },
-  ]);
-
-  // Team members
-  // const [teamMembers] = useState([
-  //   { id: 1, name: "John Doe", role: "UI/UX Designer", avatar: "JD" },
-  //   { id: 2, name: "Jane Smith", role: "Frontend Developer", avatar: "JS" },
-  //   { id: 3, name: "Mike Johnson", role: "Backend Developer", avatar: "MJ" },
-  //   { id: 4, name: "Emily Davis", role: "Full Stack Developer", avatar: "ED" },
-  //   { id: 5, name: "Tom Brown", role: "QA Engineer", avatar: "TB" },
-  //   { id: 6, name: "Lisa Anderson", role: "DevOps Engineer", avatar: "LA" },
-  //   { id: 7, name: "David Lee", role: "Product Manager", avatar: "DL" },
-  //   { id: 8, name: "Sarah Wilson", role: "Business Analyst", avatar: "SW" },
-  //   { id: 9, name: "Emily Davis", role: "Full Stack Developer", avatar: "ED" },
-  //   { id: 10, name: "Tom Brown", role: "QA Engineer", avatar: "TB" },
-  //   { id: 11, name: "Lisa Anderson", role: "DevOps Engineer", avatar: "LA" },
-  //   { id: 12, name: "David Lee", role: "Product Manager", avatar: "DL" },
-  //   { id: 13, name: "Sarah Wilson", role: "Business Analyst", avatar: "SW" },
-  // ]);
-
-  // const [newTask, setNewTask] = useState({
-  //   title: "",
-  //   description: "",
-  //   priority: "Medium",
-  //   assignedTo: "",
-  //   dueDate: "",
-  //   status: "Not Started",
-  //   progress: 0,
-  // });
-
-  // Handle add task
-  // const handleAddTask = (e) => {
-  //   e.preventDefault();
-  //   const task = {
-  //     id: Math.max(...tasks.map((t) => t.id)) + 1,
-  //     ...newTask,
-  //     completedDate: null,
-  //   };
-  //   setTasks([...tasks, task]);
-  //   setIsAddTaskOpen(false);
-  //   setNewTask({
-  //     title: "",
-  //     description: "",
-  //     priority: "Medium",
-  //     assignedTo: "",
-  //     dueDate: "",
-  //     status: "Not Started",
-  //     progress: 0,
-  //   });
-  // };
-
   // Handle delete task
   const handleDeleteTask = (id) => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
-      setTasks(tasks.filter((task) => task.id !== id));
-    }
+    console.log(id)
   };
 
   // Get status color
@@ -319,7 +187,6 @@ const ProjectDetailsPage = () => {
   if (projectError || taskError) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Toaster />
         <div className="text-red-600">Failed to load projects and tasks</div>
       </div>
     );
@@ -327,41 +194,17 @@ const ProjectDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Trigger Button */}
-      <Toaster
+      {/* Toasts */}
+      <ToastContainer
         position="bottom-right"
-        reverseOrder={false}
-        gutter={12}
-        containerStyle={{
-          bottom: 20,
-          right: 20,
-        }}
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: "#1e293b",
-            color: "#fff",
-            borderRadius: "12px",
-            padding: "16px",
-            fontSize: "14px",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-          },
-
-          success: {
-            iconTheme: {
-              primary: "#22c55e",
-              secondary: "#fff",
-            },
-          },
-
-          error: {
-            iconTheme: {
-              primary: "#ef4444",
-              secondary: "#fff",
-            },
-          },
-        }}
+        autoClose={4000}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="dark"
       />
+      {/* Trigger Button */}
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* Back Button */}
         <button
@@ -382,14 +225,18 @@ const ProjectDetailsPage = () => {
                     : "No project title"}
                 </h1>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs flex gap-1 font-medium border ${getStatusColor(projectData.project.status)}`}
+                  className={`px-3 py-1 rounded-full text-xs flex gap-1 font-medium border ${getStatusColor(
+                    projectData.project.status,
+                  )}`}
                 >
                   {projectData.project.status
                     ? projectData.project.status
                     : "No project status"}
                 </span>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs flex gap-1 font-medium border ${getPriorityColor(projectData.project.priority)}`}
+                  className={`px-3 py-1 rounded-full text-xs flex gap-1 font-medium border ${getPriorityColor(
+                    projectData.project.priority,
+                  )}`}
                 >
                   {projectData.project.priority ? (
                     <div className="first-letter:uppercase">
@@ -583,12 +430,16 @@ const ProjectDetailsPage = () => {
                               {task.title}
                             </h3>
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(task.status)}`}
+                              className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                                task.status,
+                              )}`}
                             >
                               {formatStatus(task.status)}
                             </span>
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(task.priority)}`}
+                              className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(
+                                task.priority,
+                              )}`}
                             >
                               {formatPriority(task.priority)}
                             </span>

@@ -1,59 +1,147 @@
 import { Plus, XCircle } from "lucide-react";
 import { useState } from "react";
+import { gql } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client/react";
+import { useParams } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const GET_MEMBERS = gql`
+  query Project($projectId: ID!) {
+    project(id: $projectId) {
+      users {
+        id
+        fullname
+        position
+      }
+    }
+  }
+`;
+
+const GET_TASKS = gql`
+  query TaskByProject($taskByProjectId: ID!) {
+    taskByProject(id: $taskByProjectId) {
+      id
+      title
+      description
+      assignedTo {
+        id
+        fullname
+      }
+      priority
+      status
+      dueDate
+    }
+  }
+`;
+
+const INSERT_TASK = gql`
+  mutation createTask(
+    $title: String!
+    $project: ID!
+    $description: String
+    $priority: String
+    $status: String
+    $dueDate: String
+    $assignedTo: ID
+  ) {
+    createTask(
+      title: $title
+      project: $project
+      description: $description
+      priority: $priority
+      status: $status
+      dueDate: $dueDate
+      assignedTo: $assignedTo
+    ) {
+      id
+      title
+    }
+  }
+`;
 
 function AddTaskForm() {
-  const [tasks, setTasks] = useState([]); // define tasks state
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
-
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
-    priority: "Medium",
+    priority: "medium",
     assignedTo: "",
     dueDate: "",
-    status: "Not Started",
-    progress: 0,
+    status: "todo",
   });
 
-  const [teamMembers] = useState([
-    { id: 1, name: "John Doe", role: "UI/UX Designer", avatar: "JD" },
-    { id: 2, name: "Jane Smith", role: "Frontend Developer", avatar: "JS" },
-    { id: 3, name: "Mike Johnson", role: "Backend Developer", avatar: "MJ" },
-    { id: 4, name: "Emily Davis", role: "Full Stack Developer", avatar: "ED" },
-    { id: 5, name: "Tom Brown", role: "QA Engineer", avatar: "TB" },
-    { id: 6, name: "Lisa Anderson", role: "DevOps Engineer", avatar: "LA" },
-    { id: 7, name: "David Lee", role: "Product Manager", avatar: "DL" },
-    { id: 8, name: "Sarah Wilson", role: "Business Analyst", avatar: "SW" },
-    { id: 9, name: "Emily Davis", role: "Full Stack Developer", avatar: "ED" },
-    { id: 10, name: "Tom Brown", role: "QA Engineer", avatar: "TB" },
-    { id: 11, name: "Lisa Anderson", role: "DevOps Engineer", avatar: "LA" },
-    { id: 12, name: "David Lee", role: "Product Manager", avatar: "DL" },
-    { id: 13, name: "Sarah Wilson", role: "Business Analyst", avatar: "SW" },
-  ]);
+  const { id } = useParams();
+  //get the member
+  const {
+    loading: memberLoading,
+    error: memberError,
+    data: memberData,
+  } = useQuery(GET_MEMBERS, { variables: { projectId: id } });
+
+  //insert the task
+  const [createTask] = useMutation(INSERT_TASK, {
+    onCompleted: () => {
+      toast.success("Task created successfully");
+      // reset form and selection (restore defaults)
+      setNewTask({
+        title: "",
+        description: "",
+        priority: "medium",
+        assignedTo: "",
+        dueDate: "",
+        status: "todo",
+      });
+      setIsAddTaskOpen(false);
+    },
+    onError: () => {
+      toast.error("Failed to create task");
+    },
+    // refetch task list
+    refetchQueries: [{ query: GET_TASKS, variables: { taskByProjectId: id } }],
+    awaitRefetchQueries: true,
+  });
 
   const handleAddTask = (e) => {
     e.preventDefault();
-    const task = {
-      id: tasks.length ? Math.max(...tasks.map((t) => t.id)) + 1 : 1,
-      ...newTask,
-      completedDate: null,
-    };
-    setTasks([...tasks, task]);
-    setIsAddTaskOpen(false);
-    setNewTask({
-      title: "",
-      description: "",
-      priority: "Medium",
-      assignedTo: "",
-      dueDate: "",
-      status: "Not Started",
-      progress: 0,
+    createTask({
+      variables: {
+        title: newTask.title,
+        description: newTask.description,
+        project: id,
+        priority: newTask.priority,
+        status: newTask.status,
+        dueDate: newTask.dueDate || null,
+        assignedTo: newTask.assignedTo || null,
+      },
     });
   };
 
+  if (memberLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="loading loading-spinner loading-xl"></span>
+      </div>
+    );
+  }
+  if (memberError) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-red-600">Failed to load members</div>
+      </div>
+    );
+  }
   return (
     <>
       {/* Button to open modal */}
+      <ToastContainer
+        position="bottom-right"
+        autoClose={4000}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+      />
       <button
         onClick={() => setIsAddTaskOpen(true)}
         className="flex px-4 py-2 bg-blue-600 text-white rounded-lg "
@@ -123,10 +211,9 @@ function AddTaskForm() {
                       required
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="Low">Low</option>
-                      <option value="Medium">Medium</option>
-                      <option value="High">High</option>
-                      <option value="Critical">Critical</option>
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
                     </select>
                   </div>
 
@@ -142,10 +229,9 @@ function AddTaskForm() {
                       required
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="Not Started">Not Started</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Completed">Completed</option>
-                      <option value="On Hold">On Hold</option>
+                      <option value="todo">To Do</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="completed">Completed</option>
                     </select>
                   </div>
                 </div>
@@ -164,9 +250,9 @@ function AddTaskForm() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="">Select team member</option>
-                      {teamMembers.map((member) => (
-                        <option key={member.id} value={member.name}>
-                          {member.name} - {member.role}
+                      {memberData.project.users.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.fullname} - {member.position}
                         </option>
                       ))}
                     </select>
@@ -187,7 +273,6 @@ function AddTaskForm() {
                     />
                   </div>
                 </div>
-
               </div>
 
               <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">

@@ -8,11 +8,11 @@ import {
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@apollo/client/react";
-import toast, { Toaster } from "react-hot-toast";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import FormAddProjectModal from "./FormAddProjectModal";
-
 
 export default function ProjectTable() {
   const navigate = useNavigate();
@@ -58,7 +58,6 @@ export default function ProjectTable() {
     toast.error(`Error: ${error.message}`);
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Toaster />
         <div className="text-red-600">Failed to load projects</div>
       </div>
     );
@@ -131,6 +130,14 @@ export default function ProjectTable() {
       className="w-full md:p-2 max-w-8xl mx-auto"
     >
       <div className="bg-white rounded-lg shadow">
+        <ToastContainer
+          position="bottom-right"
+          autoClose={4000}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+        />
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
@@ -208,7 +215,9 @@ export default function ProjectTable() {
                   {/* Status - Hidden on mobile (shown in badges section) */}
                   <div className="hidden lg:block">
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(project.status)}`}
+                      className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(
+                        project.status,
+                      )}`}
                     >
                       {project.status ? project.status : "No status"}
                     </span>
@@ -217,7 +226,9 @@ export default function ProjectTable() {
                   {/* Priority - Hidden on mobile (shown in badges section) */}
                   <div className="hidden lg:block">
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(project.priority)}`}
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
+                        project.priority,
+                      )}`}
                     >
                       {project.priority ? project.priority : "No Priority"}
                     </span>
@@ -226,12 +237,16 @@ export default function ProjectTable() {
                   {/* Status & Priority badges - Mobile only */}
                   <div className="flex gap-2 lg:hidden">
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(project.status)}`}
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                        project.status,
+                      )}`}
                     >
                       {project.status}
                     </span>
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(project.priority)}`}
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
+                        project.priority,
+                      )}`}
                     >
                       {project.priority || "No priority"}
                     </span>
@@ -241,7 +256,9 @@ export default function ProjectTable() {
                   <div className="text-sm text-gray-700">
                     <span className="text-gray-500 lg:hidden">PM: </span>
                     <span className="font-medium lg:font-normal">
-                      {project.projectManager.fullname ? project.projectManager.fullname : "No PM" }
+                      {project.projectManager.fullname
+                        ? project.projectManager.fullname
+                        : "No PM"}
                     </span>
                   </div>
 
