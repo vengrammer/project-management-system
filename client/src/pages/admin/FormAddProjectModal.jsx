@@ -164,8 +164,7 @@ export default function FormAddProjectModal() {
     CREATE_PROJECT,
     {
       onCompleted: () => {
-        const msg = "Project created successfully";
-        toast.success(msg);
+        toast.success("Project created successfully");
         // reset form and selection
         setFormData({
           projectName: "",
@@ -284,6 +283,7 @@ export default function FormAddProjectModal() {
         closeOnClick
         pauseOnHover
         draggable
+        theme="black"
       />
       <button
         onClick={() => setIsOpen(true)}
@@ -429,7 +429,6 @@ export default function FormAddProjectModal() {
                             value={departmentSearch}
                             onChange={(e) => {
                               if (departmentSearch) {
-                                setSelectedEmployees([]);
                                 setDepartmentSearch(e.target.value);
                                 setShowDepartmentDropdown(true);
                               }

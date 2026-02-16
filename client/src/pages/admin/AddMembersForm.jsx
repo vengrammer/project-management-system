@@ -1,9 +1,64 @@
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { Plus, XCircle } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+
+//query to get the departments
+const GET_DEPARTMENTS = gql`
+  query Departments {
+    departments {
+      id
+      name
+      users {
+        id
+        fullname
+        position
+      }
+    }
+  }
+`;
 
 function AddMembers() {
   const [tasks, setTasks] = useState([]); // define tasks state
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  ///query to get the department
+  const {
+    loading: loadindDepartments,
+    error: errorDepartments,
+    data: dataDepartments,
+  } = useQuery(GET_DEPARTMENTS);
+
+  console.log("error", dataDepartments);
+
+  const [formData, setFormData] = useState({
+    department: "",
+  });
+
+  const selectedDept = dataDepartments?.departments?.find(
+    (d) => d.id === formData.department || d.name === formData.department,
+  );
+
+  const teamUsers = selectedDept?.users || [];
+
+  /////
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [departmentSearch, setDepartmentSearch] = useState("");
+  const departmentRef = useRef(null);
+  const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false);
+  const [teamMemberSearch, setTeamMemberSearch] = useState("");
+
+  const handleInputChange = (name, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  //query
+
+  const filteredDepartments = (dataDepartments?.departments || []).filter(
+    (dept) => dept.name.toLowerCase().includes(departmentSearch.toLowerCase()),
+  );
 
   const [newTask, setNewTask] = useState({
     title: "",
@@ -12,24 +67,7 @@ function AddMembers() {
     assignedTo: "",
     dueDate: "",
     status: "Not Started",
-    progress: 0,
   });
-
-  const [teamMembers] = useState([
-    { id: 1, name: "John Doe", role: "UI/UX Designer", avatar: "JD" },
-    { id: 2, name: "Jane Smith", role: "Frontend Developer", avatar: "JS" },
-    { id: 3, name: "Mike Johnson", role: "Backend Developer", avatar: "MJ" },
-    { id: 4, name: "Emily Davis", role: "Full Stack Developer", avatar: "ED" },
-    { id: 5, name: "Tom Brown", role: "QA Engineer", avatar: "TB" },
-    { id: 6, name: "Lisa Anderson", role: "DevOps Engineer", avatar: "LA" },
-    { id: 7, name: "David Lee", role: "Product Manager", avatar: "DL" },
-    { id: 8, name: "Sarah Wilson", role: "Business Analyst", avatar: "SW" },
-    { id: 9, name: "Emily Davis", role: "Full Stack Developer", avatar: "ED" },
-    { id: 10, name: "Tom Brown", role: "QA Engineer", avatar: "TB" },
-    { id: 11, name: "Lisa Anderson", role: "DevOps Engineer", avatar: "LA" },
-    { id: 12, name: "David Lee", role: "Product Manager", avatar: "DL" },
-    { id: 13, name: "Sarah Wilson", role: "Business Analyst", avatar: "SW" },
-  ]);
 
   const handleAddTask = (e) => {
     e.preventDefault();
@@ -51,6 +89,32 @@ function AddMembers() {
     });
   };
 
+  const filteredTeamMembers = teamUsers.filter((emp) =>
+    emp.fullname.toLowerCase().includes(teamMemberSearch.toLowerCase()),
+  );
+
+  const toggleEmployee = (id) => {
+    setSelectedEmployees((prev) =>
+      prev.includes(id) ? prev.filter((empId) => empId !== id) : [...prev, id],
+    );
+  };
+
+  //show the error and loading when getting the department
+  if (loadindDepartments) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="loading loading-spinner loading-xl"></span>
+      </div>
+    );
+  }
+  if (errorDepartments) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-red-600">Failed to load projects</div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Button to open modal */}
@@ -58,7 +122,7 @@ function AddMembers() {
         onClick={() => setIsAddMemberOpen(true)}
         className="px-2 py-2 bg-blue-600 text-white rounded-lg flex"
       >
-        <Plus/>
+        <Plus />
         Member
       </button>
 
@@ -80,133 +144,100 @@ function AddMembers() {
 
             <form onSubmit={handleAddTask} className="p-6">
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Task Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={newTask.title}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, title: e.target.value })
-                    }
-                    placeholder="Enter task title"
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Description *
-                  </label>
-                  <textarea
-                    value={newTask.description}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, description: e.target.value })
-                    }
-                    placeholder="Enter task description"
-                    required
-                    rows="3"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Priority *
+                <div className="flex flex-col gap-4">
+                  <div className="space-y-2 relative" ref={departmentRef}>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Department <span className="text-red-500">*</span>
                     </label>
-                    <select
-                      value={newTask.priority}
-                      onChange={(e) =>
-                        setNewTask({ ...newTask, priority: e.target.value })
-                      }
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="Low">Low</option>
-                      <option value="Medium">Medium</option>
-                      <option value="High">High</option>
-                      <option value="Critical">Critical</option>
-                    </select>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search department..."
+                        value={departmentSearch}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setDepartmentSearch(v);
+                          setShowDepartmentDropdown(true);
+                        }}
+                        onFocus={() => setShowDepartmentDropdown(true)}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {showDepartmentDropdown && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-auto">
+                          {filteredDepartments.length > 0 ? (
+                            filteredDepartments.map((dept) => (
+                              <div
+                                key={dept.id}
+                                onClick={() => {
+                                  // store department id for form submission, but keep name visible in the input
+                                  handleInputChange("department", dept.id);
+                                  setDepartmentSearch(dept.name);
+                                  setShowDepartmentDropdown(false);
+                                }}
+                                className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                              >
+                                {dept.name}
+                              </div>
+                            ))
+                          ) : (
+                            <div className="px-3 py-2 text-sm text-gray-500">
+                              No departments found
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Status *
-                    </label>
-                    <select
-                      value={newTask.status}
-                      onChange={(e) =>
-                        setNewTask({ ...newTask, status: e.target.value })
-                      }
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="Not Started">Not Started</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Completed">Completed</option>
-                      <option value="On Hold">On Hold</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Assign To *
-                    </label>
-                    <select
-                      value={newTask.assignedTo}
-                      onChange={(e) =>
-                        setNewTask({ ...newTask, assignedTo: e.target.value })
-                      }
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="">Select team member</option>
-                      {teamMembers.map((member) => (
-                        <option key={member.id} value={member.name}>
-                          {member.name} - {member.role}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Due Date *
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Team Members <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="date"
-                      value={newTask.dueDate}
-                      onChange={(e) =>
-                        setNewTask({ ...newTask, dueDate: e.target.value })
-                      }
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      type="text"
+                      placeholder="Search team members..."
+                      value={teamMemberSearch}
+                      onChange={(e) => setTeamMemberSearch(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                     />
+                    <div className="w-full bg-gray-50 max-h-48 overflow-auto rounded-lg border border-gray-300 py-3 px-4">
+                      {filteredTeamMembers.length > 0 ? (
+                        filteredTeamMembers.map((emp) => (
+                          <label
+                            key={emp.id}
+                            className="flex items-center justify-between gap-3 py-2 px-2 rounded hover:bg-gray-100 cursor-pointer transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                checked={selectedEmployees?.includes(emp.id)}
+                                onChange={() => toggleEmployee(emp.id)}
+                                className="w-4 h-4 accent-blue-600 cursor-pointer"
+                              />
+                              <div className="text-sm">
+                                <div className="font-medium text-gray-800">
+                                  {emp.fullname}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {emp.position}
+                                </div>
+                              </div>
+                            </div>
+                          </label>
+                        ))
+                      ) : (
+                        <div className="text-sm text-gray-500 text-center py-2">
+                          No team members found
+                        </div>
+                      )}
+                    </div>
+                    {selectedEmployees?.length > 0 && (
+                      <p className="text-xs text-gray-500">
+                        {selectedEmployees.length} member(s) selected
+                      </p>
+                    )}
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Initial Progress (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={newTask.progress}
-                    onChange={(e) =>
-                      setNewTask({
-                        ...newTask,
-                        progress: parseInt(e.target.value),
-                      })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
                 </div>
               </div>
 

@@ -133,7 +133,7 @@ const ProjectDetailsPage = () => {
       return "bg-green-100 text-green-700 border-green-200";
     if (s === "inprogress" || s === "in_progress")
       return "bg-blue-100 text-blue-700 border-blue-200";
-    if (s === "notstarted" || s === "todo")
+    if (s === "not_started" || s === "todo")
       return "bg-gray-100 text-gray-700 border-gray-200";
     if (s === "onhold")
       return "bg-yellow-100 text-yellow-700 border-yellow-200";
@@ -341,10 +341,10 @@ const ProjectDetailsPage = () => {
               </div>
               <p className="text-2xl font-bold text-gray-900">
                 {taskData.taskByProject.filter(
-                  (task) => task.status === "in_progress",
+                  (task) => task.status === "todo",
                 ).length
                   ? taskData.taskByProject.filter(
-                      (task) => task.status === "in_progress",
+                      (task) => task.status === "todo",
                     ).length
                   : "0"}
               </p>
