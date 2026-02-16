@@ -101,5 +101,64 @@ export const projectResolvers = {
         throw new Error(error.message || "Failed to create project");
       }
     },
+    updateProject: async (_, args) => {
+      const { id, users, addUsers, removeUsers, ...fields } = args;
+      try {
+        if (!id) throw new Error("Project id is required");
+
+        // load project document
+        const project = await Project.findById(id);
+        if (!project) throw new Error("Project not found");
+
+        // replace entire users array when `users` provided
+        if (Array.isArray(users)) {
+          project.users = users;
+        }
+        // update other allowed fields if provided
+        const updatable = [
+          "title",
+          "description",
+          "client",
+          "priority",
+          "status",
+          "department",
+          "budget",
+          "projectManager",
+          "startDate",
+          "endDate",
+        ];
+        updatable.forEach((k) => {
+          if (fields[k] !== undefined) project[k] = fields[k];
+        });
+
+        // append unique users
+        if (Array.isArray(addUsers) && addUsers.length) {
+          const existing = new Set((project.users || []).map(String));
+          addUsers.forEach(
+            (u) => existing.has(String(u)) || project.users.push(u),
+          );
+        }
+
+        // remove users
+        if (Array.isArray(removeUsers) && removeUsers.length) {
+          const toRemove = new Set(removeUsers.map(String));
+          project.users = (project.users || []).filter(
+            (u) => !toRemove.has(String(u)),
+          );
+        }
+
+        await project.save();
+
+        const populated = await Project.findById(project._id)
+          .populate("users")
+          .populate("department")
+          .populate("projectManager");
+
+        return { message: "Project updated successfully", project: populated };
+      } catch (error) {
+        console.error("Update project error:", error);
+        throw new Error(error.message || "Failed to update project");
+      }
+    },
   },
 };

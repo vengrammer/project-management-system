@@ -36,5 +36,22 @@ export const projectSchema = `#graphql
             startDate: String
             endDate: String
         ): Message
+
+        updateProject(
+            id: ID!
+            title: String
+            description: String
+            client: String
+            priority: String
+            status: String
+            department: ID
+            budget: Int
+            projectManager: ID
+            users: [ID]
+            addUsers: [ID]
+            removeUsers: [ID]
+            startDate: String
+            endDate: String
+        ): Message
     }
 `;

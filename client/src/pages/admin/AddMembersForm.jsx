@@ -1,7 +1,9 @@
 import { gql } from "@apollo/client";
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { Plus, XCircle } from "lucide-react";
 import { useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
 //query to get the departments
 const GET_DEPARTMENTS = gql`
@@ -18,8 +20,16 @@ const GET_DEPARTMENTS = gql`
   }
 `;
 
+const ADD_MEMBER = gql`
+  mutation Mutation($updateProjectId: ID!, $addUsers: [ID]) {
+    updateProject(id: $updateProjectId, addUsers: $addUsers) {
+      message
+    }
+  }
+`;
+
 function AddMembers() {
-  const [tasks, setTasks] = useState([]); // define tasks state
+  const {id} = useParams();
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   ///query to get the department
   const {
@@ -28,7 +38,18 @@ function AddMembers() {
     data: dataDepartments,
   } = useQuery(GET_DEPARTMENTS);
 
-  console.log("error", dataDepartments);
+  //query to insert/ user
+  const [updateProject, { loading: loadingAddMember }] = useMutation(ADD_MEMBER, {
+    onCompleted: () => {
+      toast.success("Member add successfully!");
+      setSelectedEmployees("");
+    },
+    onError: () => {
+      toast.error("Failed to add member");
+    },
+    refetchQueries: [{ query: GET_DEPARTMENTS }],
+    awaitRefetchQueries: true,
+  });
 
   const [formData, setFormData] = useState({
     department: "",
@@ -60,32 +81,17 @@ function AddMembers() {
     (dept) => dept.name.toLowerCase().includes(departmentSearch.toLowerCase()),
   );
 
-  const [newTask, setNewTask] = useState({
-    title: "",
-    description: "",
-    priority: "Medium",
-    assignedTo: "",
-    dueDate: "",
-    status: "Not Started",
-  });
+ 
 
   const handleAddTask = (e) => {
     e.preventDefault();
-    const task = {
-      id: tasks.length ? Math.max(...tasks.map((t) => t.id)) + 1 : 1,
-      ...newTask,
-      completedDate: null,
-    };
-    setTasks([...tasks, task]);
     setIsAddMemberOpen(false);
-    setNewTask({
-      title: "",
-      description: "",
-      priority: "Medium",
-      assignedTo: "",
-      dueDate: "",
-      status: "Not Started",
-      progress: 0,
+    console.log(selectedEmployees, id)
+    updateProject({
+      variables: {
+        id: id,
+        addUsers: selectedEmployees,
+      },
     });
   };
 
@@ -107,6 +113,14 @@ function AddMembers() {
       </div>
     );
   }
+
+   if (loadingAddMember) {
+     return (
+       <div className="flex justify-center items-center min-h-screen">
+         <span className="loading loading-spinner loading-xl"></span>
+       </div>
+     );
+   }
   if (errorDepartments) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -117,6 +131,16 @@ function AddMembers() {
 
   return (
     <>
+      {/* Trigger Button */}
+      <ToastContainer
+        position="bottom-right"
+        autoClose={4000}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="black"
+      />
       {/* Button to open modal */}
       <button
         onClick={() => setIsAddMemberOpen(true)}
