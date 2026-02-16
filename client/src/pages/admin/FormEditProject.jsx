@@ -7,8 +7,8 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 
-//to refresh the table of projects
-const GET_PROJECTS = gql`
+// get the current project by id
+const GET_PROJECT = gql`
   query Project($projectId: ID!) {
     project(id: $projectId) {
       title
@@ -56,22 +56,23 @@ const GET_USER_MANAGER = gql`
     }
   }
 `;
-//query to CREATE the project
+// update project
 const UPDATE_PROJECT = gql`
-  mutation CreateProject(
-    $title: String!
-    $priority: String!
-    $status: String!
-    $department: ID!
+  mutation UpdateProject(
+    $id: ID!
+    $title: String
+    $priority: String
+    $status: String
+    $department: ID
     $description: String
     $client: String
     $budget: Int
     $projectManager: ID
-    $users: [ID]
     $startDate: String
     $endDate: String
   ) {
-    createProject(
+    updateProject(
+      id: $id
       title: $title
       priority: $priority
       status: $status
@@ -80,18 +81,35 @@ const UPDATE_PROJECT = gql`
       client: $client
       budget: $budget
       projectManager: $projectManager
-      users: $users
       startDate: $startDate
       endDate: $endDate
     ) {
       message
+      project {
+        id
+        title
+        description
+        client
+        status
+        priority
+        budget
+        startDate
+        endDate
+        department {
+          id
+          name
+        }
+        projectManager {
+          id
+          fullname
+        }
+      }
     }
   }
 `;
 
 export default function FormEditProject() {
   const { id } = useParams();
-  const [selectedEmployees, setSelectedEmployees] = useState([]);
   const managerRef = useRef(null);
   const departmentRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -116,8 +134,28 @@ export default function FormEditProject() {
   const [managerSearch, setManagerSearch] = useState("");
   const [departmentSearch, setDepartmentSearch] = useState("");
 
+  const resetForm = () => {
+    setFormData({
+      projectName: "",
+      description: "",
+      client: "",
+      department: "",
+      status: "",
+      priority: "",
+      projectManager: "",
+      budget: "",
+      startDate: "",
+      endDate: "",
+    });
+    setManagerSearch("");
+    setDepartmentSearch("");
+    setShowManagerDropdown(false);
+    setShowDepartmentDropdown(false);
+  };
+
   const handleClose = () => {
     setIsOpen(false);
+    resetForm();
   };
 
   const handleBackdropClick = (e) => {
@@ -165,66 +203,97 @@ export default function FormEditProject() {
     data: dataUserManager,
   } = useQuery(GET_USER_MANAGER);
 
-  // CREATE PROJECT
-  const [createProject, { loading: loadingCreateProject }] = useMutation(
+  // UPDATE PROJECT
+  const [updateProject, { loading: loadingUpdateProject }] = useMutation(
     UPDATE_PROJECT,
     {
       onCompleted: () => {
-        toast.success("Project created successfully");
-        // reset form and selection
-        setFormData({
-          projectName: "",
-          description: "",
-          client: "",
-          department: "",
-          status: "",
-          priority: "",
-          projectManager: "",
-          budget: "",
-          startDate: "",
-          endDate: "",
-        });
-        setSelectedEmployees([]);
-        setManagerSearch("");
-        setDepartmentSearch("");
+        toast.success("Project updated successfully");
         setIsOpen(false);
       },
       onError: () => {
-        toast.error("Failed to create project");
+        toast.error("Failed to update project");
       },
-      // refresh project list (server query name)
-      refetchQueries: [{ query: GET_PROJECTS }],
+      // return updated project, so apollo cache can update any screen using this project
+      refetchQueries: [{ query: GET_PROJECT, variables: { projectId: id } }],
       awaitRefetchQueries: true,
     },
   );
 
-  //CONST GET THE PROJECTS
+  // GET THE CURRENT PROJECT
   const {
     loading: loadingProject,
     data: dataProject,
     errorProject,
-  } = useQuery(GET_PROJECTS, { variables: { projectId: id } });
+  } = useQuery(GET_PROJECT, { variables: { projectId: id } });
+
+  // helper: convert server date string -> yyyy-mm-dd for <input type="date" />
+  const toDateInputValue = (value) => {
+    if (!value) return "";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 10);
+  };
+
+  const prefillFromProject = (p) => {
+    setFormData({
+      projectName: p?.title ?? "",
+      description: p?.description ?? "",
+      client: p?.client ?? "",
+      department: p?.department?.id ?? "",
+      status: p?.status ?? "",
+      priority: p?.priority ?? "",
+      projectManager: p?.projectManager?.id ?? "",
+      budget:
+        p?.budget === 0
+          ? "0"
+          : p?.budget !== undefined
+          ? String(p?.budget)
+          : "",
+      startDate: toDateInputValue(p?.startDate),
+      endDate: toDateInputValue(p?.endDate),
+    });
+    setDepartmentSearch(p?.department?.name ?? "");
+    setManagerSearch(p?.projectManager?.fullname ?? "");
+  };
+
+  const handleOpen = () => {
+    const p = dataProject?.project;
+    if (p) prefillFromProject(p);
+    setIsOpen(true);
+  };
+
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (isNaN(formData.budget)) {
+    console.log(formData);
+
+    if (formData.projectManager === "") {
+      toast.error("Please Select Correct Manager.");
+      return;
+    }
+    // allow empty budget; validate only if provided
+    if (formData.budget !== "" && Number.isNaN(Number(formData.budget))) {
       toast.error("Budget must be a number.");
       return;
     }
-    // ensure numeric budget and send correct values
-    createProject({
+
+    updateProject({
       variables: {
+        id,
         title: formData.projectName,
         description: formData.description,
         client: formData.client,
-        department: formData.department,
-        status: formData.status,
-        priority: formData.priority,
-        projectManager: formData.projectManager,
-        budget: parseInt(formData.budget, 10) || 0,
-        users: selectedEmployees,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
+        department: formData.department === "" ? null : formData.department,
+        status: formData.status === "" ? null : formData.status,
+        priority: formData.priority === "" ? null : formData.priority,
+        projectManager:
+          formData.projectManager === "" ? null : formData.projectManager,
+        budget:
+          formData.budget === "" ? null : parseInt(formData.budget, 10) || 0,
+        startDate: formData.startDate === "" ? null : formData.startDate,
+        endDate: formData.endDate === "" ? null : formData.endDate,
       },
     });
   };
@@ -295,7 +364,8 @@ export default function FormEditProject() {
     <>
       {/* Trigger Button */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpen}
+        disabled={loadingProject}
         className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
       >
         <Pen size={20} />
@@ -363,9 +433,7 @@ export default function FormEditProject() {
                       <input
                         type="text"
                         placeholder="Enter project name"
-                        value={
-                          formData.projectName || dataProject?.project?.title
-                        }
+                        value={formData.projectName}
                         onChange={(e) =>
                           handleInputChange("projectName", e.target.value)
                         }
@@ -439,12 +507,10 @@ export default function FormEditProject() {
                             placeholder="Search department..."
                             value={departmentSearch}
                             onChange={(e) => {
-                              if (departmentSearch) {
-                                setDepartmentSearch(e.target.value);
-                                setShowDepartmentDropdown(true);
-                              }
                               setDepartmentSearch(e.target.value);
                               setShowDepartmentDropdown(true);
+                              // user is typing; clear the selected department id unless they pick from dropdown
+                              handleInputChange("department", "");
                             }}
                             onFocus={() => setShowDepartmentDropdown(true)}
                             required
@@ -497,7 +563,6 @@ export default function FormEditProject() {
                           onChange={(e) =>
                             handleInputChange("budget", e.target.value)
                           }
-                          required
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
@@ -534,6 +599,8 @@ export default function FormEditProject() {
                             onChange={(e) => {
                               setManagerSearch(e.target.value);
                               setShowManagerDropdown(true);
+                              // user is typing; clear the selected manager id unless they pick from dropdown
+                              handleInputChange("projectManager", "");
                             }}
                             onFocus={() => setShowManagerDropdown(true)}
                             required
@@ -585,7 +652,6 @@ export default function FormEditProject() {
                           onChange={(e) =>
                             handleInputChange("startDate", e.target.value)
                           }
-                          required
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
@@ -600,7 +666,6 @@ export default function FormEditProject() {
                           onChange={(e) =>
                             handleInputChange("endDate", e.target.value)
                           }
-                          required
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
@@ -620,12 +685,12 @@ export default function FormEditProject() {
               </button>
               <button
                 type="submit"
-                disabled={loadingCreateProject}
+                disabled={loadingUpdateProject}
                 className={`px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors ${
-                  loadingCreateProject ? "opacity-60 cursor-not-allowed" : ""
+                  loadingUpdateProject ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               >
-                {loadingCreateProject ? "Creating..." : "Update"}
+                {loadingUpdateProject ? "Updating..." : "Update"}
               </button>
             </div>
 

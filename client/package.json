@@ -29,11 +29,13 @@
     "motion": "^12.33.0",
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
+    "react-confirm-alert": "^3.0.6",
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.13.0",
     "react-toastify": "^11.0.5",
     "sonner": "^2.0.7",
+    "sweetalert2": "^11.26.18",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "toast": "^0.5.4"

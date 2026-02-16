@@ -6,7 +6,6 @@ import HomeRoute from "./Router/AdminRoute";
 import { AdminContextProvider } from "./context/AdminContextProvider";
 import { EmployeeContextProvider } from "./context/EmployeeContextProvider";
 import ProjectDetailsPage from "./pages/admin/ProjectDetailsPage";
-import TaskActivityPage from "@/pages/admin/TaskActivityPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 function App() {
@@ -19,7 +18,7 @@ function App() {
             <Route path="admin/*" element={<HomeRoute />} />
             <Route path="*" element={<NotFound />} />
             <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
-            <Route path="taskactivity" element={<TaskActivityPage />} />
+            
           </Routes>
           <ToastContainer
             position="bottom-right"

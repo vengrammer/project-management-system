@@ -19,6 +19,7 @@ import AddTaskForm from "./AddTaskForm";
 import FormEditProject from "./FormEditProject";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
+import TaskActivityModal from "./TaskActivityModal";
 
 const GET_PROJECTS = gql`
   query Project($projectId: ID!) {
@@ -407,7 +408,7 @@ const ProjectDetailsPage = () => {
                   {taskData.taskByProject.map((task) => (
                     <div
                       key={task.id}
-                      className="p-6 hover:bg-gray-100 transition-colors"
+                      className="p-3 hover:bg-gray-100 transition-colors"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
@@ -453,14 +454,10 @@ const ProjectDetailsPage = () => {
                           </div>
                         </div>
                         <div className="flex flex-row gap-2">
-                          <button
-                            onClick={() =>
-                              navigate("/taskactivity", { replace: true })
-                            }
-                            className="p-2 text-blue-600 hover:bg-blue-700 hover:text-white rounded-lg transition-colors cursor-pointer"
-                          >
-                            <Eye size={18} />
-                          </button>
+                          {/*task action */}
+                          <div>
+                            <TaskActivityModal id={task.id} />
+                          </div>
 
                           <button
                             onClick={() => handleDeleteTask(task.id)}
