@@ -2,8 +2,7 @@ import { Eye, Pen, Trash2, Users } from "lucide-react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@apollo/client/react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
 
 const GET_DEPARTMENT = gql`
@@ -94,15 +93,6 @@ export default function DepartmentTable() {
       transition={{ duration: 0.8, ease: "easeInOut" }}
       className="w-full md:p-2 max-w-8xl mx-auto"
     >
-      <ToastContainer
-        position="bottom-right"
-        autoClose={4000}
-        newestOnTop={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="dark"
-      />
       <div className="bg-white rounded-lg shadow">
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">

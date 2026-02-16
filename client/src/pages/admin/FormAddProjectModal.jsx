@@ -4,8 +4,7 @@ import logo from "@/assets/logo.png";
 
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 //to refresh the table of projects
 const GET_PROJECTS = gql`
@@ -276,15 +275,6 @@ export default function FormAddProjectModal() {
   return (
     <>
       {/* Trigger Button */}
-      <ToastContainer
-        position="bottom-right"
-        autoClose={4000}
-        newestOnTop={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="black"
-      />
       <button
         onClick={() => setIsOpen(true)}
         className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

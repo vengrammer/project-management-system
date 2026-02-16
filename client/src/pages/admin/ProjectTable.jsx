@@ -8,8 +8,7 @@ import {
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@apollo/client/react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import FormAddProjectModal from "./FormAddProjectModal";
@@ -130,14 +129,6 @@ export default function ProjectTable() {
       className="w-full md:p-2 max-w-8xl mx-auto"
     >
       <div className="bg-white rounded-lg shadow">
-        <ToastContainer
-          position="bottom-right"
-          autoClose={4000}
-          newestOnTop={false}
-          closeOnClick
-          pauseOnHover
-          draggable
-        />
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">

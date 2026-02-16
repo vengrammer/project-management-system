@@ -3,8 +3,7 @@ import { useState } from "react";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useParams } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const GET_MEMBERS = gql`
   query Project($projectId: ID!) {
@@ -134,14 +133,6 @@ function AddTaskForm() {
   return (
     <>
       {/* Button to open modal */}
-      <ToastContainer
-        position="bottom-right"
-        autoClose={4000}
-        newestOnTop={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-      />
       <button
         onClick={() => setIsAddTaskOpen(true)}
         className="flex px-4 py-2 bg-blue-600 text-white rounded-lg "

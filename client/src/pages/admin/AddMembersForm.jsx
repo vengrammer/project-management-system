@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { Plus, XCircle } from "lucide-react";
 import { useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 //query to get the departments
 const GET_DEPARTMENTS = gql`
@@ -20,16 +20,28 @@ const GET_DEPARTMENTS = gql`
   }
 `;
 
+// query to get the current project details
+const GET_PROJECT = gql`
+  query Project($projectId: ID!) {
+    project(id: $projectId) {
+      id
+      users {
+        id
+      }
+    }
+  }
+`;
+
 const ADD_MEMBER = gql`
-  mutation Mutation($updateProjectId: ID!, $addUsers: [ID]) {
-    updateProject(id: $updateProjectId, addUsers: $addUsers) {
+  mutation Mutation($id: ID!, $addUsers: [ID]) {
+    updateProject(id: $id, addUsers: $addUsers) {
       message
     }
   }
 `;
 
 function AddMembers() {
-  const {id} = useParams();
+  const { id } = useParams();
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   ///query to get the department
   const {
@@ -38,18 +50,28 @@ function AddMembers() {
     data: dataDepartments,
   } = useQuery(GET_DEPARTMENTS);
 
+  // query to get current project details (to get existing users)
+  const {
+    loading: loadingProject,
+    error: errorProject,
+    data: projectData,
+  } = useQuery(GET_PROJECT, { variables: { projectId: id } });
+
   //query to insert/ user
-  const [updateProject, { loading: loadingAddMember }] = useMutation(ADD_MEMBER, {
-    onCompleted: () => {
-      toast.success("Member add successfully!");
-      setSelectedEmployees("");
+  const [updateProject, { loading: loadingAddMember }] = useMutation(
+    ADD_MEMBER,
+    {
+      onCompleted: () => {
+        toast.success("Member add successfully!");
+        setSelectedEmployees([]);
+      },
+      onError: () => {
+        toast.error("Failed to add member");
+      },
+      refetchQueries: [{ query: GET_DEPARTMENTS }],
+      awaitRefetchQueries: true,
     },
-    onError: () => {
-      toast.error("Failed to add member");
-    },
-    refetchQueries: [{ query: GET_DEPARTMENTS }],
-    awaitRefetchQueries: true,
-  });
+  );
 
   const [formData, setFormData] = useState({
     department: "",
@@ -81,12 +103,10 @@ function AddMembers() {
     (dept) => dept.name.toLowerCase().includes(departmentSearch.toLowerCase()),
   );
 
- 
-
   const handleAddTask = (e) => {
     e.preventDefault();
     setIsAddMemberOpen(false);
-    console.log(selectedEmployees, id)
+    console.log(selectedEmployees, id);
     updateProject({
       variables: {
         id: id,
@@ -95,8 +115,16 @@ function AddMembers() {
     });
   };
 
-  const filteredTeamMembers = teamUsers.filter((emp) =>
-    emp.fullname.toLowerCase().includes(teamMemberSearch.toLowerCase()),
+  // Get existing user IDs from the project
+  const existingUserIds = new Set(
+    projectData?.project?.users?.map((user) => user.id) || [],
+  );
+
+  // Filter team members: exclude existing users and match search
+  const filteredTeamMembers = teamUsers.filter(
+    (emp) =>
+      !existingUserIds.has(emp.id) &&
+      emp.fullname.toLowerCase().includes(teamMemberSearch.toLowerCase()),
   );
 
   const toggleEmployee = (id) => {
@@ -105,7 +133,7 @@ function AddMembers() {
     );
   };
 
-  //show the error and loading when getting the department
+  //show the error and loading
   if (loadindDepartments) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -114,13 +142,13 @@ function AddMembers() {
     );
   }
 
-   if (loadingAddMember) {
-     return (
-       <div className="flex justify-center items-center min-h-screen">
-         <span className="loading loading-spinner loading-xl"></span>
-       </div>
-     );
-   }
+  if (loadingAddMember) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="loading loading-spinner loading-xl"></span>
+      </div>
+    );
+  }
   if (errorDepartments) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -129,18 +157,23 @@ function AddMembers() {
     );
   }
 
+  if (loadingProject) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="loading loading-spinner loading-xl"></span>
+      </div>
+    );
+  }
+  if (errorProject) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-red-600">Failed to load Project</div>
+      </div>
+    );
+  }
+
   return (
     <>
-      {/* Trigger Button */}
-      <ToastContainer
-        position="bottom-right"
-        autoClose={4000}
-        newestOnTop={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="black"
-      />
       {/* Button to open modal */}
       <button
         onClick={() => setIsAddMemberOpen(true)}

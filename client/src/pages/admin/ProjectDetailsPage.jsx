@@ -1,4 +1,3 @@
-
 import AddMembers from "./AddMembersForm";
 import {
   ArrowLeft,
@@ -20,8 +19,6 @@ import AddTaskForm from "./AddTaskForm";
 import FormEditProject from "./FormEditProject";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const GET_PROJECTS = gql`
   query Project($projectId: ID!) {
@@ -121,7 +118,7 @@ const ProjectDetailsPage = () => {
 
   // Handle delete task
   const handleDeleteTask = (id) => {
-    console.log(id)
+    console.log(id);
   };
 
   // Get status color
@@ -194,16 +191,6 @@ const ProjectDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Toasts */}
-      <ToastContainer
-        position="bottom-right"
-        autoClose={4000}
-        newestOnTop={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="dark"
-      />
       {/* Trigger Button */}
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* Back Button */}
@@ -340,9 +327,8 @@ const ProjectDetailsPage = () => {
                 <Clock className="text-orange-600" size={20} />
               </div>
               <p className="text-2xl font-bold text-gray-900">
-                {taskData.taskByProject.filter(
-                  (task) => task.status === "todo",
-                ).length
+                {taskData.taskByProject.filter((task) => task.status === "todo")
+                  .length
                   ? taskData.taskByProject.filter(
                       (task) => task.status === "todo",
                     ).length

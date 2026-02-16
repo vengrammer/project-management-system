@@ -118,6 +118,23 @@ input[type="password"]::-ms-clear {
   display: none;
 }
 
+/* Prevent Tailwind preflight from overriding react-toastify styles */
+.Toastify__toast {
+  color: inherit;
+}
+.Toastify__toast--success {
+  color: #fff;
+}
+.Toastify__toast--error {
+  color: #fff;
+}
+.Toastify__toast--info {
+  color: #fff;
+}
+.Toastify__toast--warning {
+  color: #fff;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
