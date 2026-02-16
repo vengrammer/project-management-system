@@ -19,6 +19,34 @@ const GET_DEPARTMENTS = gql`
     }
   }
 `;
+const GET_PROJECTS = gql`
+  query Project($projectId: ID!) {
+    project(id: $projectId) {
+      title
+      client
+      budget
+      description
+      priority
+      startDate
+      status
+      endDate
+      id
+      department {
+        id
+        name
+      }
+      projectManager {
+        id
+        fullname
+      }
+      users {
+        id
+        fullname
+        position
+      }
+    }
+  }
+`;
 
 // query to get the current project details
 const GET_PROJECT = gql`
@@ -68,7 +96,10 @@ function AddMembers() {
       onError: () => {
         toast.error("Failed to add member");
       },
-      refetchQueries: [{ query: GET_DEPARTMENTS }],
+      refetchQueries: [
+        { query: GET_PROJECTS, variables: { projectId: id } },
+        { query: GET_PROJECT, variables: { projectId: id } },
+      ],
       awaitRefetchQueries: true,
     },
   );
@@ -105,8 +136,11 @@ function AddMembers() {
 
   const handleAddTask = (e) => {
     e.preventDefault();
+    if(selectedEmployees.length === 0){
+      toast.error("Please select member");
+      return
+    }
     setIsAddMemberOpen(false);
-    console.log(selectedEmployees, id);
     updateProject({
       variables: {
         id: id,
@@ -216,8 +250,8 @@ function AddMembers() {
                           setDepartmentSearch(v);
                           setShowDepartmentDropdown(true);
                         }}
+                        
                         onFocus={() => setShowDepartmentDropdown(true)}
-                        required
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       {showDepartmentDropdown && (
@@ -271,6 +305,7 @@ function AddMembers() {
                                 checked={selectedEmployees?.includes(emp.id)}
                                 onChange={() => toggleEmployee(emp.id)}
                                 className="w-4 h-4 accent-blue-600 cursor-pointer"
+                                required
                               />
                               <div className="text-sm">
                                 <div className="font-medium text-gray-800">

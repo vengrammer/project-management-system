@@ -1,28 +1,100 @@
-import { useId, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useRef } from "react";
+import { X, Plus, Pen } from "lucide-react";
 import logo from "@/assets/logo.png";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Pen, Plus } from "lucide-react";
+
+import { gql } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client/react";
+import { toast } from "react-toastify";
+import { useParams } from "react-router-dom";
+
+//to refresh the table of projects
+const GET_PROJECTS = gql`
+  query Project($projectId: ID!) {
+    project(id: $projectId) {
+      title
+      client
+      budget
+      description
+      priority
+      startDate
+      status
+      endDate
+      id
+      department {
+        id
+        name
+      }
+      projectManager {
+        id
+        fullname
+      }
+      users {
+        id
+        fullname
+        position
+      }
+    }
+  }
+`;
+
+//query to get the departments
+const GET_DEPARTMENTS = gql`
+  query Departments {
+    departments {
+      id
+      name
+    }
+  }
+`;
+//query to get the user manager
+const GET_USER_MANAGER = gql`
+  query UserRoleManager {
+    userRoleManager {
+      id
+      fullname
+      position
+    }
+  }
+`;
+//query to CREATE the project
+const UPDATE_PROJECT = gql`
+  mutation CreateProject(
+    $title: String!
+    $priority: String!
+    $status: String!
+    $department: ID!
+    $description: String
+    $client: String
+    $budget: Int
+    $projectManager: ID
+    $users: [ID]
+    $startDate: String
+    $endDate: String
+  ) {
+    createProject(
+      title: $title
+      priority: $priority
+      status: $status
+      department: $department
+      description: $description
+      client: $client
+      budget: $budget
+      projectManager: $projectManager
+      users: $users
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      message
+    }
+  }
+`;
 
 export default function FormEditProject() {
-  const id = useId();
+  const { id } = useParams();
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const managerRef = useRef(null);
+  const departmentRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     projectName: "",
     description: "",
@@ -30,15 +102,188 @@ export default function FormEditProject() {
     department: "",
     status: "",
     priority: "",
-    progress: "",
-    tags: "",
     projectManager: "",
-    assignee: "",
-    teamSize: "",
     budget: "",
     startDate: "",
-    dueDate: "",
+    endDate: "",
   });
+
+  // Dropdown states
+  const [showManagerDropdown, setShowManagerDropdown] = useState(false);
+  const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false);
+
+  // Search states
+  const [managerSearch, setManagerSearch] = useState("");
+  const [departmentSearch, setDepartmentSearch] = useState("");
+
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (managerRef.current && !managerRef.current.contains(event.target)) {
+        setShowManagerDropdown(false);
+      }
+      if (
+        departmentRef.current &&
+        !departmentRef.current.contains(event.target)
+      ) {
+        setShowDepartmentDropdown(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  //HERE IS THE ALL QUERRY------------#######################################
+
+  //GET THE DEPARTMENT AND THERE USERS
+  const {
+    loading: loadindDepartments,
+    error: errorDepartments,
+    data: dataDepartments,
+  } = useQuery(GET_DEPARTMENTS);
+
+  //GET THE USER WITH A ROLE OF MANAGER
+  const {
+    loading: loadingUserManager,
+    error: errorUserManager,
+    data: dataUserManager,
+  } = useQuery(GET_USER_MANAGER);
+
+  // CREATE PROJECT
+  const [createProject, { loading: loadingCreateProject }] = useMutation(
+    UPDATE_PROJECT,
+    {
+      onCompleted: () => {
+        toast.success("Project created successfully");
+        // reset form and selection
+        setFormData({
+          projectName: "",
+          description: "",
+          client: "",
+          department: "",
+          status: "",
+          priority: "",
+          projectManager: "",
+          budget: "",
+          startDate: "",
+          endDate: "",
+        });
+        setSelectedEmployees([]);
+        setManagerSearch("");
+        setDepartmentSearch("");
+        setIsOpen(false);
+      },
+      onError: () => {
+        toast.error("Failed to create project");
+      },
+      // refresh project list (server query name)
+      refetchQueries: [{ query: GET_PROJECTS }],
+      awaitRefetchQueries: true,
+    },
+  );
+
+  //CONST GET THE PROJECTS
+  const {
+    loading: loadingProject,
+    data: dataProject,
+    errorProject,
+  } = useQuery(GET_PROJECTS, { variables: { projectId: id } });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isNaN(formData.budget)) {
+      toast.error("Budget must be a number.");
+      return;
+    }
+    // ensure numeric budget and send correct values
+    createProject({
+      variables: {
+        title: formData.projectName,
+        description: formData.description,
+        client: formData.client,
+        department: formData.department,
+        status: formData.status,
+        priority: formData.priority,
+        projectManager: formData.projectManager,
+        budget: parseInt(formData.budget, 10) || 0,
+        users: selectedEmployees,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+      },
+    });
+  };
+
+  //show the error and loading when getting the department
+  if (loadindDepartments) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="loading loading-spinner loading-xl"></span>
+      </div>
+    );
+  }
+  if (errorDepartments) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-red-600">Failed to load projects</div>
+      </div>
+    );
+  }
+
+  //show the error and loading when getting the user manager
+  if (loadingUserManager) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="loading loading-spinner loading-xl"></span>
+      </div>
+    );
+  }
+  if (errorUserManager) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-red-600">Failed to load User Manager</div>
+      </div>
+    );
+  }
+
+  //show the error and loading when getting the project
+  if (loadingProject) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="loading loading-spinner loading-xl"></span>
+      </div>
+    );
+  }
+  if (errorProject) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-red-600">Failed to load project</div>
+      </div>
+    );
+  }
+
+  const filteredManagers = dataUserManager.userRoleManager?.filter((manager) =>
+    manager.fullname?.toLowerCase().includes(managerSearch.toLowerCase()),
+  );
+
+  const filteredDepartments = dataDepartments.departments?.filter((dept) =>
+    dept.name.toLowerCase().includes(departmentSearch.toLowerCase()),
+  );
 
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({
@@ -46,401 +291,348 @@ export default function FormEditProject() {
       [name]: value,
     }));
   };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Add your submit logic here
-  };
-
-  const employees = [
-    { id: 1, name: "Alice Johnson" },
-    { id: 2, name: "Bob Smith" },
-    { id: 3, name: "Carol Williams" },
-    { id: 4, name: "David Brown" },
-    { id: 5, name: "Eva Martinez" },
-    { id: 6, name: "Frank Lee" },
-    { id: 7, name: "Grace Kim" },
-    { id: 8, name: "Henry Clark" },
-  ];
-
-  const [selectedEmployees, setSelectedEmployees] = useState([]);
-
-  const toggleEmployee = (id) => {
-    setSelectedEmployees((prev) =>
-      prev.includes(id) ? prev.filter((empId) => empId !== id) : [...prev, id],
-    );
-  };
   return (
-    <div className="max-w-500 rounded">
-      <Dialog className="min-w-200">
-        <DialogTrigger asChild>
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg flex gap-2"
+    <>
+      {/* Trigger Button */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        <Pen size={20} />
+        Edit Project
+      </button>
+
+      {/* Modal Backdrop & Content */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4"
+          onClick={handleBackdropClick}
+        >
+          {/* Modal Container */}
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
           >
-            <Pen size={20} />
-            Edit Project
-          </button>
-        </DialogTrigger>
-        {/*this is the size adjustment*/}
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:w-full md:max-w-3xl lg:max-w-4xl p-6">
-          <div className="flex flex-col items-center gap-2 rounded">
-            <div
-              aria-hidden="true"
-              className="flex size-11 shrink-0 items-center justify-center rounded-full border"
-            >
-              <img
-                src={logo}
-                alt="Logo"
-                className="h-10 w-10 object-contain rounded-full"
-              />
+            {/* Modal Header */}
+            <div className="flex flex-col items-center p-4 border-b border-gray-200">
+              {/* Top row: Close button */}
+              <div className="w-full flex justify-end">
+                <button
+                  onClick={handleClose}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="Close modal"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Logo + Title row */}
+              <div className="flex items-center gap-3 mt-2">
+                <div className="w-12 h-12 flex items-center justify-center rounded-full border border-gray-200 overflow-hidden">
+                  <img
+                    src={logo}
+                    alt="Logo"
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Edit Project
+                </h2>
+              </div>
+
+              {/* Subtitle */}
+              <p className="text-center text-sm text-gray-500 mt-1">
+                Please change in the information below to update a project.
+              </p>
             </div>
-            <DialogHeader>
-              <DialogTitle className="sm:text-center">
-                Edit the Project
-              </DialogTitle>
-              <DialogDescription className="sm:text-center">
-                Please fill in the information below to edit the project.
-              </DialogDescription>
-            </DialogHeader>
-          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
-                Basic Information
-              </h3>
+            {/* Modal Body */}
+            <div className="flex flex-col overflow-auto">
+              <div className="flex flex-col ">
+                <div className=" overflow-auto ">
+                  <div className="space-y-4 p-6">
+                    <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
+                      Basic Information
+                    </h3>
 
-              {/* Project Name - Full Width */}
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-projectName`}>
-                    Project Name <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id={`${id}-projectName`}
-                    placeholder="Enter project name"
-                    value={formData.projectName}
-                    onChange={(e) =>
-                      handleInputChange("projectName", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Description - Full Width */}
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-description`}>
-                    Project Description <span className="text-red-500">*</span>
-                  </Label>
-                  <Textarea
-                    id={`${id}-description`}
-                    placeholder="Enter project description"
-                    value={formData.description}
-                    onChange={(e) =>
-                      handleInputChange("description", e.target.value)
-                    }
-                    rows={3}
-                    required
-                    className="resize-none"
-                  />
-                </div>
-              </div>
-
-              {/* Client, Department, Status - 3 Columns on Wide Screen */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-client`}>
-                    Client <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id={`${id}-client`}
-                    placeholder="Enter client name"
-                    value={formData.client}
-                    onChange={(e) =>
-                      handleInputChange("client", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-
-                {/*employee depends on */}
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-status`}>
-                    Status <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) =>
-                      handleInputChange("status", value)
-                    }
-                    required
-                  >
-                    <SelectTrigger id={`${id}-status`}>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Planning">Planning</SelectItem>
-                      <SelectItem value="In Progress">In Progress</SelectItem>
-                      <SelectItem value="On Hold">On Hold</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                      <SelectItem value="Not Started">Not Started</SelectItem>
-                      <SelectItem value="Cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Department dropdown*/}
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-department`}>
-                    Department <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.department}
-                    onValueChange={(value) =>
-                      handleInputChange("department", value)
-                    }
-                    required
-                  >
-                    <SelectTrigger id={`${id}-department`}>
-                      <SelectValue placeholder="Select department" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="IT">IT</SelectItem>
-                      <SelectItem value="Development">Development</SelectItem>
-                      <SelectItem value="Design">Design</SelectItem>
-                      <SelectItem value="Marketing">Marketing</SelectItem>
-                      <SelectItem value="Sales">Sales</SelectItem>
-                      <SelectItem value="HR">HR</SelectItem>
-                      <SelectItem value="Finance">Finance</SelectItem>
-                      <SelectItem value="Operations">Operations</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/*employee dropdown */}
-                <Label htmlFor={`${id}-department`}>
-                  Department <span className="text-red-500 ">*</span>
-                </Label>
-                <div className="col-span-full">
-                  <div className="w-full bg-gray-200 h-50 overflow-auto rounded py-3 px-5">
-                    {employees.map((emp) => (
-                      <label
-                        key={emp.id}
-                        className="flex items-center gap-3 py-1.5 px-2 rounded hover:bg-gray-300 cursor-pointer transition-colors"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedEmployees.includes(emp.id)}
-                          onChange={() => toggleEmployee(emp.id)}
-                          className="w-4 h-4 accent-blue-600"
-                        />
-                        <span className="text-sm font-medium text-gray-800">
-                          {emp.name}
-                        </span>
+                    {/* Project Name */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Project Name <span className="text-red-500">*</span>
                       </label>
-                    ))}
+                      <input
+                        type="text"
+                        placeholder="Enter project name"
+                        value={
+                          formData.projectName || dataProject?.project?.title
+                        }
+                        onChange={(e) =>
+                          handleInputChange("projectName", e.target.value)
+                        }
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Project Description{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        placeholder="Enter project description"
+                        value={formData.description}
+                        onChange={(e) =>
+                          handleInputChange("description", e.target.value)
+                        }
+                        rows={3}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      />
+                    </div>
+
+                    {/* Client, Status, Department */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Client <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Enter client name"
+                          value={formData.client}
+                          onChange={(e) =>
+                            handleInputChange("client", e.target.value)
+                          }
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Status <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={formData.status}
+                          onChange={(e) =>
+                            handleInputChange("status", e.target.value)
+                          }
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        >
+                          <option value="">Select status</option>
+                          <option value="not started">Not Started</option>
+                          <option value="in progress">In Progress</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-2 relative" ref={departmentRef}>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Department <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="Search department..."
+                            value={departmentSearch}
+                            onChange={(e) => {
+                              if (departmentSearch) {
+                                setDepartmentSearch(e.target.value);
+                                setShowDepartmentDropdown(true);
+                              }
+                              setDepartmentSearch(e.target.value);
+                              setShowDepartmentDropdown(true);
+                            }}
+                            onFocus={() => setShowDepartmentDropdown(true)}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          {showDepartmentDropdown && (
+                            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-auto">
+                              {filteredDepartments.length > 0 ? (
+                                filteredDepartments.map((dept) => (
+                                  <div
+                                    key={dept.id}
+                                    onClick={() => {
+                                      // store department id for form submission, but keep name visible in the input
+                                      handleInputChange("department", dept.id);
+                                      setDepartmentSearch(dept.name);
+                                      setShowDepartmentDropdown(false);
+                                    }}
+                                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                                  >
+                                    {dept.name}
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="px-3 py-2 text-sm text-gray-500">
+                                  No departments found
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Project Details Section */}
+                  <div className="space-y-4 p-6">
+                    <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
+                      Project Details
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Budget <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g., $50,000"
+                          value={formData.budget}
+                          onChange={(e) =>
+                            handleInputChange("budget", e.target.value)
+                          }
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Priority <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={formData.priority}
+                          onChange={(e) =>
+                            handleInputChange("priority", e.target.value)
+                          }
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        >
+                          <option value="">Select priority</option>
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                        </select>
+                      </div>
+                      {/* project manager dropdown */}
+                      <div className="space-y-2 relative" ref={managerRef}>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Project Manager{" "}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="Search project manager..."
+                            value={managerSearch}
+                            onChange={(e) => {
+                              setManagerSearch(e.target.value);
+                              setShowManagerDropdown(true);
+                            }}
+                            onFocus={() => setShowManagerDropdown(true)}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          {showManagerDropdown && (
+                            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-auto">
+                              {filteredManagers.length > 0 ? (
+                                filteredManagers.map((manager) => (
+                                  <div
+                                    key={manager.id}
+                                    onClick={() => {
+                                      handleInputChange(
+                                        "projectManager",
+                                        manager?.id,
+                                      );
+                                      setManagerSearch(manager?.fullname);
+                                      setShowManagerDropdown(false);
+                                    }}
+                                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                                  >
+                                    {manager?.fullname}
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="px-3 py-2 text-sm text-gray-500">
+                                  No managers found
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Timeline Section */}
+                  <div className="space-y-4 p-6">
+                    <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
+                      Timeline
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Start Date <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.startDate}
+                          onChange={(e) =>
+                            handleInputChange("startDate", e.target.value)
+                          }
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          End Date <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.endDate}
+                          onChange={(e) =>
+                            handleInputChange("endDate", e.target.value)
+                          }
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Project Details Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
-                Project Details
-              </h3>
-
-              {/* Priority, Progress, Tags - 3 Columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-priority`}>
-                    Priority <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.priority}
-                    onValueChange={(value) =>
-                      handleInputChange("priority", value)
-                    }
-                    required
-                  >
-                    <SelectTrigger id={`${id}-priority`}>
-                      <SelectValue placeholder="Select priority" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Low">Low</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="High">High</SelectItem>
-                      <SelectItem value="Critical">Critical</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-progress`}>
-                    Progress Percentage <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id={`${id}-progress`}
-                    type="number"
-                    min="0"
-                    max="100"
-                    placeholder="e.g., 50"
-                    value={formData.progress}
-                    onChange={(e) =>
-                      handleInputChange("progress", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-tags`}>Tags</Label>
-                  <Input
-                    id={`${id}-tags`}
-                    placeholder="e.g., Design, Frontend, API"
-                    value={formData.tags}
-                    onChange={(e) => handleInputChange("tags", e.target.value)}
-                  />
-                </div>
-              </div>
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-100 text-gray-700 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loadingCreateProject}
+                className={`px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors ${
+                  loadingCreateProject ? "opacity-60 cursor-not-allowed" : ""
+                }`}
+              >
+                {loadingCreateProject ? "Creating..." : "Update"}
+              </button>
             </div>
 
-            {/* Team & Resources Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
-                Team & Resources
-              </h3>
-
-              {/* Project Manager, Assignee, Team Size - 3 Columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-projectManager`}>
-                    Project Manager <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id={`${id}-projectManager`}
-                    placeholder="Enter project manager name"
-                    value={formData.projectManager}
-                    onChange={(e) =>
-                      handleInputChange("projectManager", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-assignee`}>
-                    Lead Assignee <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id={`${id}-assignee`}
-                    placeholder="Enter lead assignee name"
-                    value={formData.assignee}
-                    onChange={(e) =>
-                      handleInputChange("assignee", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-teamSize`}>
-                    Team Size <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id={`${id}-teamSize`}
-                    type="number"
-                    min="1"
-                    placeholder="Number of team members"
-                    value={formData.teamSize}
-                    onChange={(e) =>
-                      handleInputChange("teamSize", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Budget - Can span or be in row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-budget`}>
-                    Budget <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id={`${id}-budget`}
-                    placeholder="e.g., $50,000"
-                    value={formData.budget}
-                    onChange={(e) =>
-                      handleInputChange("budget", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Timeline Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
-                Timeline
-              </h3>
-
-              {/* Start Date, End Date - 2 or 3 Columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-startDate`}>
-                    Start Date <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id={`${id}-startDate`}
-                    type="date"
-                    value={formData.startDate}
-                    onChange={(e) =>
-                      handleInputChange("startDate", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor={`${id}-dueDate`}>
-                    End Date <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id={`${id}-dueDate`}
-                    type="date"
-                    value={formData.dueDate}
-                    onChange={(e) =>
-                      handleInputChange("dueDate", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="flex cursor-pointer items-center gap-2 px-4 py-2 border roubded bg-white hover:bg-gray-100 transition-colors"
-                >
-                  Cancel
-                </Button>
-              </DialogTrigger>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                Update Project
-              </Button>
-            </div>
+            {/* Modal Footer */}
           </form>
-        </DialogContent>
-      </Dialog>
-    </div>
+        </div>
+      )}
+    </>
   );
 }

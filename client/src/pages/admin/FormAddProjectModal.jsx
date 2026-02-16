@@ -193,6 +193,10 @@ export default function FormAddProjectModal() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+   if (isNaN(formData.budget)) {
+     toast.error("Budget must be a number.");
+     return;
+   }
     // ensure numeric budget and send correct values
     createProject({
       variables: {
