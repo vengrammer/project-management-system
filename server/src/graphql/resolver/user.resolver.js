@@ -24,7 +24,7 @@ export const userResolvers = {
         console.log("return users error: ", error);
       }
     },
-    //return user by id
+    //return user by id 
     user: async (_, { id }) => {
       try {
         const user = await User.findById(id).populate("department");

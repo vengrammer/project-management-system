@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
+import FormAddUser from "./FormAddUser";
 
 export default function UsersTable() {
   const GET_USERS = gql`
@@ -63,7 +64,7 @@ export default function UsersTable() {
   });
 
   // Pagination
-  // const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentUsers = filteredUsers.slice(startIndex, endIndex);
@@ -114,9 +115,9 @@ export default function UsersTable() {
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
             <h1 className="text-2xl font-bold text-gray-800">Users</h1>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">
-              + Add User
-            </button>
+            <div className="px-4 py-2 rounded-lg w-full sm:w-auto">
+              <FormAddUser/>
+            </div>
           </div>
 
           <input
@@ -253,7 +254,7 @@ export default function UsersTable() {
         </div>
 
         {/* Pagination*/}
-        {/* {totalPages > 1 && (
+        {totalPages > 1 && (
           <div className="px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-gray-600">
               Showing {startIndex + 1} to{" "}
@@ -279,7 +280,7 @@ export default function UsersTable() {
               </button>
             </div>
           </div>
-        )} */}
+        )}
 
         {/* Total count footer */}
         <div className="px-4 md:px-6 py-4 border-t border-gray-200">
