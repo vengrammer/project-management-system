@@ -64,11 +64,45 @@ const taskResolver = {
       }
     },
 
+    updateTask: async (_, args) => {
+      const { id, ...fields } = args;
+      try {
+        if (!id) throw new Error("Task id is required");
+
+        const task = await Task.findById(id);
+        if (!task) throw new Error("Task not found");
+
+        const updatable = [
+          "title",
+          "description",
+          "priority",
+          "status",
+          "dueDate",
+          "assignedTo",
+        ];
+
+        updatable.forEach((k) => {
+          if (fields[k] !== undefined) task[k] = fields[k];
+        });
+
+        await task.save();
+
+        const populated = await Task.findById(task._id)
+          .populate("project")
+          .populate("assignedTo");
+
+        return populated;
+      } catch (error) {
+        console.error("Update task error:", error);
+        throw new Error(error.message || "Failed to update task");
+      }
+    },
+
     deleteTask: async (_, { id }) => {
       try {
         //delete all tasklog reference in this task
         await TaskLog.deleteMany({ task: id });
-        
+
         const deletedTask = await Task.findByIdAndDelete(id);
         if (!deletedTask) throw new Error("Task not found");
         return deletedTask;

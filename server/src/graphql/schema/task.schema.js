@@ -27,6 +27,16 @@ const taskSchema = `#graphql
             assignedTo: ID
         ): Task
 
+        updateTask(
+            id: ID!
+            title: String
+            description: String
+            priority: String
+            status: String
+            dueDate: String
+            assignedTo: ID
+        ): Task
+
         deleteTask(
             id: ID!
         ): Task

@@ -274,7 +274,7 @@ export default function TaskActivityModal({ id: taskId }) {
         onClick={() => setIsOpen(true)}
         className="p-2 text-blue-600 hover:bg-blue-700 hover:text-white rounded-lg transition-colors cursor-pointer"
       >
-        <Eye />
+        <Eye size={18}/>
       </button>
 
       {/* Modal */}

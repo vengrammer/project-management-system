@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Trash2,
   User,
-  Pencil,
 } from "lucide-react";
 
 import { useNavigate, useParams } from "react-router-dom";
@@ -21,6 +20,7 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import TaskActivityModal from "./TaskActivityModal";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import FormEditTask from "./FormEditTask";
 
 const GET_PROJECTS = gql`
   query Project($projectId: ID!) {
@@ -327,7 +327,7 @@ const ProjectDetailsPage = () => {
                   <User size={16} />
                   PM:{" "}
                   {projectData.project.projectManager.fullname
-                    ? projectData.project.projectManager.fullname
+                    ? projectData.project?.projectManager.fullname
                     : "no project manager"}
                 </span>
                 <span className="flex items-center gap-1">
@@ -354,7 +354,7 @@ const ProjectDetailsPage = () => {
 
             {/* Buttons for edit project and add member*/}
             <div className="flex gap-3">
-              <FormEditProject />
+              <FormEditProject/>
             </div>
           </div>
 
@@ -534,24 +534,26 @@ const ProjectDetailsPage = () => {
                             )}
                           </div>
                         </div>
-                        <div className="flex flex-row gap-2">
+                        <div className="flex flex-row gap-1">
                           {/*task action */}
+                          {/* for the taskactivity */}
                           <div>
                             <TaskActivityModal id={task.id} />
                           </div>
 
-                          <button
-                            onClick={() => handleDeleteTask(task.id)}
-                            className="p-2 text-green-600 hover:bg-green-700 hover:text-white rounded-lg transition-colors cursor-pointer"
-                          >
-                            <Pencil size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteTask(task.id)}
-                            className="p-2 text-red-600 hover:bg-red-700 hover:text-white rounded-lg transition-colors cursor-pointer"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                          {/* EYE FOR THE EDIT TASK*/}
+                          <div>
+                            <FormEditTask taskID={task?.id} />
+                          </div>
+
+                          <div>
+                            <button
+                              onClick={() => handleDeleteTask(task.id)}
+                              className="p-2 text-red-600 hover:bg-red-700 hover:text-white rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
