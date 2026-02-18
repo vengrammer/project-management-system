@@ -53,5 +53,7 @@ export const projectSchema = `#graphql
             startDate: String
             endDate: String
         ): Message
+
+        deleteProject(id: ID): Message
     }
 `;

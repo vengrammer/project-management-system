@@ -1,5 +1,5 @@
 import { Pencil, Plus, XCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useParams } from "react-router-dom";
@@ -109,24 +109,33 @@ function FormEditTask({ taskID }) {
   });
 
   //const get the old task
-  const { loading: loadingTask, error: errorTask } = useQuery(GET_TASK, {
+  const {
+    loading: loadingTask,
+    error: errorTask,
+    data: taskData,
+  } = useQuery(GET_TASK, {
     variables: { taskId: taskID },
     // Don't fetch task for every row; only when modal is open
     skip: !isAddTaskOpen || !taskID,
-    onCompleted: (d) => {
-      const t = d?.task;
-      if (!t) return;
-      setNewTask({
-        title: t.title ?? "",
-        description: t.description ?? "",
-        priority: t.priority ?? "medium",
-        assignedTo: t.assignedTo?.id ?? "",
-        dueDate: toInputDate(t.dueDate),
-        status: t.status ?? "todo",
-      });
-    },
+    // If the task is already in Apollo cache, `onCompleted` may not run.
+    // Use `data` + effect below to ensure the form always gets hydrated.
+    fetchPolicy: "cache-and-network",
     onError: () => toast.error("Failed to load task"),
   });
+
+  useEffect(() => {
+    if (!isAddTaskOpen) return;
+    const t = taskData?.task;
+    if (!t) return;
+    setNewTask({
+      title: t.title ?? "",
+      description: t.description ?? "",
+      priority: t.priority ?? "medium",
+      assignedTo: t.assignedTo?.id ?? "",
+      dueDate: toInputDate(t.dueDate),
+      status: t.status ?? "todo",
+    });
+  }, [isAddTaskOpen, taskData]);
 
   const [updateTask, { loading: updatingTask }] = useMutation(UPDATE_TASK, {
     onCompleted: () => {
@@ -288,6 +297,19 @@ function FormEditTask({ taskID }) {
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">Select team member</option>
+                        {/* If the currently assigned user is not in project.users, still show it as selected */}
+                        {(() => {
+                          const current = taskData?.task?.assignedTo;
+                          if (!current?.id) return null;
+                          const users = memberData?.project?.users || [];
+                          const exists = users.some((u) => u.id === current.id);
+                          if (exists) return null;
+                          return (
+                            <option key={current.id} value={current.id}>
+                              {current.fullname} (current)
+                            </option>
+                          );
+                        })()}
                         {(memberData?.project?.users || []).map((member) => (
                           <option key={member.id} value={member.id}>
                             {member.fullname} - {member.position}

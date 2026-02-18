@@ -82,6 +82,19 @@ const CREATE_PROJECT = gql`
   }
 `;
 
+//query to DELETE the project
+const DELETE_PROJECT = gql`
+  mutation DeleteProject($projectId: ID!) {
+    deleteProject(projectId: $projectId) {
+      message
+      project {
+        id
+        title
+      }
+    }
+  }
+`;
+
 export default function FormAddProjectModal() {
   const [selectedEmployees, setSelectedEmployees] = useState([]);
   const managerRef = useRef(null);
@@ -191,13 +204,28 @@ export default function FormAddProjectModal() {
     },
   );
 
+  const isValidObjectId = (id) => {
+    return /^[0-9a-fA-F]{24}$/.test(id);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (formData.projectManager === "") {
-      toast.error("Please Select Correct Manager.");
+    // ✅ If projectManager is provided, validate it
+    if (
+      formData.projectManager &&
+      formData.projectManager.trim() !== "" &&
+      !isValidObjectId(formData.projectManager)
+    ) {
+      toast.error("Invalid Project Manager ID.");
       return;
     }
+
+    // ✅ If projectManager is empty string, set it to null
+    const projectManager =
+      formData.projectManager && formData.projectManager.trim() !== ""
+        ? formData.projectManager
+        : null;
 
     if (isNaN(formData.budget)) {
       toast.error("Budget must be a number.");
@@ -213,7 +241,7 @@ export default function FormAddProjectModal() {
         department: formData.department,
         status: formData.status,
         priority: formData.priority,
-        projectManager: formData.projectManager,
+        projectManager: projectManager,
         budget: parseInt(formData.budget, 10) || 0,
         users: selectedEmployees,
         startDate: formData.startDate,
@@ -582,7 +610,6 @@ export default function FormAddProjectModal() {
                               setShowManagerDropdown(true);
                             }}
                             onFocus={() => setShowManagerDropdown(true)}
-                            required
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                           {showManagerDropdown && (

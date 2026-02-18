@@ -7,14 +7,26 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useQuery } from "@apollo/client/react";
+import { useQuery, useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import FormAddProjectModal from "./FormAddProjectModal";
+import Swal from "sweetalert2";
 
 export default function ProjectTable() {
   const navigate = useNavigate();
+  const DELETE_PROJECT = gql`
+    mutation DeleteProject($id: ID!) {
+      deleteProject(id: $id) {
+        message
+        project {
+          id
+        }
+      }
+    }
+  `;
+  const [deleteProject] = useMutation(DELETE_PROJECT);
   const GET_PROJECTS = gql`
     query Projects {
       projects {
@@ -41,7 +53,7 @@ export default function ProjectTable() {
   const itemsPerPage = 10;
 
   // Get the projects data using Apollo Client
-  const { loading, error, data } = useQuery(GET_PROJECTS);
+  const { loading, error, data, refetch } = useQuery(GET_PROJECTS);
 
   // Handle loading state
   if (loading) {
@@ -89,17 +101,29 @@ export default function ProjectTable() {
     // alert(`Viewing: ${project.title}`);
   };
 
-  const handleEdit = (project) => {
-    console.log("Edit project:", project);
-    alert(`Editing: ${project.title}`);
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this project?")) {
-      console.log("Delete project:", id);
-      // TODO: Implement delete mutation
-      toast.success("Project deleted successfully");
-    }
+  const handleDelete = async (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const { data } = await deleteProject({ variables: { id } });
+          if (data.deleteProject) {
+            toast.success("Project deleted successfully");
+            // Refetch projects to update the list
+            refetch();
+          }
+        } catch (error) {
+          toast.error(`Error deleting project: ${error.message}`);
+        }
+      }
+    });
   };
 
   // Helper functions
@@ -248,7 +272,7 @@ export default function ProjectTable() {
                     <span className="text-gray-500 lg:hidden">PM: </span>
                     <span className="font-medium lg:font-normal">
                       {project?.projectManager?.fullname
-                        ? project?.projectManager?.fullname
+                        ? project?.projectManager.fullname
                         : "No PM"}
                     </span>
                   </div>
@@ -296,14 +320,6 @@ export default function ProjectTable() {
                     >
                       <span className="lg:hidden">View</span>
                       <Eye size={20} className="hidden lg:block" />
-                    </button>
-                    <button
-                      onClick={() => handleEdit(project)}
-                      className="flex-1 cursor-pointer lg:flex-none bg-green-50 lg:bg-transparent text-green-600 hover:bg-green-100 lg:hover:bg-transparent lg:hover:text-green-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
-                      title="Edit"
-                    >
-                      <span className="lg:hidden">Edit</span>
-                      <Pen size={20} className="hidden lg:block" />
                     </button>
                     <button
                       onClick={() => handleDelete(project.id)}

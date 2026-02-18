@@ -1,4 +1,6 @@
 import Project from "../../model/project.model.js";
+import TaskLog from "../../model/TaskLogs.js";
+import Task from "../../model/Task.js";
 
 //projectData = title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
 export const projectResolvers = {
@@ -158,6 +160,26 @@ export const projectResolvers = {
       } catch (error) {
         console.error("Update project error:", error);
         throw new Error(error.message || "Failed to update project");
+      }
+    },
+    deleteProject: async (_, { id }) => {
+      try {
+        const tasks = await Task.find({ project: id });
+
+        const taskIds = tasks.map((task) => task._id);
+
+        await TaskLog.deleteMany({ task: { $in: taskIds } });
+
+        await Task.deleteMany({ project: id });
+
+        const deletedProject = await Project.findByIdAndDelete(id);
+
+        return {
+          message: "Successfully deleted project and all related data",
+          project: deletedProject,
+        };
+      } catch (error) {
+        throw new Error("Error in deleting the project.");
       }
     },
   },
