@@ -274,7 +274,7 @@ export default function TaskActivityModal({ id: taskId }) {
         onClick={() => setIsOpen(true)}
         className="p-2 text-blue-600 hover:bg-blue-700 hover:text-white rounded-lg transition-colors cursor-pointer"
       >
-        <Eye size={18}/>
+        <Eye size={18} />
       </button>
 
       {/* Modal */}
@@ -293,16 +293,18 @@ export default function TaskActivityModal({ id: taskId }) {
                 {taskData?.task?.assignedTo?.fullname && (
                   <div className="flex items-center gap-2 mt-2">
                     <Avatar
-                      initials={getInitials(taskData.task.assignedTo.fullname)}
+                      initials={getInitials(
+                        taskData?.task?.assignedTo?.fullname,
+                      )}
                       size="w-6 h-6"
                       text="text-xs"
                     />
                     <div>
                       <p className="text-xs font-medium text-gray-700">
-                        {taskData.task.assignedTo.fullname}
+                        {taskData?.task?.assignedTo?.fullname}
                       </p>
                       <p className="text-xs text-gray-400">
-                        {taskData.task.assignedTo.position || "Assignee"}
+                        {taskData?.task?.assignedTo?.position || "Assignee"}
                       </p>
                     </div>
                   </div>

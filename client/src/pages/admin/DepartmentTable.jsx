@@ -18,7 +18,7 @@ const GET_DEPARTMENT = gql`
     }
   }
 `;
-
+ 
 export default function DepartmentTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);

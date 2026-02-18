@@ -21,6 +21,7 @@ import TaskActivityModal from "./TaskActivityModal";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import FormEditTask from "./FormEditTask";
+import { motion } from "framer-motion";
 
 const GET_PROJECTS = gql`
   query Project($projectId: ID!) {
@@ -271,6 +272,18 @@ const ProjectDetailsPage = () => {
     );
   }
 
+  // If the query succeeded but the project is null/undefined, avoid crashing on `projectData.project.*`
+  if (!projectData?.project) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-red-600">Project not found</div>
+      </div>
+    );
+  }
+
+  const project = projectData?.project;
+  const tasks = taskData?.taskByProject ?? [];
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Trigger Button */}
@@ -284,32 +297,33 @@ const ProjectDetailsPage = () => {
           <span>Back to Projects</span>
         </button>
         {/* Project Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6"
+        >
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {projectData.project.title
-                    ? projectData.project.title
-                    : "No project title"}
+                  {project?.title ? project?.title : "No project title"}
                 </h1>
                 <span
                   className={`px-3 py-1 rounded-full text-xs flex gap-1 font-medium border ${getStatusColor(
-                    projectData.project.status,
+                    project?.status,
                   )}`}
                 >
-                  {projectData.project.status
-                    ? projectData.project.status
-                    : "No project status"}
+                  {project?.status ? project?.status : "No project status"}
                 </span>
                 <span
                   className={`px-3 py-1 rounded-full text-xs flex gap-1 font-medium border ${getPriorityColor(
-                    projectData.project.priority,
+                    project?.priority,
                   )}`}
                 >
-                  {projectData.project.priority ? (
+                  {project?.priority ? (
                     <div className="first-letter:uppercase">
-                      {projectData.project.priority}
+                      {project?.priority}
                     </div>
                   ) : (
                     "No"
@@ -318,35 +332,29 @@ const ProjectDetailsPage = () => {
                 </span>
               </div>
               <p className="text-gray-600 mb-4">
-                {projectData.project.description
-                  ? projectData.project.description
-                  : "no description"}
+                {project?.description ? project?.description : "no description"}
               </p>
               <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                 <span className="flex items-center gap-1">
                   <User size={16} />
                   PM:{" "}
-                  {projectData.project.projectManager.fullname
-                    ? projectData.project?.projectManager.fullname
+                  {project?.projectManager?.fullname
+                    ? project?.projectManager?.fullname
                     : "no project manager"}
                 </span>
                 <span className="flex items-center gap-1">
                   <Users size={16} />
-                  Team:{" "}
-                  {projectData.project.users.length
-                    ? projectData.project.users.length
+                  Team: {project?.users?.length
+                    ? project?.users?.length
                     : "0"}{" "}
                   members
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar size={16} />
-                  {projectData.project.startDate
-                    ? projectData.project.startDate
-                    : "no start date"}{" "}
-                  -{" "}
-                  {projectData.project.endDate
-                    ? projectData.project.endDate
-                    : "no end date"}
+                  {project?.startDate
+                    ? project?.startDate
+                    : "no start date"} -{" "}
+                  {project?.endDate ? project?.endDate : "no end date"}
                 </span>
               </div>
             </div>
@@ -354,7 +362,7 @@ const ProjectDetailsPage = () => {
 
             {/* Buttons for edit project and add member*/}
             <div className="flex gap-3">
-              <FormEditProject/>
+              <FormEditProject />
             </div>
           </div>
 
@@ -366,10 +374,8 @@ const ProjectDetailsPage = () => {
               </span>
               <span className="text-sm font-bold text-gray-900">
                 {calculateProgress(
-                  taskData.taskByProject.length,
-                  taskData.taskByProject.filter(
-                    (task) => task.status === "completed",
-                  ).length,
+                  tasks.length,
+                  tasks.filter((task) => task.status === "completed").length,
                 )}
                 %
               </span>
@@ -379,10 +385,8 @@ const ProjectDetailsPage = () => {
                 className="h-full bg-linear-to-r from-blue-500 to-blue-600 transition-all duration-500"
                 style={{
                   width: `${calculateProgress(
-                    taskData.taskByProject.length,
-                    taskData.taskByProject.filter(
-                      (task) => task.status === "completed",
-                    ).length,
+                    tasks.length,
+                    tasks.filter((task) => task.status === "completed").length,
                   )}%`,
                 }}
               ></div>
@@ -397,9 +401,7 @@ const ProjectDetailsPage = () => {
                 <Target className="text-blue-600" size={20} />
               </div>
               <p className="text-2xl font-bold text-gray-900">
-                {taskData.taskByProject.length
-                  ? taskData.taskByProject.length
-                  : "0"}
+                {tasks.length ? tasks.length : "0"}
               </p>
               <p className="text-xs text-gray-600">Total Tasks</p>
             </div>
@@ -409,12 +411,7 @@ const ProjectDetailsPage = () => {
                 <Clock className="text-orange-600" size={20} />
               </div>
               <p className="text-2xl font-bold text-gray-900">
-                {taskData.taskByProject.filter((task) => task.status === "todo")
-                  .length
-                  ? taskData.taskByProject.filter(
-                      (task) => task.status === "todo",
-                    ).length
-                  : "0"}
+                {tasks.filter((task) => task.status === "todo").length || "0"}
               </p>
               <p className="text-xs text-gray-600">Not Started</p>
             </div>
@@ -424,13 +421,8 @@ const ProjectDetailsPage = () => {
                 <TrendingUp className="text-orange-600" size={20} />
               </div>
               <p className="text-2xl font-bold text-gray-900">
-                {taskData.taskByProject.filter(
-                  (task) => task.status === "in_progress",
-                ).length
-                  ? taskData.taskByProject.filter(
-                      (task) => task.status === "in_progress",
-                    ).length
-                  : "0"}
+                {tasks.filter((task) => task.status === "in_progress").length ||
+                  "0"}
               </p>
               <p className="text-xs text-gray-600">In Progress</p>
             </div>
@@ -440,13 +432,8 @@ const ProjectDetailsPage = () => {
                 <CheckCircle2 className="text-green-600" size={20} />
               </div>
               <p className="text-2xl font-bold text-gray-900">
-                {taskData.taskByProject.filter(
-                  (task) => task.status === "completed",
-                ).length
-                  ? taskData.taskByProject.filter(
-                      (task) => task.status === "completed",
-                    ).length
-                  : "0"}
+                {tasks.filter((task) => task.status === "completed").length ||
+                  "0"}
               </p>
               <p className="text-xs text-gray-600">Completed</p>
             </div>
@@ -457,15 +444,19 @@ const ProjectDetailsPage = () => {
                 <DollarSign className="text-purple-600" size={20} />
               </div>
               <p className="text-2xl font-bold text-gray-900">
-                {projectData.project.budget}
+                {project?.budget ?? "0"}
               </p>
               <p className="text-xs text-gray-600">Budget</p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+         className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Tasks Section (2 columns) */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -474,19 +465,16 @@ const ProjectDetailsPage = () => {
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">Tasks</h2>
                     <p className="text-sm text-gray-600 mt-1">
-                      {taskData.taskByProject.length
-                        ? taskData.taskByProject.length
-                        : "0"}{" "}
-                      total tasks
+                      {tasks.length ? tasks.length : "0"} total tasks
                     </p>
                   </div>
                   <AddTaskForm />
                 </div>
               </div>
               {/*all task value*/}
-              {taskData.taskByProject.length > 0 ? (
+              {tasks.length > 0 ? (
                 <div className="divide-y divide-gray-200 max-h-160 overflow-auto">
-                  {taskData.taskByProject.map((task) => (
+                  {tasks.map((task) => (
                     <div
                       key={task.id}
                       className="p-3 hover:bg-gray-100 transition-colors"
@@ -577,12 +565,10 @@ const ProjectDetailsPage = () => {
               </div>
 
               <div className="bg-black max-w-full h-px mb-4"></div>
-              {projectData.project.users.length > 0 ? (
+              {(project?.users?.length || 0) > 0 ? (
                 <div className=" space-y-3 max-h-160 overflow-auto">
-                  {projectData.project.users.map((member) => {
-                    const assignedTasks = (
-                      taskData?.taskByProject || []
-                    ).filter(
+                  {(project?.users || []).map((member) => {
+                    const assignedTasks = tasks.filter(
                       (t) =>
                         (t.assignedTo?.fullname || t.assignedTo) ===
                         member.fullname,
@@ -639,7 +625,7 @@ const ProjectDetailsPage = () => {
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

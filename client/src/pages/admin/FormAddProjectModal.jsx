@@ -203,7 +203,7 @@ export default function FormAddProjectModal() {
       toast.error("Budget must be a number.");
       return;
     }
-    
+
     // ensure numeric budget and send correct values
     createProject({
       variables: {
@@ -260,21 +260,27 @@ export default function FormAddProjectModal() {
     );
   };
 
-  const filteredManagers = dataUserManager.userRoleManager?.filter((manager) =>
-    manager.fullname?.toLowerCase().includes(managerSearch.toLowerCase()),
+  const filteredManagers = (dataUserManager?.userRoleManager || []).filter(
+    (manager) =>
+      manager.fullname
+        ?.toLowerCase()
+        .includes((managerSearch || "").toLowerCase()),
   );
 
-  const filteredDepartments = dataDepartments.departments?.filter((dept) =>
-    dept.name.toLowerCase().includes(departmentSearch.toLowerCase()),
+  const filteredDepartments = (dataDepartments?.departments || []).filter(
+    (dept) =>
+      dept.name?.toLowerCase().includes((departmentSearch || "").toLowerCase()),
   );
 
   // build team-member list from the selected department
-  const selectedDept = dataDepartments.departments?.find(
+  const selectedDept = (dataDepartments?.departments || []).find(
     (d) => d.id === formData.department || d.name === formData.department,
   );
   const teamUsers = selectedDept?.users || [];
   const filteredTeamMembers = teamUsers.filter((emp) =>
-    emp.fullname.toLowerCase().includes(teamMemberSearch.toLowerCase()),
+    emp.fullname
+      ?.toLowerCase()
+      .includes((teamMemberSearch || "").toLowerCase()),
   );
 
   const handleInputChange = (name, value) => {

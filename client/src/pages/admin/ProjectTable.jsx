@@ -247,8 +247,8 @@ export default function ProjectTable() {
                   <div className="text-sm text-gray-700">
                     <span className="text-gray-500 lg:hidden">PM: </span>
                     <span className="font-medium lg:font-normal">
-                      {project.projectManager.fullname
-                        ? project.projectManager.fullname
+                      {project?.projectManager?.fullname
+                        ? project?.projectManager?.fullname
                         : "No PM"}
                     </span>
                   </div>

@@ -131,14 +131,17 @@ function AddMembers() {
   //query
 
   const filteredDepartments = (dataDepartments?.departments || []).filter(
-    (dept) => dept.name.toLowerCase().includes(departmentSearch.toLowerCase()),
+    (dept) =>
+      (dept.name || "")
+        .toLowerCase()
+        .includes((departmentSearch || "").toLowerCase()),
   );
 
   const handleAddTask = (e) => {
     e.preventDefault();
-    if(selectedEmployees.length === 0){
+    if (selectedEmployees.length === 0) {
       toast.error("Please select member");
-      return
+      return;
     }
     setIsAddMemberOpen(false);
     updateProject({
@@ -158,7 +161,9 @@ function AddMembers() {
   const filteredTeamMembers = teamUsers.filter(
     (emp) =>
       !existingUserIds.has(emp.id) &&
-      emp.fullname.toLowerCase().includes(teamMemberSearch.toLowerCase()),
+      (emp.fullname || "")
+        .toLowerCase()
+        .includes((teamMemberSearch || "").toLowerCase()),
   );
 
   const toggleEmployee = (id) => {
@@ -250,7 +255,6 @@ function AddMembers() {
                           setDepartmentSearch(v);
                           setShowDepartmentDropdown(true);
                         }}
-                        
                         onFocus={() => setShowDepartmentDropdown(true)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />

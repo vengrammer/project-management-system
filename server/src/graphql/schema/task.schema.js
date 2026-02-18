@@ -16,11 +16,21 @@ const taskSchema = `#graphql
         taskByProject(id: ID!): [Task]
     }
     type Mutation {
-
         createTask(
             title: String!
             description: String
             project: ID!
+            priority: String
+            status: String
+            dueDate: String
+            assignedTo: ID
+        ): Task
+
+        # Edit/update an existing task (alias of updateTask)
+        editTask(
+            id: ID!
+            title: String
+            description: String
             priority: String
             status: String
             dueDate: String

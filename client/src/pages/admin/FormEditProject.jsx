@@ -263,8 +263,6 @@ export default function FormEditProject() {
     setIsOpen(true);
   };
 
-
-
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
@@ -346,12 +344,16 @@ export default function FormEditProject() {
     );
   }
 
-  const filteredManagers = dataUserManager.userRoleManager?.filter((manager) =>
-    manager.fullname?.toLowerCase().includes(managerSearch.toLowerCase()),
+  const filteredManagers = (dataUserManager?.userRoleManager || []).filter(
+    (manager) =>
+      manager.fullname
+        ?.toLowerCase()
+        .includes((managerSearch || "").toLowerCase()),
   );
 
-  const filteredDepartments = dataDepartments.departments?.filter((dept) =>
-    dept.name.toLowerCase().includes(departmentSearch.toLowerCase()),
+  const filteredDepartments = (dataDepartments?.departments || []).filter(
+    (dept) =>
+      dept.name?.toLowerCase().includes((departmentSearch || "").toLowerCase()),
   );
 
   const handleInputChange = (name, value) => {
