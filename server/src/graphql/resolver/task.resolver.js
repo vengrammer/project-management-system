@@ -1,4 +1,5 @@
 import Task from "../../model/Task.js";
+import TaskLog from "../../model/TaskLogs.js";
 
 const taskResolver = {
   Query: {
@@ -60,6 +61,20 @@ const taskResolver = {
       } catch (error) {
         console.error("Create task error:", error);
         throw new Error(error.message || "Failed to create task");
+      }
+    },
+
+    deleteTask: async (_, { id }) => {
+      try {
+        //delete all tasklog reference in this task
+        await TaskLog.deleteMany({ task: id });
+        
+        const deletedTask = await Task.findByIdAndDelete(id);
+        if (!deletedTask) throw new Error("Task not found");
+        return deletedTask;
+      } catch (error) {
+        console.log("Error in deleting the task");
+        throw new Error(error.message || "error in deleting task");
       }
     },
   },

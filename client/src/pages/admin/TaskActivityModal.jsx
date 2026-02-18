@@ -14,7 +14,7 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
-// temporary user id (until auth integration)
+// temporary user id
 const TEMP_AUTHOR_ID = "6992d115b034bbfbac83b8fb";
 
 const GET_TASK = gql`
@@ -123,11 +123,27 @@ function getInitials(name) {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
-function formatLogDate(value) {
+function formatTimeAgo(value) {
   if (!value) return "";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString("en-US", {
+
+  const now = new Date();
+  const date = new Date(Number(value));
+  const diffMs = now - date;
+
+  const seconds = Math.floor(diffMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const weeks = Math.floor(days / 7);
+
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} min ago`;
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+  if (weeks <= 2) return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+
+  // If more than 2 weeks → show full date
+  return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -213,24 +229,24 @@ export default function TaskActivityModal({ id: taskId }) {
       onError: () => toast.error("Failed to delete log"),
     },
   );
- 
+
   const handleDelete = (taskLogId) => {
     // show confirmation first, then delete only if user confirms
     Swal.fire({
-  title: "Are you sure?",
-  text: "You won't be able to revert this!",
-  icon: "warning",
-  showCancelButton: true,
-  confirmButtonColor: "#3085d6",
-  cancelButtonColor: "#d33",
-  confirmButtonText: "Yes, delete it!"
-}).then((result) => {
-  if (result.isConfirmed) {
-    deleteTaskLog({
-              variables: { id: taskLogId },
-            });;
-  }
-});
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteTaskLog({
+          variables: { id: taskLogId },
+        });
+      }
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -418,7 +434,7 @@ export default function TaskActivityModal({ id: taskId }) {
                                     •
                                   </span>
                                   <p className="text-xs text-gray-500">
-                                    {formatLogDate(log.createdAt)}
+                                    {formatTimeAgo(log?.updatedAt)}
                                   </p>
                                 </div>
                                 {isEditing ? (
@@ -475,9 +491,11 @@ export default function TaskActivityModal({ id: taskId }) {
                                     </div>
                                   </div>
                                 ) : (
-                                  <p className="text-sm text-gray-700 mt-1.5">
-                                    {log.content}
-                                  </p>
+                                  <div className="flex flex-col gap-1 flex-1 min-w-0 ">
+                                    <p className=" text-sm text-gray-700 mt-1.5">
+                                      {log.content}
+                                    </p>
+                                  </div>
                                 )}
                               </div>
                             </div>

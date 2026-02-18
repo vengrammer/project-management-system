@@ -2,7 +2,7 @@
 const taskSchema = `#graphql
     type Task {
         id: ID!
-        title: String!
+        title: String
         description: String
         project: Project
         assignedTo: User
@@ -16,6 +16,7 @@ const taskSchema = `#graphql
         taskByProject(id: ID!): [Task]
     }
     type Mutation {
+
         createTask(
             title: String!
             description: String
@@ -24,6 +25,10 @@ const taskSchema = `#graphql
             status: String
             dueDate: String
             assignedTo: ID
+        ): Task
+
+        deleteTask(
+            id: ID!
         ): Task
     }
 `;

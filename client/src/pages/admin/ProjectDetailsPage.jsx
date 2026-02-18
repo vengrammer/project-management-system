@@ -11,15 +11,16 @@ import {
   Trash2,
   User,
   Pencil,
-  Eye,
 } from "lucide-react";
 
 import { useNavigate, useParams } from "react-router-dom";
 import AddTaskForm from "./AddTaskForm";
 import FormEditProject from "./FormEditProject";
 import { gql } from "@apollo/client";
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import TaskActivityModal from "./TaskActivityModal";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const GET_PROJECTS = gql`
   query Project($projectId: ID!) {
@@ -46,6 +47,21 @@ const GET_PROJECTS = gql`
         fullname
         position
       }
+    }
+  }
+`;
+const REMOVE_MEMBER = gql`
+  mutation updateProject($updateProjectId: ID!, $removeUsers: [ID]) {
+    updateProject(id: $updateProjectId, removeUsers: $removeUsers) {
+      message
+    }
+  }
+`;
+
+const DELETE_TASK = gql`
+  mutation deleteTask($deleteTaskId: ID!) {
+    deleteTask(id: $deleteTaskId) {
+      id
     }
   }
 `;
@@ -117,11 +133,6 @@ const formatDate = (date) => {
 const ProjectDetailsPage = () => {
   const { id } = useParams();
 
-  // Handle delete task
-  const handleDeleteTask = (id) => {
-    console.log(id);
-  };
-
   // Get status color
 
   const getStatusColor = (status) => {
@@ -173,6 +184,76 @@ const ProjectDetailsPage = () => {
     error: taskError,
     data: taskData,
   } = useQuery(GET_TASKS, { variables: { taskByProjectId: id } });
+
+  //remove the member from the project
+  const [updateProject] = useMutation(REMOVE_MEMBER, {
+    onCompleted: () => {
+      toast.success("Member removed successfully");
+    },
+    onError: () => {
+      toast.error("Failed to remove member");
+    },
+    refetchQueries: [{ query: GET_PROJECTS, variables: { projectId: id } }],
+    awaitRefetchQueries: true,
+  });
+
+  //const remove task
+  const [deleteTask] = useMutation(DELETE_TASK, {
+    onCompleted: () => {
+      toast.success("Task successfully deleted");
+    },
+    onError: () => {
+      toast.error("Failed to delete task");
+    },
+    // After deleting a task, refetch BOTH the task list and the project details.
+    refetchQueries: [
+      { query: GET_TASKS, variables: { taskByProjectId: id } },
+      { query: GET_PROJECTS, variables: { projectId: id } },
+    ],
+    awaitRefetchQueries: true,
+  });
+
+  const handleRemoveMember = (userId) => {
+    Swal.fire({
+      title: "Are you sure you want to delete this member?",
+      text: "You won't be able to revert this!",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        updateProject({
+          variables: {
+            updateProjectId: id,
+            removeUsers: [userId],
+          },
+        });
+      }
+    });
+  };
+
+  const handleDeleteTask = (taskID) => {
+    console.log(taskID);
+    Swal.fire({
+      title: "Are you sure you want to delete this task?",
+      text: "You won't be able to revert this!",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteTask({
+          variables: {
+            deleteTaskId: taskID,
+          },
+        });
+      }
+    });
+  };
 
   //show the error and loading when getting the projects
   if (projectLoading || taskLoading) {
@@ -537,7 +618,7 @@ const ProjectDetailsPage = () => {
                           </div>
                           <div className="pl-3">
                             <button
-                              // onClick={() => handleDeleteRow(row.id)}
+                              onClick={() => handleRemoveMember(member.id)}
                               className="py-3 px-3 text-red-600 hover:text-white hover:bg-red-700 rounded transition-colors cursor-pointer"
                               title="Delete row"
                             >
