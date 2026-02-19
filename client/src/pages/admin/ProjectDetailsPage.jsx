@@ -25,6 +25,13 @@ import Swal from "sweetalert2";
 import FormEditTask from "./FormEditTask";
 import { motion } from "framer-motion";
 
+const UPDATE_PROJECT_STATUS = gql`
+  mutation updateProject($updateProjectId: ID!, $status: String) {
+    updateProject(id: $updateProjectId, status: $status) {
+      message
+    }
+  }
+`;
 const GET_PROJECTS = gql`
   query Project($projectId: ID!) {
     project(id: $projectId) {
@@ -165,12 +172,6 @@ const ProjectDetailsPage = () => {
     return "bg-blue-100 text-blue-700 border-blue-200";
   };
 
-  const calculateProgress = (taskLength, taskComplete) => {
-    if (taskLength === 0) return 0;
-    const percent = (taskComplete / taskLength) * 100;
-    return Math.round(percent);
-  };
-
   // Task statistics are computed from `taskData.taskByProject` inline where needed.
   const navigate = useNavigate();
 
@@ -216,6 +217,37 @@ const ProjectDetailsPage = () => {
     awaitRefetchQueries: true,
   });
 
+  const [updateProjectStatus] = useMutation(UPDATE_PROJECT_STATUS, {
+    onCompleted: () => {
+      toast.success("Marked as completed successfully.");
+    },
+    onError: () => {
+      toast.error("Failed to update the project");
+    },
+    refetchQueries: [{ query: GET_PROJECTS, variables: { projectId: id } }],
+  });
+
+  const handleMarkAsDone = () => {
+    Swal.fire({
+      title: "Are you sure you want to mark this project as completed?",
+      text: "Mark as done!",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        updateProjectStatus({
+          variables: {
+            updateProjectId: id,
+            status: "completed",
+          },
+        });
+      }
+    });
+  };
+
   const handleRemoveMember = (userId) => {
     Swal.fire({
       title: "Are you sure you want to delete this member?",
@@ -258,6 +290,14 @@ const ProjectDetailsPage = () => {
     });
   };
 
+  const calculateProgress = (taskLength, taskComplete) => {
+    if (taskLength === 0) return 0;
+    const percent = (taskComplete / taskLength) * 100;
+    return Math.round(percent);
+  };
+
+
+
   //show the error and loading when getting the projects
   if (projectLoading || taskLoading) {
     return (
@@ -289,7 +329,7 @@ const ProjectDetailsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Trigger Button */}
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto p-2 sm:p-6 lg:p-5">
         {/* Back Button */}
         <button
           onClick={() => navigate("/admin/projects")}
@@ -303,7 +343,7 @@ const ProjectDetailsPage = () => {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6"
+          className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-3"
         >
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
             <div className="flex-1">
@@ -312,7 +352,7 @@ const ProjectDetailsPage = () => {
                   {project?.title ? project?.title : "No project title"}
                 </h1>
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                  className={`first-letter:uppercase px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
                     project?.status,
                   )}`}
                 >
@@ -324,9 +364,9 @@ const ProjectDetailsPage = () => {
                   )}`}
                 >
                   {project?.priority ? (
-                    <div className="first-letter:uppercase">
+                    <span className="first-letter:uppercase">
                       {project?.priority}
-                    </div>
+                    </span>
                   ) : (
                     "No"
                   )}{" "}
@@ -368,7 +408,10 @@ const ProjectDetailsPage = () => {
                 <FormEditProject />
               </div>
               <div>
-                <button className="flex items-center gap-2 px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <button
+                  onClick={handleMarkAsDone}
+                  className="flex items-center gap-2 px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
                   <Check size={20} />
                   Mark As Done
                 </button>
@@ -471,7 +514,7 @@ const ProjectDetailsPage = () => {
           {/* Tasks Section (2 columns) */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
+              <div className="p-3 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">Tasks</h2>
@@ -484,11 +527,11 @@ const ProjectDetailsPage = () => {
               </div>
               {/*all task value*/}
               {tasks.length > 0 ? (
-                <div className="divide-y divide-gray-200 max-h-160 overflow-auto">
+                <div className="divide-y divide-gray-200 max-h-105 overflow-auto">
                   {tasks.map((task) => (
                     <div
                       key={task.id}
-                      className="p-3 hover:bg-gray-100 transition-colors"
+                      className="px-4 py-1 hover:bg-gray-100 transition-colors"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
@@ -577,7 +620,7 @@ const ProjectDetailsPage = () => {
 
               <div className="bg-black max-w-full h-px mb-4"></div>
               {(project?.users?.length || 0) > 0 ? (
-                <div className=" space-y-3 max-h-160 overflow-auto">
+                <div className=" space-y-3 max-h-100 overflow-auto">
                   {(project?.users || []).map((member) => {
                     const assignedTasks = tasks.filter(
                       (t) =>

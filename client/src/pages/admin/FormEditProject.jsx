@@ -17,7 +17,6 @@ const GET_PROJECT = gql`
       description
       priority
       startDate
-      status
       endDate
       id
       department {
@@ -62,7 +61,6 @@ const UPDATE_PROJECT = gql`
     $id: ID!
     $title: String
     $priority: String
-    $status: String
     $department: ID
     $description: String
     $client: String
@@ -75,7 +73,6 @@ const UPDATE_PROJECT = gql`
       id: $id
       title: $title
       priority: $priority
-      status: $status
       department: $department
       description: $description
       client: $client
@@ -90,7 +87,6 @@ const UPDATE_PROJECT = gql`
         title
         description
         client
-        status
         priority
         budget
         startDate
@@ -118,7 +114,6 @@ export default function FormEditProject() {
     description: "",
     client: "",
     department: "",
-    status: "",
     priority: "",
     projectManager: "",
     budget: "",
@@ -140,7 +135,6 @@ export default function FormEditProject() {
       description: "",
       client: "",
       department: "",
-      status: "",
       priority: "",
       projectManager: "",
       budget: "",
@@ -241,7 +235,6 @@ export default function FormEditProject() {
       description: p?.description ?? "",
       client: p?.client ?? "",
       department: p?.department?.id ?? "",
-      status: p?.status ?? "",
       priority: p?.priority ?? "",
       projectManager: p?.projectManager?.id ?? "",
       budget:
@@ -263,15 +256,30 @@ export default function FormEditProject() {
     setIsOpen(true);
   };
 
+  const isValidObjectId = (id) => {
+    return /^[0-9a-fA-F]{24}$/.test(id);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
 
-    if (formData.projectManager === "") {
-      toast.error("Please Select Correct Manager.");
+    if (
+      formData.projectManager &&
+      formData.projectManager.trim() !== "" &&
+      !isValidObjectId(formData.projectManager)
+    ) {
+      toast.error("Invalid Project Manager ID.");
       return;
     }
+
+    // ✅ If projectManager is empty string, set it to null
+    const projectManager =
+      formData.projectManager && formData.projectManager.trim() !== ""
+        ? formData.projectManager
+        : null;
     // allow empty budget; validate only if provided
+
     if (formData.budget !== "" && Number.isNaN(Number(formData.budget))) {
       toast.error("Budget must be a number.");
       return;
@@ -284,10 +292,8 @@ export default function FormEditProject() {
         description: formData.description,
         client: formData.client,
         department: formData.department === "" ? null : formData.department,
-        status: formData.status === "" ? null : formData.status,
         priority: formData.priority === "" ? null : formData.priority,
-        projectManager:
-          formData.projectManager === "" ? null : formData.projectManager,
+        projectManager: projectManager,
         budget:
           formData.budget === "" ? null : parseInt(formData.budget, 10) || 0,
         startDate: formData.startDate === "" ? null : formData.startDate,
@@ -466,7 +472,7 @@ export default function FormEditProject() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">
-                          Client <span className="text-red-500">*</span>
+                          Client
                         </label>
                         <input
                           type="text"
@@ -475,28 +481,8 @@ export default function FormEditProject() {
                           onChange={(e) =>
                             handleInputChange("client", e.target.value)
                           }
-                          required
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Status <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          value={formData.status}
-                          onChange={(e) =>
-                            handleInputChange("status", e.target.value)
-                          }
-                          required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                        >
-                          <option value="">Select status</option>
-                          <option value="not started">Not Started</option>
-                          <option value="in progress">In Progress</option>
-                          <option value="completed">Completed</option>
-                        </select>
                       </div>
 
                       <div className="space-y-2 relative" ref={departmentRef}>
@@ -556,7 +542,7 @@ export default function FormEditProject() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">
-                          Budget <span className="text-red-500">*</span>
+                          Budget
                         </label>
                         <input
                           type="text"
@@ -591,7 +577,6 @@ export default function FormEditProject() {
                       <div className="space-y-2 relative" ref={managerRef}>
                         <label className="block text-sm font-medium text-gray-700">
                           Project Manager{" "}
-                          <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <input
@@ -605,7 +590,6 @@ export default function FormEditProject() {
                               handleInputChange("projectManager", "");
                             }}
                             onFocus={() => setShowManagerDropdown(true)}
-                            required
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                           {showManagerDropdown && (

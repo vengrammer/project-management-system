@@ -401,8 +401,7 @@ export default function FormAddProjectModal() {
                     {/* Description */}
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-gray-700">
-                        Project Description{" "}
-                        <span className="text-red-500">*</span>
+                        Project Description
                       </label>
                       <textarea
                         placeholder="Enter project description"
@@ -411,7 +410,6 @@ export default function FormAddProjectModal() {
                           handleInputChange("description", e.target.value)
                         }
                         rows={3}
-                        required
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                       />
                     </div>
@@ -420,7 +418,7 @@ export default function FormAddProjectModal() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">
-                          Client <span className="text-red-500">*</span>
+                          Client
                         </label>
                         <input
                           type="text"
@@ -429,7 +427,6 @@ export default function FormAddProjectModal() {
                           onChange={(e) =>
                             handleInputChange("client", e.target.value)
                           }
-                          required
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
@@ -486,7 +483,7 @@ export default function FormAddProjectModal() {
                     {/* Team Members Selection */}
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-gray-700">
-                        Team Members <span className="text-red-500">*</span>
+                        Team Members
                       </label>
                       <input
                         type="text"
@@ -543,7 +540,7 @@ export default function FormAddProjectModal() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">
-                          Budget <span className="text-red-500">*</span>
+                          Budget
                         </label>
                         <input
                           type="text"
@@ -552,7 +549,6 @@ export default function FormAddProjectModal() {
                           onChange={(e) =>
                             handleInputChange("budget", e.target.value)
                           }
-                          required
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
@@ -578,8 +574,7 @@ export default function FormAddProjectModal() {
                       {/* project manager dropdown */}
                       <div className="space-y-2 relative" ref={managerRef}>
                         <label className="block text-sm font-medium text-gray-700">
-                          Project Manager{" "}
-                          <span className="text-red-500">*</span>
+                          Project Manager
                         </label>
                         <div className="relative">
                           <input
