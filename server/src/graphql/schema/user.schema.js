@@ -34,5 +34,9 @@ export const userSchema = `#graphql
             department: ID!
             role: String
         ): ReturnMessage!
+
+        deleteUser(id: ID!): User
+
+        deactivateUser(id: ID!): User
     }
 `;

@@ -2,13 +2,14 @@
 import { Routes, Route, Navigate } from "react-router-dom"
 import NotFound from "@/components/Notfound"
 // import HomeLayout from "@/layout/AdminLayout";
-import Dashboard from "@/pages/admin/Dashboard";
+//import Dashboard from "@/pages/admin/AdminDashboard";
 //import ProjectTable from "@/pages/admin/MyProjectTable";
 import UsersTable from "@/pages/admin/UsersTable"; 
 import ProjectTable from "@/pages/admin/ProjectTable";
 import AdminSidebar from "@/layout/AdminSideBar";
 import DepartmentTable from "@/pages/admin/DepartmentTable";
 import PracticeComponent from "@/pages/admin/PracticeComponent";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
 function HomeRoute() {
     return (
       <Routes>
@@ -17,7 +18,7 @@ function HomeRoute() {
             path="/"
             element={<Navigate to="/admin/dashboard" replace />}
           />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="projects" element={<ProjectTable />} />
           <Route path="users" element={<UsersTable />} />
           <Route path="department" element={<DepartmentTable />} />

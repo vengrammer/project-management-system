@@ -13,10 +13,18 @@ import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { useParams } from "react-router-dom";
 
 // temporary user id
 const TEMP_AUTHOR_ID = "6992d115b034bbfbac83b8fb";
 
+const UPDATE_TASK_STATUS = gql`
+  mutation UpdateTask($updateTaskId: ID!, $status: String) {
+    updateTask(id: $updateTaskId, status: $status) {
+      id
+    }
+  }
+`;
 const GET_TASK = gql`
   query Task($taskId: ID!) {
     task(id: $taskId) {
@@ -85,6 +93,23 @@ const DELETE_TASKLOG = gql`
   mutation DeleteTaskLog($id: ID!) {
     deleteTaskLog(id: $id) {
       id
+    }
+  }
+`;
+
+const GET_TASKS = gql`
+  query TaskByProject($taskByProjectId: ID!) {
+    taskByProject(id: $taskByProjectId) {
+      id
+      title
+      description
+      assignedTo {
+        id
+        fullname
+      }
+      priority
+      status
+      dueDate
     }
   }
 `;
@@ -170,6 +195,7 @@ export default function TaskActivityModal({ id: taskId }) {
   const [editingId, setEditingId] = useState(null);
   const [editingContent, setEditingContent] = useState("");
   const [editingStatus, setEditingStatus] = useState("in_progress");
+  const {id} = useParams();
 
   const shouldFetch = isOpen && Boolean(taskId);
 
@@ -230,6 +256,14 @@ export default function TaskActivityModal({ id: taskId }) {
     },
   );
 
+  const [updateTask] = useMutation(UPDATE_TASK_STATUS, {
+    onError: () => {
+      toast.error("Error in updating the task");
+    },
+    refetchQueries: [{ query: GET_TASKS, variables: { taskByProjectId: id } }],
+    awaitRefetchQueries: true,
+  });
+
   const handleDelete = (taskLogId) => {
     // show confirmation first, then delete only if user confirms
     Swal.fire({
@@ -259,6 +293,13 @@ export default function TaskActivityModal({ id: taskId }) {
         task: taskId,
         status: selectedStatus,
         author: TEMP_AUTHOR_ID,
+      },
+    });
+
+    await updateTask({
+      variables: {
+        updateTaskId: taskId,
+        status: "in_progress",
       },
     });
   };

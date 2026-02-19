@@ -105,7 +105,7 @@ export default function FormAddProjectModal() {
     description: "",
     client: "",
     department: "",
-    status: "",
+    status: "not started",
     priority: "",
     projectManager: "",
     budget: "",
@@ -432,25 +432,6 @@ export default function FormAddProjectModal() {
                           required
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Status <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          value={formData.status}
-                          onChange={(e) =>
-                            handleInputChange("status", e.target.value)
-                          }
-                          required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                        >
-                          <option value="">Select status</option>
-                          <option value="not started">Not Started</option>
-                          <option value="in progress">In Progress</option>
-                          <option value="completed">Completed</option>
-                        </select>
                       </div>
 
                       <div className="space-y-2 relative" ref={departmentRef}>

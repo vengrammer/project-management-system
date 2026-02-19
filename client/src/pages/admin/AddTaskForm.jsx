@@ -34,6 +34,15 @@ const GET_TASKS = gql`
   }
 `;
 
+const UPDATE_PROJECT_STATUS = gql`
+  mutation updateProject($updateProjectId: ID!, $status: String) {
+    updateProject(id: $updateProjectId, status: $status) {
+      message
+    }
+  }
+`;
+
+
 const INSERT_TASK = gql`
   mutation createTask(
     $title: String!
@@ -59,6 +68,35 @@ const INSERT_TASK = gql`
   }
 `;
 
+const GET_PROJECTS = gql`
+  query Project($projectId: ID!) {
+    project(id: $projectId) {
+      title
+      client
+      budget
+      description
+      priority
+      startDate
+      status
+      endDate
+      id
+      department {
+        id
+        name
+      }
+      projectManager {
+        id
+        fullname
+      }
+      users {
+        id
+        fullname
+        position
+      }
+    }
+  }
+`;
+
 function AddTaskForm() {
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [newTask, setNewTask] = useState({
@@ -71,6 +109,16 @@ function AddTaskForm() {
   });
 
   const { id } = useParams();
+
+  //update the project status to in progress when the user add task
+  const [updateProject] = useMutation(UPDATE_PROJECT_STATUS, {
+    onError: () => {
+      toast.error("Failed to update the project");
+    },
+    refetchQueries: [{ query: GET_PROJECTS, variables: { projectId: id } }],
+  });
+
+
   //get the member
   const {
     loading: memberLoading,
@@ -114,7 +162,15 @@ function AddTaskForm() {
         assignedTo: newTask.assignedTo || null,
       },
     });
+
+     updateProject({
+       variables: {
+         updateProjectId: id,
+         status: "in progress",
+       },
+     });
   };
+
 
   if (memberLoading) {
     return (
@@ -208,7 +264,7 @@ function AddTaskForm() {
                     </select>
                   </div>
 
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Status *
                     </label>
@@ -224,7 +280,7 @@ function AddTaskForm() {
                       <option value="in_progress">In Progress</option>
                       <option value="completed">Completed</option>
                     </select>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

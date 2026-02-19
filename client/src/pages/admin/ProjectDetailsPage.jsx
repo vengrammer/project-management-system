@@ -10,6 +10,8 @@ import {
   CheckCircle2,
   Trash2,
   User,
+  Pen,
+  Check,
 } from "lucide-react";
 
 import { useNavigate, useParams } from "react-router-dom";
@@ -310,14 +312,14 @@ const ProjectDetailsPage = () => {
                   {project?.title ? project?.title : "No project title"}
                 </h1>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs flex gap-1 font-medium border ${getStatusColor(
+                  className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
                     project?.status,
                   )}`}
                 >
                   {project?.status ? project?.status : "No project status"}
                 </span>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs flex gap-1 font-medium border ${getPriorityColor(
+                  className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(
                     project?.priority,
                   )}`}
                 >
@@ -362,7 +364,15 @@ const ProjectDetailsPage = () => {
 
             {/* Buttons for edit project and add member*/}
             <div className="flex gap-3">
-              <FormEditProject />
+              <div>
+                <FormEditProject />
+              </div>
+              <div>
+                <button className="flex items-center gap-2 px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                  <Check size={20} />
+                  Mark As Done
+                </button>
+              </div>
             </div>
           </div>
 
@@ -456,7 +466,8 @@ const ProjectDetailsPage = () => {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-         className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        >
           {/* Tasks Section (2 columns) */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">

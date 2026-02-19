@@ -24,7 +24,7 @@ export const userResolvers = {
         console.log("return users error: ", error);
       }
     },
-    //return user by id 
+    //return user by id
     user: async (_, { id }) => {
       try {
         const user = await User.findById(id).populate("department");
@@ -120,6 +120,15 @@ export const userResolvers = {
       } catch (error) {
         console.error("Create user error:", error);
         throw new Error(error.message || "Failed to create user");
+      }
+    },
+    deleteUser: async (_, { id }) => {
+      try {
+        const deletedUser = await User.findByIdAndDelete(id );
+        return deletedUser;
+      } catch (error) {
+        console.error(error);
+        throw new Error(error);
       }
     },
   },
