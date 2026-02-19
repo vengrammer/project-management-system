@@ -6,6 +6,7 @@ export const userSchema = `#graphql
         role: String
         position: String
         email: String
+        username: String
         status: Boolean
         createdAt: String
         updatedAt: String
@@ -32,6 +33,18 @@ export const userSchema = `#graphql
             username: String!
             status: Boolean!
             department: ID!
+            role: String
+        ): ReturnMessage!
+
+        updateUser(
+            id: ID!
+            fullname: String
+            email: String
+            password: String
+            position: String
+            username: String
+            status: Boolean
+            department: ID
             role: String
         ): ReturnMessage!
 

@@ -17,6 +17,7 @@ export const userResolvers = {
           position: user.position,
           role: user.role,
           status: user.status,
+          username: user.username,
           createdAt: user.createdAt.toISOString(),
           updatedAt: user.updatedAt.toISOString(),
         }));
@@ -31,9 +32,21 @@ export const userResolvers = {
         if (!user) {
           throw new Error("Cannot find user");
         }
-        return user;
+        return {
+          id: user._id.toString(),
+          fullname: user.fullname,
+          email: user.email,
+          username: user.username,
+          department: user.department,
+          position: user.position,
+          role: user.role,
+          status: user.status,
+          createdAt: user.createdAt?.toISOString() || null,
+          updatedAt: user.updatedAt?.toISOString() || null,
+        };
       } catch (error) {
         console.log("Error User Find", error);
+        throw new Error(error.message);
       }
     },
     //get all the user with a role manager
@@ -80,6 +93,7 @@ export const userResolvers = {
           position: user.position,
           role: user.role,
           status: user.status,
+          username: user.username,
           createdAt: user.createdAt?.toISOString() || null,
           updatedAt: user.updatedAt?.toISOString() || null,
         }));
@@ -93,6 +107,21 @@ export const userResolvers = {
     createUser: async (_, args) => {
       try {
         userValidator.parse(args);
+
+        // Check if email already exists
+        const existingEmail = await User.findOne({ email: args.email });
+        if (existingEmail) {
+          throw new Error("EMAIL_EXISTS: This email is already registered");
+        }
+
+        // Check if username already exists
+        const existingUsername = await User.findOne({
+          username: args.username,
+        });
+        if (existingUsername) {
+          throw new Error("USERNAME_EXISTS");
+        }
+
         const newUser = await User.create({
           fullname: args.fullname,
           email: args.email,
@@ -113,18 +142,105 @@ export const userResolvers = {
             position: newUser.position,
             role: newUser.role,
             status: newUser.status,
+            username: newUser.username,
             createdAt: newUser.createdAt.toISOString(),
             updatedAt: newUser.updatedAt.toISOString(),
           },
         };
       } catch (error) {
         console.error("Create user error:", error);
+        // Handle email exists error - show direct message
+        if (error.message.includes("EMAIL_EXISTS")) {
+          throw new Error(
+            "This email is already registered. Please use a different email.",
+          );
+        }
+        // Handle username exists error - generic message
+        if (error.message.includes("USERNAME_EXISTS")) {
+          throw new Error("Please change your username and try again.");
+        }
         throw new Error(error.message || "Failed to create user");
+      }
+    },
+    updateUser: async (_, args) => {
+      try {
+        const { id, ...updateData } = args;
+
+        // Check if user exists
+        const existingUser = await User.findById(id);
+        if (!existingUser) {
+          throw new Error("User not found");
+        }
+
+        // Check if email already exists for another user
+        if (updateData.email && updateData.email !== existingUser.email) {
+          const existingEmail = await User.findOne({ email: updateData.email });
+          if (existingEmail) {
+            throw new Error("EMAIL_EXISTS: This email is already registered");
+          }
+        }
+
+        // Check if username already exists for another user
+        if (
+          updateData.username &&
+          updateData.username !== existingUser.username
+        ) {
+          const existingUsername = await User.findOne({
+            username: updateData.username,
+          });
+          if (existingUsername) {
+            throw new Error("USERNAME_EXISTS");
+          }
+        }
+
+        // Hash password if it's being updated
+        if (updateData.password) {
+          const bcrypt = await import("bcryptjs");
+          updateData.password = await bcrypt.default.hash(
+            updateData.password,
+            10,
+          );
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+          id,
+          { $set: updateData },
+          { new: true },
+        ).populate("department");
+
+        return {
+          message: "User updated successfully",
+          user: {
+            id: updatedUser._id,
+            fullname: updatedUser.fullname,
+            email: updatedUser.email,
+            department: updatedUser.department,
+            position: updatedUser.position,
+            role: updatedUser.role,
+            status: updatedUser.status,
+            username: updatedUser.username,
+            createdAt: updatedUser.createdAt.toISOString(),
+            updatedAt: updatedUser.updatedAt.toISOString(),
+          },
+        };
+      } catch (error) {
+        console.error("Update user error:", error);
+        // Handle email exists error - show direct message
+        if (error.message.includes("EMAIL_EXISTS")) {
+          throw new Error(
+            "This email is already registered. Please use a different email.",
+          );
+        }
+        // Handle username exists error - generic message
+        if (error.message.includes("USERNAME_EXISTS")) {
+          throw new Error("Please change your username and try again.");
+        }
+        throw new Error(error.message || "Failed to update user");
       }
     },
     deleteUser: async (_, { id }) => {
       try {
-        const deletedUser = await User.findByIdAndDelete(id );
+        const deletedUser = await User.findByIdAndDelete(id);
         return deletedUser;
       } catch (error) {
         console.error(error);

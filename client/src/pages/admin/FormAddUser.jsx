@@ -231,7 +231,7 @@ export default function FormAddUser() {
                     </option>
 
                     {dataDepartment?.departments?.map((d) => (
-                      <option value={d.id}>{d.name}</option>
+                      <option key={d.id} value={d.id}>{d.name}</option>
                     ))}
                   </select>
                 </div>

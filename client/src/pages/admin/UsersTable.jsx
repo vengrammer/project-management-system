@@ -1,10 +1,11 @@
-import { Eye, Pen, Trash2 } from "lucide-react";
+import { Ban, Eye, Pen, Power, PowerOff, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
 import FormAddUser from "./FormAddUser";
+import  FormEditUser  from "./FormEditUser";
 
 export default function UsersTable() {
   const GET_USERS = gql`
@@ -22,15 +23,47 @@ export default function UsersTable() {
       }
     }
   `;
+
+  const UPDATE_USER_STATUS = gql`
+    mutation UpdateUser($updateUserId: ID!, $status: Boolean) {
+      updateUser(id: $updateUserId, status: $status) {
+        message
+      }
+    }
+  `;
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  const [updateUserStatus, { loading: loadingUpdateUserStatus }] = useMutation(
+    UPDATE_USER_STATUS,
+    {
+      onCompleted: () => {
+        toast.success("Successfully update account!");
+      },
+      onError: () => {
+        toast.error("Failed to update account");
+      },
+      refetchQueries: [{ query: GET_USERS }],
+    },
+  );
+
+  const handleUpdateStatus = (id, status) => {
+    console.log(id, status)
+
+    updateUserStatus({
+      variables: {
+        updateUserId: id,
+        status: status,
+      },
+    });
+  };
 
   // Get the users data using Apollo Client
   const { loading, error, data } = useQuery(GET_USERS);
 
   // Handle loading state
-  if (loading) {
+  if (loading || loadingUpdateUserStatus) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <span className="loading loading-spinner loading-xl"></span>
@@ -69,25 +102,6 @@ export default function UsersTable() {
   const endIndex = startIndex + itemsPerPage;
   const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
-  // Actions
-  const handleView = (user) => {
-    console.log("View user:", user);
-    alert(`Viewing: ${user.fullname}`);
-  };
-
-  const handleEdit = (user) => {
-    console.log("Edit user:", user);
-    alert(`Editing: ${user.fullname}`);
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      console.log("Delete user:", id);
-      // TODO: Implement delete mutation
-      toast.success("User deleted successfully");
-    }
-  };
-
   // Helper functions
   const getRoleColor = (role) => {
     const colors = {
@@ -116,7 +130,7 @@ export default function UsersTable() {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
             <h1 className="text-2xl font-bold text-gray-800">Users</h1>
             <div className="px-4 py-2 rounded-lg w-full sm:w-auto">
-              <FormAddUser/>
+              <FormAddUser />
             </div>
           </div>
 
@@ -222,29 +236,19 @@ export default function UsersTable() {
 
                   {/* Actions*/}
                   <div className="flex gap-2 pt-2 border-t border-gray-100 md:border-t-0 md:pt-0 md:gap-3">
+                    <FormEditUser userId={user?.id} />
                     <button
-                      onClick={() => handleView(user)}
-                      className="flex-1 md:flex-none bg-blue-50 md:bg-transparent text-blue-600 hover:bg-blue-100 md:hover:bg-transparent md:hover:text-blue-800 py-2 md:py-0 rounded-lg md:rounded-none text-sm font-medium md:font-normal"
-                      title="View"
-                    >
-                      <span className="md:hidden">View</span>
-                      <Eye size={20} className="hidden md:block" />
-                    </button>
-                    <button
-                      onClick={() => handleEdit(user)}
-                      className="flex-1 md:flex-none bg-green-50 md:bg-transparent text-green-600 hover:bg-green-100 md:hover:bg-transparent md:hover:text-green-800 py-2 md:py-0 rounded-lg md:rounded-none text-sm font-medium md:font-normal"
-                      title="Edit"
-                    >
-                      <span className="md:hidden">Edit</span>
-                      <Pen size={20} className="hidden md:block" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      className="flex-1 md:flex-none bg-red-50 md:bg-transparent text-red-600 hover:bg-red-100 md:hover:bg-transparent md:hover:text-red-800 py-2 md:py-0 rounded-lg md:rounded-none text-sm font-medium md:font-normal"
-                      title="Delete"
+                      onClick={() => handleUpdateStatus(user?.id, !user?.status)}
+                      className={`flex hover:cursor-pointer items-center gap-2 ${user.status? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}  text-white  px-3 py-3 rounded-md text-sm font-medium`}
+                      title="Ban User"
                     >
                       <span className="md:hidden">Delete</span>
-                      <Trash2 size={20} className="hidden md:block" />
+
+                      {user.status ? (
+                        <PowerOff size={20} className="hidden md:block" />
+                      ) : (
+                        <Power size={20} className="hidden md:block" />
+                      )}
                     </button>
                   </div>
                 </div>
