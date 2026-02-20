@@ -229,8 +229,7 @@ const ProjectDetailsPage = () => {
 
   const handleMarkAsDone = () => {
     Swal.fire({
-      title: "Are you sure you want to mark this project as completed?",
-      text: "Mark as done!",
+      title: "Mark this project as done?",
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",

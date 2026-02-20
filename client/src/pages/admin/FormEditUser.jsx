@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, Pen } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { gql } from "@apollo/client";
@@ -47,7 +47,6 @@ const GET_USER = gql`
       department {
         id
       }
-      username
     }
   }
 `;
@@ -102,10 +101,11 @@ export default function FormEditUser({ userId }) {
 
   /* ===========================
      GET USER DATA
+     — fetch when modal opens using useEffect
   =========================== */
-  const { loading: loadingUser } = useQuery(GET_USER, {
-    variables: { userId },
-    skip: !userId,
+  const { loading: loadingUser, refetch } = useQuery(GET_USER, {
+    skip: true, // Always skip, we'll call refetch when modal opens
+    fetchPolicy: "network-only",
     onCompleted: (data) => {
       if (data?.user) {
         setFormData({
@@ -122,7 +122,13 @@ export default function FormEditUser({ userId }) {
       }
     },
   });
-  console.log(formData);
+
+  // Trigger query when modal opens
+  useEffect(() => {
+    if (open && userId) {
+      refetch({ userId });
+    }
+  }, [open, userId, refetch]);
 
   /* ===========================
      INPUT HANDLER
@@ -134,30 +140,25 @@ export default function FormEditUser({ userId }) {
   /* ===========================
      GET DEPARTMENTS
   =========================== */
-  const { data: dataDepartment } =
-    useQuery(GET_DEPARTMENTS);
+  const { data: dataDepartment } = useQuery(GET_DEPARTMENTS);
 
   /* ===========================
      UPDATE MUTATION
   =========================== */
-  const [updateUser] = useMutation(
-    UPDATE_USER,
-    {
-      onCompleted: () => {
-        toast.success("Successfully updated account!");
-        setOpen(false);
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-      refetchQueries: [{ query: GET_USERS }],
+  const [updateUser] = useMutation(UPDATE_USER, {
+    onCompleted: () => {
+      toast.success("Successfully updated account!");
+      setOpen(false);
     },
-  );
+    onError: (error) => {
+      toast.error(error.message);
+    },
+    refetchQueries: [{ query: GET_USERS }],
+  });
 
   /* ===========================
      SUBMIT
   =========================== */
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -212,7 +213,7 @@ export default function FormEditUser({ userId }) {
                 onSubmit={handleSubmit}
                 className="flex flex-col gap-4 mt-4"
               >
-                {/* Fullname */}
+                {/* Fullname — pre-filled */}
                 <input
                   type="text"
                   placeholder="Fullname"
@@ -223,7 +224,7 @@ export default function FormEditUser({ userId }) {
                   className="border px-3 py-2 rounded-md"
                 />
 
-                {/* Department */}
+                {/* Department — pre-selected */}
                 <select
                   value={formData.department}
                   onChange={(e) =>
@@ -239,7 +240,7 @@ export default function FormEditUser({ userId }) {
                   ))}
                 </select>
 
-                {/* Role */}
+                {/* Role — pre-selected */}
                 <select
                   value={formData.role}
                   onChange={(e) => handleInputChange("role", e.target.value)}
@@ -251,7 +252,7 @@ export default function FormEditUser({ userId }) {
                   <option value="user">Employee</option>
                 </select>
 
-                {/* Position */}
+                {/* Position — pre-filled */}
                 <input
                   type="text"
                   placeholder="Position"
@@ -262,7 +263,7 @@ export default function FormEditUser({ userId }) {
                   className="border px-3 py-2 rounded-md"
                 />
 
-                {/* Email */}
+                {/* Email — pre-filled */}
                 <input
                   type="email"
                   placeholder="Email"
@@ -271,7 +272,7 @@ export default function FormEditUser({ userId }) {
                   className="border px-3 py-2 rounded-md"
                 />
 
-                {/* Username (optional update) */}
+                {/* Username — intentionally blank */}
                 <input
                   type="text"
                   placeholder="Username (leave blank to keep current)"
@@ -282,7 +283,7 @@ export default function FormEditUser({ userId }) {
                   className="border px-3 py-2 rounded-md"
                 />
 
-                {/* Password (optional update) */}
+                {/* Password — intentionally blank */}
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
