@@ -1,11 +1,13 @@
 import Department from "../../model/department.model.js";
 import User from "../../model/user.model.js";
+import Project from "../../model/project.model.js"
+import {GraphQLError} from "graphql";
 
 export const departmentResolver = {
   Query: {
     departments: async () => {
       try {
-        const departments = await Department.find();      
+        const departments = await Department.find();
         return departments;
       } catch (error) {
         console.log("error", error);
@@ -37,6 +39,39 @@ export const departmentResolver = {
       } catch (error) {
         console.error("Create department error:", error);
         throw new Error(error.message || "Failed to create department");
+      }
+    },
+    deleteDepartment: async (_, { id }) => {
+      try {
+        // 1️⃣ Check if department is used
+        const departmentUsedInUser = await User.find({ department: id });
+        const departmentUsedInProject = await Project.find({ department: id });
+
+        if (
+          departmentUsedInUser.length > 0 ||
+          departmentUsedInProject.length > 0
+        ) {
+          throw new GraphQLError("Failed: This department is currently used", {
+            extensions: { code: "USED" },
+          });
+        }
+
+        // 2️⃣ Now safe to delete
+        const deletedDepartment = await Department.findByIdAndDelete(id);
+
+        if (!deletedDepartment) {
+          throw new GraphQLError("Department not found", {
+            extensions: { code: "NOT_FOUND" },
+          });
+        }
+
+        return {
+          message: "Successfully deleted department",
+          department: deletedDepartment,
+        };
+      } catch (error) {
+        console.error(error);
+        throw error;
       }
     },
   },

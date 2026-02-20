@@ -108,24 +108,51 @@ export default function FormAddUser() {
     },
   );
 
-  if (loadingDepartment || loadingCreateUser) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-xl"></span>
-      </div>
-    );
-  }
-  if (errorDepartment) {
-    toast.error("Error in returning department");
-  }
-
-  console.log(dataDepartment.departments);
-
   const handleAddUser = (e) => {
     e.preventDefault();
+    const regex = /^[a-zA-Z\s.'-]+$/;
+    if (!regex.test(formData.fullname)) {
+      toast.error(
+        "Fullname can only contain letters, spaces, dots, apostrophes, and hyphens",
+      );
+      return;
+    }
+
+    if (formData.username.length < 5) {
+      toast.error("Username must be at least 8 characters");
+      return;
+    }
+
+    if (formData.password.length < 5) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+
+    if (loadingDepartment || loadingCreateUser) {
+      return (
+        <div className="flex justify-center items-center min-h-screen">
+          <span className="loading loading-spinner loading-xl"></span>
+        </div>
+      );
+    }
+    if (errorDepartment) {
+      toast.error("Error in returning department");
+    }
+
+    //uppercase the first letter in the name
+    const formatFullname = (name) => {
+      return name
+        .split(" ")
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
+        .join(" "); 
+    };
+    const formattedFullname = formatFullname(formData.fullname);
+
     createUser({
       variables: {
-        fullname: formData.fullname,
+        fullname: formattedFullname,
         department: formData.department,
         role: formData.role,
         position: formData.position,
@@ -231,7 +258,9 @@ export default function FormAddUser() {
                     </option>
 
                     {dataDepartment?.departments?.map((d) => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
                     ))}
                   </select>
                 </div>

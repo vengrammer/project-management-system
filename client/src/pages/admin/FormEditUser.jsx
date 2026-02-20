@@ -80,8 +80,6 @@ const UPDATE_USER = gql`
   }
 `;
 
-
-
 /* ===========================
    COMPONENT
 =========================== */
@@ -126,8 +124,6 @@ export default function FormEditUser({ userId }) {
   });
   console.log(formData);
 
-  
-
   /* ===========================
      INPUT HANDLER
   =========================== */
@@ -138,13 +134,13 @@ export default function FormEditUser({ userId }) {
   /* ===========================
      GET DEPARTMENTS
   =========================== */
-  const { loading: loadingDepartment, data: dataDepartment } =
+  const { data: dataDepartment } =
     useQuery(GET_DEPARTMENTS);
 
   /* ===========================
      UPDATE MUTATION
   =========================== */
-  const [updateUser, { loading: loadingUpdateUser }] = useMutation(
+  const [updateUser] = useMutation(
     UPDATE_USER,
     {
       onCompleted: () => {
@@ -158,16 +154,9 @@ export default function FormEditUser({ userId }) {
     },
   );
 
-  
-
-
-
   /* ===========================
      SUBMIT
   =========================== */
- 
-
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -186,18 +175,6 @@ export default function FormEditUser({ userId }) {
       },
     });
   };
-
-  if (
-    loadingDepartment ||
-    loadingUpdateUser ||
-    loadingUser
-  ) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-xl"></span>
-      </div>
-    );
-  }
 
   /* ===========================
      RENDER
@@ -219,106 +196,121 @@ export default function FormEditUser({ userId }) {
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4"
           onClick={(e) => e.target === e.currentTarget && setOpen(false)}
         >
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <div className="flex justify-center mb-4">
-              <img src={logo} alt="logo" className="h-10 w-auto" />
+          {loadingUser ? (
+            <div className="flex justify-center items-center bg-white rounded-xl p-8">
+              <span className="loading loading-spinner loading-xl"></span>
             </div>
-
-            <h2 className="text-xl font-bold text-center">Edit User</h2>
-
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
-              {/* Fullname */}
-              <input
-                type="text"
-                placeholder="Fullname"
-                value={formData.fullname}
-                onChange={(e) => handleInputChange("fullname", e.target.value)}
-                className="border px-3 py-2 rounded-md"
-              />
-
-              {/* Department */}
-              <select
-                value={formData.department}
-                onChange={(e) =>
-                  handleInputChange("department", e.target.value)
-                }
-                className="border px-3 py-2 rounded-md"
-              >
-                <option value="">Select Department</option>
-                {dataDepartment?.departments?.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-
-              {/* Role */}
-              <select
-                value={formData.role}
-                onChange={(e) => handleInputChange("role", e.target.value)}
-                className="border px-3 py-2 rounded-md"
-              >
-                <option value="">Select Role</option>
-                <option value="admin">Admin</option>
-                <option value="manager">Manager</option>
-                <option value="user">Employee</option>
-              </select>
-
-              {/* Position */}
-              <input
-                type="text"
-                placeholder="Position"
-                value={formData.position}
-                onChange={(e) => handleInputChange("position", e.target.value)}
-                className="border px-3 py-2 rounded-md"
-              />
-
-              {/* Email */}
-              <input
-                type="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                className="border px-3 py-2 rounded-md"
-              />
-
-              {/* Username (optional update) */}
-              <input
-                type="text"
-                placeholder="Username (leave blank to keep current)"
-                value={formData.username}
-                onChange={(e) => handleInputChange("username", e.target.value)}
-                className="border px-3 py-2 rounded-md"
-              />
-
-              {/* Password (optional update) */}
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password (leave blank to keep current)"
-                  value={formData.password}
-                  onChange={(e) =>
-                    handleInputChange("password", e.target.value)
-                  }
-                  className="border px-3 py-2 rounded-md w-full pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2 text-gray-400"
-                >
-                  {showPassword ? <EyeOff size={25} /> : <Eye size={25} />}
-                </button>
+          ) : (
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+              <div className="flex justify-center mb-4">
+                <img src={logo} alt="logo" className="h-10 w-auto" />
               </div>
 
-              <button
-                type="submit"
-                className="bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+              <h2 className="text-xl font-bold text-center">Edit User</h2>
+
+              <form
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-4 mt-4"
               >
-                Update Account
-              </button>
-            </form>
-          </div>
+                {/* Fullname */}
+                <input
+                  type="text"
+                  placeholder="Fullname"
+                  value={formData.fullname}
+                  onChange={(e) =>
+                    handleInputChange("fullname", e.target.value)
+                  }
+                  className="border px-3 py-2 rounded-md"
+                />
+
+                {/* Department */}
+                <select
+                  value={formData.department}
+                  onChange={(e) =>
+                    handleInputChange("department", e.target.value)
+                  }
+                  className="border px-3 py-2 rounded-md"
+                >
+                  <option value="">Select Department</option>
+                  {dataDepartment?.departments?.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Role */}
+                <select
+                  value={formData.role}
+                  onChange={(e) => handleInputChange("role", e.target.value)}
+                  className="border px-3 py-2 rounded-md"
+                >
+                  <option value="">Select Role</option>
+                  <option value="admin">Admin</option>
+                  <option value="manager">Manager</option>
+                  <option value="user">Employee</option>
+                </select>
+
+                {/* Position */}
+                <input
+                  type="text"
+                  placeholder="Position"
+                  value={formData.position}
+                  onChange={(e) =>
+                    handleInputChange("position", e.target.value)
+                  }
+                  className="border px-3 py-2 rounded-md"
+                />
+
+                {/* Email */}
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  className="border px-3 py-2 rounded-md"
+                />
+
+                {/* Username (optional update) */}
+                <input
+                  type="text"
+                  placeholder="Username (leave blank to keep current)"
+                  value={formData.username}
+                  onChange={(e) =>
+                    handleInputChange("username", e.target.value)
+                  }
+                  className="border px-3 py-2 rounded-md"
+                />
+
+                {/* Password (optional update) */}
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password (leave blank to keep current)"
+                    value={formData.password}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
+                    className="border px-3 py-2 rounded-md w-full pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-2 text-gray-400"
+                  >
+                    {showPassword ? <EyeOff size={25} /> : <Eye size={25} />}
+                  </button>
+                </div>
+
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                >
+                  Update Account
+                </button>
+              </form>
+            </div>
+          )}
         </div>
       )}
     </>

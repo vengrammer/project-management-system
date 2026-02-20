@@ -1,9 +1,11 @@
 import { Eye, Pen, Trash2, Users } from "lucide-react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
+import FormAddDepartment from "./FormAddDepartment";
+import Swal from "sweetalert2";
 
 const GET_DEPARTMENT = gql`
   query Departments {
@@ -18,7 +20,15 @@ const GET_DEPARTMENT = gql`
     }
   }
 `;
- 
+
+const DELETE_DEPARTMENT = gql`
+  mutation deleteDepartment($deleteDepartmentId: ID!) {
+    deleteDepartment(id: $deleteDepartmentId) {
+      message
+    }
+  }
+`;
+
 export default function DepartmentTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,6 +36,42 @@ export default function DepartmentTable() {
 
   // Get the department data
   const { loading, error, data } = useQuery(GET_DEPARTMENT);
+
+  //DELETE DEPARTMENT ID IT UNUSED
+  const [deleteDepartment] = useMutation(DELETE_DEPARTMENT, {
+    onCompleted: () => {
+      toast.success("Successfully deleted department");
+    },
+    onError: (error) => {
+      //check if the error is has this
+      if (error.message.includes("Failed: This department is currently used")) {
+        toast.error(error.message);
+        return;
+      }
+      // 3️⃣ Default fallback
+      toast.error("Failed to delete department");
+    },
+    refetchQueries: [{ query: GET_DEPARTMENT }],
+    awaitRefetchQueries: true,
+  });
+  const handleDelete = (id) => {
+    console.log(id);
+    Swal.fire({
+      title: "Are you sure you want to delete department?",
+      text: "You won't be able to revert this!",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        deleteDepartment({
+          variables: { deleteDepartmentId: id },
+        });
+      }
+    });
+  };
 
   // Handle loading state
   if (loading) {
@@ -64,22 +110,9 @@ export default function DepartmentTable() {
   const endIndex = startIndex + itemsPerPage;
   const currentDepartments = filteredDepartments.slice(startIndex, endIndex);
 
-  // Actions
-  const handleView = (department) => {
-    console.log("View department:", department);
-    alert(`Viewing: ${department.name}`);
-  };
-
   const handleEdit = (department) => {
     console.log("Edit department:", department);
     alert(`Editing: ${department.name}`);
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this department?")) {
-      console.log("Delete department:", id);
-      toast.success("Department deleted successfully");
-    }
   };
 
   const getStatusColor = (isActive) => {
@@ -98,9 +131,7 @@ export default function DepartmentTable() {
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
             <h1 className="text-2xl font-bold text-gray-800">Departments</h1>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">
-              + Add Department
-            </button>
+            <FormAddDepartment />
           </div>
 
           <input
@@ -180,16 +211,8 @@ export default function DepartmentTable() {
                   {/* Actions*/}
                   <div className="flex gap-2 pt-2 border-t border-gray-100 lg:border-t-0 lg:pt-0 lg:gap-3">
                     <button
-                      onClick={() => handleView(department)}
-                      className="flex-1 lg:flex-none bg-blue-50 lg:bg-transparent text-blue-600 hover:bg-blue-100 lg:hover:bg-transparent lg:hover:text-blue-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
-                      title="View"
-                    >
-                      <span className="lg:hidden">View</span>
-                      <Eye size={20} className="hidden lg:block" />
-                    </button>
-                    <button
                       onClick={() => handleEdit(department)}
-                      className="flex-1 lg:flex-none bg-green-50 lg:bg-transparent text-green-600 hover:bg-green-100 lg:hover:bg-transparent lg:hover:text-green-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
+                      className="flex-1 lg:flex-none px-2 py-2 rounded cursor-pointer  bg-green-600 text-white hover:bg-green-700  text-sm font-medium lg:font-normal"
                       title="Edit"
                     >
                       <span className="lg:hidden">Edit</span>
@@ -197,7 +220,7 @@ export default function DepartmentTable() {
                     </button>
                     <button
                       onClick={() => handleDelete(department.id)}
-                      className="flex-1 lg:flex-none bg-red-50 lg:bg-transparent text-red-600 hover:bg-red-100 lg:hover:bg-transparent lg:hover:text-red-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
+                      className="flex-1 lg:flex-none bg-red-600 px-2 py-2 rounded cursor-pointer text-white hover:bg-red-700 text-sm font-medium lg:font-normal"
                       title="Delete"
                     >
                       <span className="lg:hidden">Delete</span>

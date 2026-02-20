@@ -250,13 +250,13 @@ const ProjectDetailsPage = () => {
 
   const handleRemoveMember = (userId) => {
     Swal.fire({
-      title: "Are you sure you want to delete this member?",
-      text: "You won't be able to revert this!",
+      title: "Are you sure you want to remove this member?",
+      text: "remove member from project!",
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Confirm!",
+      confirmButtonText: "Confirm",
     }).then((result) => {
       if (result.isConfirmed) {
         updateProject({
@@ -591,7 +591,7 @@ const ProjectDetailsPage = () => {
                           <div>
                             <button
                               onClick={() => handleDeleteTask(task.id)}
-                              className="p-2 text-red-600 hover:bg-red-700 hover:text-white rounded-lg transition-colors cursor-pointer"
+                              className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors cursor-pointer"
                             >
                               <Trash2 size={18} />
                             </button>
@@ -661,7 +661,7 @@ const ProjectDetailsPage = () => {
                           <div className="pl-3">
                             <button
                               onClick={() => handleRemoveMember(member.id)}
-                              className="py-3 px-3 text-red-600 hover:text-white hover:bg-red-700 rounded transition-colors cursor-pointer"
+                              className="py-2 px-2 text-white bg-red-600 hover:bg-red-700 rounded transition-colors cursor-pointer"
                               title="Delete row"
                             >
                               <Trash2 size={16} />

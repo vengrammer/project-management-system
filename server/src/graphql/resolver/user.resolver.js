@@ -1,6 +1,5 @@
 import Department from "../../model/department.model.js";
 import User from "../../model/user.model.js";
-import { userValidator } from "../validator/user.validator.js";
 
 // data = fullname, department, role, email, username, password, timestamps
 export const userResolvers = {
@@ -106,8 +105,7 @@ export const userResolvers = {
   Mutation: {
     createUser: async (_, args) => {
       try {
-        userValidator.parse(args);
-
+        
         // Check if email already exists
         const existingEmail = await User.findOne({ email: args.email });
         if (existingEmail) {
@@ -121,7 +119,6 @@ export const userResolvers = {
         if (existingUsername) {
           throw new Error("USERNAME_EXISTS");
         }
-
         const newUser = await User.create({
           fullname: args.fullname,
           email: args.email,

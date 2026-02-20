@@ -1,11 +1,12 @@
-import { Ban, Eye, Pen, Power, PowerOff, Trash2 } from "lucide-react";
+import { Power, PowerOff } from "lucide-react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
 import FormAddUser from "./FormAddUser";
-import  FormEditUser  from "./FormEditUser";
+import FormEditUser from "./FormEditUser";
+import Swal from "sweetalert2";
 
 export default function UsersTable() {
   const GET_USERS = gql`
@@ -49,13 +50,23 @@ export default function UsersTable() {
   );
 
   const handleUpdateStatus = (id, status) => {
-    console.log(id, status)
-
-    updateUserStatus({
-      variables: {
-        updateUserId: id,
-        status: status,
-      },
+    Swal.fire({
+      title: "Are you sure you want to update status?",
+      text: "active or inactive account!",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        updateUserStatus({
+          variables: {
+            updateUserId: id,
+            status: status,
+          },
+        });
+      }
     });
   };
 
@@ -238,8 +249,14 @@ export default function UsersTable() {
                   <div className="flex gap-2 pt-2 border-t border-gray-100 md:border-t-0 md:pt-0 md:gap-3">
                     <FormEditUser userId={user?.id} />
                     <button
-                      onClick={() => handleUpdateStatus(user?.id, !user?.status)}
-                      className={`flex hover:cursor-pointer items-center gap-2 ${user.status? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}  text-white  px-3 py-3 rounded-md text-sm font-medium`}
+                      onClick={() =>
+                        handleUpdateStatus(user?.id, !user?.status)
+                      }
+                      className={`flex hover:cursor-pointer items-center gap-2 ${
+                        user.status
+                          ? "bg-red-600 hover:bg-red-700"
+                          : "bg-green-600 hover:bg-green-700"
+                      }  text-white  px-3 py-3 rounded-md text-sm font-medium`}
                       title="Ban User"
                     >
                       <span className="md:hidden">Delete</span>

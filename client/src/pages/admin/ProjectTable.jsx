@@ -1,4 +1,5 @@
 import {
+  Archive,
   CalendarArrowDown,
   CalendarArrowUp,
   Eye,
@@ -103,7 +104,7 @@ export default function ProjectTable() {
 
   const handleDelete = async (id) => {
     Swal.fire({
-      title: "Are you sure?",
+      title: "Are you sure you want to delete this project?",
       text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
@@ -312,22 +313,34 @@ export default function ProjectTable() {
                   </div>
 
                   {/* Actions - Full width buttons on mobile, icon buttons on desktop */}
-                  <div className="flex gap-2 pt-2 border-t border-gray-100 lg:border-t-0 lg:pt-0 lg:gap-3">
+                  <div className="flex gap-2 pt-2  border-t border-gray-100 lg:border-t-0 lg:pt-0 lg:gap-1">
                     <button
                       onClick={() => handleView(project)}
-                      className="flex-1 cursor-pointer lg:flex-none bg-blue-50 lg:bg-transparent text-blue-600 hover:bg-blue-100 lg:hover:bg-transparent lg:hover:text-blue-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
+                      className="flex-1 cursor-pointer lg:flex-none  bg-blue-600 text-white hover:bg-blue-700  py-2 lg:py-1 lg:px-1 rounded  text-sm font-medium"
                       title="View"
                     >
-                      <span className="lg:hidden">View</span>
-                      <Eye size={20} className="hidden lg:block" />
+                      <span className="lg:hidden text-white">View</span>
+                      <Eye size={20} className="hidden lg:inline text-white" />
                     </button>
+
+                    <button
+                      className="flex-1 cursor-pointer lg:flex-none  bg-gray-500 text-white hover:bg-gray-600  py-2 lg:py-1 lg:px-1 rounded  text-sm font-medium"
+                      title="View"
+                    >
+                      <span className="lg:hidden text-white">Archive</span>
+                      <Archive size={20} className="hidden lg:inline text-white" />
+                    </button>
+
                     <button
                       onClick={() => handleDelete(project.id)}
-                      className="flex-1 cursor-pointer lg:flex-none bg-red-50 lg:bg-transparent text-red-600 hover:bg-red-100 lg:hover:bg-transparent lg:hover:text-red-800 py-2 lg:py-0 rounded-lg lg:rounded-none text-sm font-medium lg:font-normal"
+                      className="flex-1 cursor-pointer lg:flex-none  bg-red-600 text-white hover:bg-red-700 py-2 lg:py-1 lg:px-1 rounded  text-sm font-medium"
                       title="Delete"
                     >
                       <span className="lg:hidden">Delete</span>
-                      <Trash2 size={20} className="hidden lg:block" />
+                      <Trash2
+                        size={18}
+                        className="hidden lg:inline text-white"
+                      />
                     </button>
                   </div>
                 </div>

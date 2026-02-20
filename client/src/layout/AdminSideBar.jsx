@@ -12,6 +12,7 @@ import {
   User,
   LayoutDashboard,
   Building2,
+  Archive,
 } from "lucide-react";
 
 export default function AdminSideBar() {
@@ -120,6 +121,19 @@ export default function AdminSideBar() {
               >
                 <Building2 size={20} />
                 <span>Department</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                to="/admin/practice"
+                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
+                  isActive("/settings") ? "bg-blue-100 text-blue-600" : ""
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <Archive size={20} />
+                <span>Archive</span>
               </Link>
             </li>
 

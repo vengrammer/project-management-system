@@ -8,6 +8,8 @@ import {
   Pencil,
   Trash2,
   Eye,
+  Pen,
+  Check,
 } from "lucide-react";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
@@ -18,7 +20,7 @@ import { useParams } from "react-router-dom";
 // temporary user id
 const TEMP_AUTHOR_ID = "6992d115b034bbfbac83b8fb";
 
-const UPDATE_TASK_STATUS = gql`
+const UPDATE_TASK_STATUS_IN_PROGRESS = gql`
   mutation UpdateTask($updateTaskId: ID!, $status: String) {
     updateTask(id: $updateTaskId, status: $status) {
       id
@@ -114,6 +116,15 @@ const GET_TASKS = gql`
   }
 `;
 
+const UPDATE_TASK_STATUS_TO_COMPLETED = gql`
+  mutation updateTask($updateTaskId: ID!, $status: String) {
+    updateTask(id: $updateTaskId, status: $status) {
+      id
+    }
+  }
+`;
+
+
 // ─── status config ────────────────────────────────────────
 const STATUS_OPTIONS = [
   {
@@ -175,6 +186,8 @@ function formatTimeAgo(value) {
   });
 }
 
+
+
 // ─── avatar ───────────────────────────────────────────────
 function Avatar({ initials, size = "w-9 h-9", text = "text-sm" }) {
   return (
@@ -219,6 +232,40 @@ export default function TaskActivityModal({ id: taskId }) {
     fetchPolicy: "network-only",
   });
 
+  //MARK AS DONE
+  const [updateTaskCompleted] = useMutation(UPDATE_TASK_STATUS_TO_COMPLETED, {
+    onCompleted: () => {
+      toast.success("Task Updated Successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to update task!");
+    },
+    refetchQueries: [{ query: GET_TASKS, variables: { taskByProjectId: id } }],
+    awaitRefetchQueries: true,
+  });
+
+const handleMarkAsDone = (taskId) => {
+  Swal.fire({
+    title: "Are you sure you want to mark as done this task?",
+    text: "task mark as done!",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Mark as done",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      updateTaskCompleted({
+        variables: {
+          updateTaskId: taskId,
+          status: "completed",
+        },
+      });
+    }
+  });
+  
+} 
+
   const [createTaskLog, { loading: loadingCreate }] = useMutation(
     CREATE_TASKLOG,
     {
@@ -256,7 +303,7 @@ export default function TaskActivityModal({ id: taskId }) {
     },
   );
 
-  const [updateTask] = useMutation(UPDATE_TASK_STATUS, {
+  const [updateTask] = useMutation(UPDATE_TASK_STATUS_IN_PROGRESS, {
     onError: () => {
       toast.error("Error in updating the task");
     },
@@ -313,7 +360,7 @@ export default function TaskActivityModal({ id: taskId }) {
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 text-blue-600 hover:bg-blue-700 hover:text-white rounded-lg transition-colors cursor-pointer"
+        className="p-2  bg-blue-600  hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer"
       >
         <Eye size={18} />
       </button>
@@ -324,7 +371,7 @@ export default function TaskActivityModal({ id: taskId }) {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col">
             {/* ── header ── */}
             <div className="px-6 py-4 border-b border-gray-200 flex items-start justify-between">
-              <div className="flex-1">
+              <div className="flex-1 ">
                 <p className="text-xs font-medium text-blue-600 mb-1">
                   {taskData?.task?.project?.title || "Task Activity"}
                 </p>
@@ -332,31 +379,47 @@ export default function TaskActivityModal({ id: taskId }) {
                   {taskData?.task?.title || `Task: ${taskId || ""}`}
                 </h2>
                 {taskData?.task?.assignedTo?.fullname && (
-                  <div className="flex items-center gap-2 mt-2">
-                    <Avatar
-                      initials={getInitials(
-                        taskData?.task?.assignedTo?.fullname,
-                      )}
-                      size="w-6 h-6"
-                      text="text-xs"
-                    />
-                    <div>
-                      <p className="text-xs font-medium text-gray-700">
-                        {taskData?.task?.assignedTo?.fullname}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {taskData?.task?.assignedTo?.position || "Assignee"}
-                      </p>
+                  <div className="flex justify-between items-center">
+                    {/* LEFT SIDE */}
+                    <div className="flex items-center gap-2 mt-2">
+                      <Avatar
+                        initials={getInitials(
+                          taskData?.task?.assignedTo?.fullname,
+                        )}
+                        size="w-6 h-6"
+                        text="text-xs"
+                      />
+                      <div>
+                        <p className="text-xs font-medium text-gray-700">
+                          {taskData?.task?.assignedTo?.fullname}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {taskData?.task?.assignedTo?.position || "Assignee"}
+                        </p>
+                      </div>
                     </div>
+
+                    {/* RIGHT SIDE */}
+                    <button
+                    onClick={() => handleMarkAsDone(taskData?.task?.id)}
+                      className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <Check size={18} />
+                      Mark As Done
+                    </button>
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X size={20} className="text-gray-500" />
-              </button>
+              <div>
+                <div className="">
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X size={20} className="text-gray-500" />
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* ── scrollable content ── */}
@@ -564,7 +627,7 @@ export default function TaskActivityModal({ id: taskId }) {
                                         log.status || "in_progress",
                                       );
                                     }}
-                                    className="p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                                    className="p-1.5 text-white hover:bg-blue-700 bg-blue-600 rounded transition-colors"
                                     title="Edit"
                                   >
                                     <Pencil size={14} />
@@ -573,7 +636,7 @@ export default function TaskActivityModal({ id: taskId }) {
                                     type="button"
                                     disabled={loadingDelete}
                                     onClick={() => handleDelete(log.id)}
-                                    className="p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                                    className="p-1.5 text-white bg-red-600 hover:text-bg-700 rounded transition-colors"
                                     title="Delete"
                                   >
                                     <Trash2 size={14} />

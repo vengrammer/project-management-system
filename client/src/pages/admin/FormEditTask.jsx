@@ -180,7 +180,7 @@ function FormEditTask({ taskID }) {
           });
           setIsAddTaskOpen(true);
         }}
-        className="p-2 text-green-600 hover:bg-green-700 hover:text-white rounded-lg transition-colors cursor-pointer"
+        className="p-2 text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors cursor-pointer"
       >
         <Pencil size={18} />
       </button>
