@@ -23,10 +23,12 @@ const taskSchema = mongoose.Schema(
       index: true,
     },
 
-    assignedTo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
+    users: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
 
     priority: {
       type: String,

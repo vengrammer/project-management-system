@@ -20,11 +20,13 @@ import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { useParams } from "react-router-dom";
 
-const TEMP_AUTHOR_ID = "6992d115b034bbfbac83b8fb";
+const TEMP_AUTHOR_ID = "6997f38ed947212d48f71e03";
 
 const UPDATE_TASK_STATUS_IN_PROGRESS = gql`
   mutation UpdateTask($updateTaskId: ID!, $status: String) {
-    updateTask(id: $updateTaskId, status: $status) { id }
+    updateTask(id: $updateTaskId, status: $status) {
+      id
+    }
   }
 `;
 const GET_TASK = gql`
@@ -32,53 +34,111 @@ const GET_TASK = gql`
     task(id: $taskId) {
       id
       title
-      assignedTo { id fullname position }
-      project { id title }
+      users {
+        id
+        fullname
+        position
+      }
+      project {
+        id
+        title
+      }
     }
   }
 `;
 const GET_TASKLOGS = gql`
   query TaskLogsByTask($taskId: ID!) {
     taskLogsByTask(taskId: $taskId) {
-      id content status createdAt updatedAt
-      task { id title }
-      author { id fullname }
+      id
+      content
+      status
+      createdAt
+      updatedAt
+      task {
+        id
+        title
+      }
+      author {
+        id
+        fullname
+      }
     }
   }
 `;
 const CREATE_TASKLOG = gql`
-  mutation CreateTaskLog($content: String!, $task: ID!, $status: TaskStatus!, $author: ID!) {
-    createTaskLog(content: $content, task: $task, status: $status, author: $author) { id }
+  mutation CreateTaskLog(
+    $content: String!
+    $task: ID!
+    $status: TaskStatus!
+    $author: ID!
+  ) {
+    createTaskLog(
+      content: $content
+      task: $task
+      status: $status
+      author: $author
+    ) {
+      id
+    }
   }
 `;
 const UPDATE_TASKLOG = gql`
   mutation UpdateTaskLog($id: ID!, $content: String, $status: TaskStatus) {
-    updateTaskLog(id: $id, content: $content, status: $status) { id }
+    updateTaskLog(id: $id, content: $content, status: $status) {
+      id
+    }
   }
 `;
 const DELETE_TASKLOG = gql`
   mutation DeleteTaskLog($id: ID!) {
-    deleteTaskLog(id: $id) { id }
+    deleteTaskLog(id: $id) {
+      id
+    }
   }
 `;
 const GET_TASKS = gql`
   query TaskByProject($taskByProjectId: ID!) {
     taskByProject(id: $taskByProjectId) {
-      id title description assignedTo { id fullname }
-      priority status dueDate
+      id
+      title
+      description
+      users {
+        id
+        fullname
+      }
+      priority
+      status
+      dueDate
     }
   }
 `;
 const UPDATE_TASK_STATUS_TO_COMPLETED = gql`
   mutation updateTask($updateTaskId: ID!, $status: String) {
-    updateTask(id: $updateTaskId, status: $status) { id }
+    updateTask(id: $updateTaskId, status: $status) {
+      id
+    }
   }
 `;
 
 const STATUS_OPTIONS = [
-  { value: "in_progress", label: "In Progress", color: "bg-blue-100 text-blue-700", icon: Clock },
-  { value: "done", label: "Done", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
-  { value: "stuck", label: "Stuck", color: "bg-red-100 text-red-700", icon: AlertCircle },
+  {
+    value: "in_progress",
+    label: "In Progress",
+    color: "bg-blue-100 text-blue-700",
+    icon: Clock,
+  },
+  {
+    value: "done",
+    label: "Done",
+    color: "bg-green-100 text-green-700",
+    icon: CheckCircle2,
+  },
+  {
+    value: "stuck",
+    label: "Stuck",
+    color: "bg-red-100 text-red-700",
+    icon: AlertCircle,
+  },
 ];
 
 function getStatus(val) {
@@ -112,7 +172,9 @@ function formatTimeAgo(value) {
 
 function Avatar({ initials, size = "w-9 h-9", text = "text-sm" }) {
   return (
-    <div className={`${size} rounded-full bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold ${text} shadow-sm shrink-0`}>
+    <div
+      className={`${size} rounded-full bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold ${text} shadow-sm shrink-0`}
+    >
       {initials}
     </div>
   );
@@ -136,12 +198,21 @@ export default function TaskActivityModal({ id: taskId }) {
   const { id } = useParams();
   const shouldFetch = isOpen && Boolean(taskId);
 
-  const { data: taskData, loading: loadingTask, error: errorTask } = useQuery(GET_TASK, {
+  const {
+    data: taskData,
+    loading: loadingTask,
+    error: errorTask,
+  } = useQuery(GET_TASK, {
     variables: { taskId },
     skip: !shouldFetch,
   });
 
-  const { data: dataTasksLog, loading: loadingTasksLog, error: errorTasksLog, refetch: refetchTaskLogs } = useQuery(GET_TASKLOGS, {
+  const {
+    data: dataTasksLog,
+    loading: loadingTasksLog,
+    error: errorTasksLog,
+    refetch: refetchTaskLogs,
+  } = useQuery(GET_TASKLOGS, {
     variables: { taskId },
     skip: !shouldFetch,
     fetchPolicy: "network-only",
@@ -163,24 +234,51 @@ export default function TaskActivityModal({ id: taskId }) {
       cancelButtonColor: "#d33",
       confirmButtonText: "Mark as done",
     }).then((result) => {
-      if (result.isConfirmed) updateTaskCompleted({ variables: { updateTaskId: tId, status: "completed" } });
+      if (result.isConfirmed)
+        updateTaskCompleted({
+          variables: { updateTaskId: tId, status: "completed" },
+        });
     });
   };
 
-  const [createTaskLog, { loading: loadingCreate }] = useMutation(CREATE_TASKLOG, {
-    onCompleted: async () => { setComment(""); await refetchTaskLogs(); toast.success("Update posted"); setPostFormOpen(false); setMobileTab("timeline"); },
-    onError: () => toast.error("Failed to post update"),
-  });
+  const [createTaskLog, { loading: loadingCreate }] = useMutation(
+    CREATE_TASKLOG,
+    {
+      onCompleted: async () => {
+        setComment("");
+        await refetchTaskLogs();
+        toast.success("Update posted");
+        setPostFormOpen(false);
+        setMobileTab("timeline");
+      },
+      onError: () => toast.error("Failed to post update"),
+    },
+  );
 
-  const [updateTaskLog, { loading: loadingUpdate }] = useMutation(UPDATE_TASKLOG, {
-    onCompleted: async () => { setEditingId(null); setEditingContent(""); setEditingStatus("in_progress"); await refetchTaskLogs(); toast.success("Update saved"); },
-    onError: () => toast.error("Failed to update log"),
-  });
+  const [updateTaskLog, { loading: loadingUpdate }] = useMutation(
+    UPDATE_TASKLOG,
+    {
+      onCompleted: async () => {
+        setEditingId(null);
+        setEditingContent("");
+        setEditingStatus("in_progress");
+        await refetchTaskLogs();
+        toast.success("Update saved");
+      },
+      onError: () => toast.error("Failed to update log"),
+    },
+  );
 
-  const [deleteTaskLog, { loading: loadingDelete }] = useMutation(DELETE_TASKLOG, {
-    onCompleted: async () => { await refetchTaskLogs(); toast.success("Update deleted"); },
-    onError: () => toast.error("Failed to delete log"),
-  });
+  const [deleteTaskLog, { loading: loadingDelete }] = useMutation(
+    DELETE_TASKLOG,
+    {
+      onCompleted: async () => {
+        await refetchTaskLogs();
+        toast.success("Update deleted");
+      },
+      onError: () => toast.error("Failed to delete log"),
+    },
+  );
 
   const [updateTask] = useMutation(UPDATE_TASK_STATUS_IN_PROGRESS, {
     onError: () => toast.error("Error updating the task"),
@@ -205,28 +303,49 @@ export default function TaskActivityModal({ id: taskId }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!comment.trim()) return;
-    await createTaskLog({ variables: { content: comment.trim(), task: taskId, status: selectedStatus, author: TEMP_AUTHOR_ID } });
-    await updateTask({ variables: { updateTaskId: taskId, status: "in_progress" } });
+    await createTaskLog({
+      variables: {
+        content: comment.trim(),
+        task: taskId,
+        status: selectedStatus,
+        author: TEMP_AUTHOR_ID,
+      },
+    });
+    await updateTask({
+      variables: { updateTaskId: taskId, status: "in_progress" },
+    });
   };
 
-  const allLogs = useMemo(() => dataTasksLog?.taskLogsByTask || [], [dataTasksLog]);
+  const allLogs = useMemo(
+    () => dataTasksLog?.taskLogsByTask || [],
+    [dataTasksLog],
+  );
 
   const uniqueAuthors = useMemo(() => {
     const map = new Map();
-    allLogs.forEach((log) => { if (log.author?.id) map.set(log.author.id, log.author.fullname); });
-    return Array.from(map.entries()).map(([id, fullname]) => ({ id, fullname }));
+    allLogs.forEach((log) => {
+      if (log.author?.id) map.set(log.author.id, log.author.fullname);
+    });
+    return Array.from(map.entries()).map(([id, fullname]) => ({
+      id,
+      fullname,
+    }));
   }, [allLogs]);
 
   const assignedUsers = useMemo(() => {
-    const raw = taskData?.task?.assignedTo;
+    const raw = taskData?.task?.users;
     if (!raw) return [];
     return Array.isArray(raw) ? raw : [raw];
   }, [taskData]);
 
   const filteredLogs = useMemo(() => {
     return allLogs.filter((log) => {
-      const matchesUser = selectedUser === "all" || log.author?.id === selectedUser;
-      const matchesSearch = search.trim() === "" || log.content?.toLowerCase().includes(search.toLowerCase()) || log.author?.fullname?.toLowerCase().includes(search.toLowerCase());
+      const matchesUser =
+        selectedUser === "all" || log.author?.id === selectedUser;
+      const matchesSearch =
+        search.trim() === "" ||
+        log.content?.toLowerCase().includes(search.toLowerCase()) ||
+        log.author?.fullname?.toLowerCase().includes(search.toLowerCase());
       return matchesUser && matchesSearch;
     });
   }, [allLogs, selectedUser, search]);
@@ -236,7 +355,12 @@ export default function TaskActivityModal({ id: taskId }) {
     allLogs.forEach((log) => {
       const uid = log.author?.id;
       if (!uid) return;
-      if (!map.has(uid)) map.set(uid, { fullname: log.author.fullname, total: 0, lastStatus: log.status });
+      if (!map.has(uid))
+        map.set(uid, {
+          fullname: log.author.fullname,
+          total: 0,
+          lastStatus: log.status,
+        });
       const entry = map.get(uid);
       entry.total += 1;
       entry.lastStatus = log.status;
@@ -248,7 +372,9 @@ export default function TaskActivityModal({ id: taskId }) {
   const PostForm = (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-2">Status</label>
+        <label className="block text-xs font-semibold text-gray-700 mb-2">
+          Status
+        </label>
         <div className="flex flex-col gap-2">
           {STATUS_OPTIONS.map((s) => {
             const Icon = s.icon;
@@ -260,9 +386,11 @@ export default function TaskActivityModal({ id: taskId }) {
                 onClick={() => setSelectedStatus(s.value)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
                   active
-                    ? s.value === "done" ? "border-green-500 bg-green-50 text-green-700"
-                    : s.value === "stuck" ? "border-red-500 bg-red-50 text-red-700"
-                    : "border-blue-500 bg-blue-50 text-blue-700"
+                    ? s.value === "done"
+                      ? "border-green-500 bg-green-50 text-green-700"
+                      : s.value === "stuck"
+                      ? "border-red-500 bg-red-50 text-red-700"
+                      : "border-blue-500 bg-blue-50 text-blue-700"
                     : "border-gray-200 text-gray-600 hover:border-gray-300 bg-white"
                 }`}
               >
@@ -273,7 +401,9 @@ export default function TaskActivityModal({ id: taskId }) {
         </div>
       </div>
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-2">What did you do today?</label>
+        <label className="block text-xs font-semibold text-gray-700 mb-2">
+          What did you do today?
+        </label>
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
@@ -298,7 +428,10 @@ export default function TaskActivityModal({ id: taskId }) {
       {/* Search + filter */}
       <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
           <input
             type="text"
             value={search}
@@ -314,25 +447,47 @@ export default function TaskActivityModal({ id: taskId }) {
           >
             <Users size={13} />
             <span className="hidden sm:inline">
-              {selectedUser === "all" ? "All" : uniqueAuthors.find((a) => a.id === selectedUser)?.fullname?.split(" ")[0] || "Member"}
+              {selectedUser === "all"
+                ? "All"
+                : uniqueAuthors
+                    .find((a) => a.id === selectedUser)
+                    ?.fullname?.split(" ")[0] || "Member"}
             </span>
             <ChevronDown size={13} />
           </button>
           {userDropdownOpen && (
             <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 w-44 py-1 overflow-hidden">
               <button
-                onClick={() => { setSelectedUser("all"); setUserDropdownOpen(false); }}
-                className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${selectedUser === "all" ? "font-semibold text-blue-600" : "text-gray-700"}`}
+                onClick={() => {
+                  setSelectedUser("all");
+                  setUserDropdownOpen(false);
+                }}
+                className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${
+                  selectedUser === "all"
+                    ? "font-semibold text-blue-600"
+                    : "text-gray-700"
+                }`}
               >
                 All Members
               </button>
               {uniqueAuthors.map((a) => (
                 <button
                   key={a.id}
-                  onClick={() => { setSelectedUser(a.id); setUserDropdownOpen(false); }}
-                  className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2 ${selectedUser === a.id ? "font-semibold text-blue-600" : "text-gray-700"}`}
+                  onClick={() => {
+                    setSelectedUser(a.id);
+                    setUserDropdownOpen(false);
+                  }}
+                  className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2 ${
+                    selectedUser === a.id
+                      ? "font-semibold text-blue-600"
+                      : "text-gray-700"
+                  }`}
                 >
-                  <Avatar initials={getInitials(a.fullname)} size="w-5 h-5" text="text-[9px]" />
+                  <Avatar
+                    initials={getInitials(a.fullname)}
+                    size="w-5 h-5"
+                    text="text-[9px]"
+                  />
                   <span className="truncate">{a.fullname}</span>
                 </button>
               ))}
@@ -347,12 +502,18 @@ export default function TaskActivityModal({ id: taskId }) {
       {/* Log list */}
       <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
         {loadingTasksLog || loadingTask ? (
-          <div className="p-6 text-sm text-gray-500 text-center">Loading...</div>
+          <div className="p-6 text-sm text-gray-500 text-center">
+            Loading...
+          </div>
         ) : errorTasksLog || errorTask ? (
-          <div className="p-6 text-sm text-red-600 text-center">Failed to load activity.</div>
+          <div className="p-6 text-sm text-red-600 text-center">
+            Failed to load activity.
+          </div>
         ) : filteredLogs.length === 0 ? (
           <div className="p-6 text-sm text-gray-400 text-center">
-            {search || selectedUser !== "all" ? "No updates match your filter." : "No updates yet."}
+            {search || selectedUser !== "all"
+              ? "No updates match your filter."
+              : "No updates yet."}
           </div>
         ) : (
           filteredLogs.map((log) => {
@@ -361,15 +522,26 @@ export default function TaskActivityModal({ id: taskId }) {
             const isMine = String(log.author?.id) === TEMP_AUTHOR_ID;
             const isEditing = editingId === log.id;
             return (
-              <div key={log.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div
+                key={log.id}
+                className="p-4 hover:bg-gray-50 transition-colors"
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                    <Avatar initials={getInitials(log.author?.fullname)} size="w-8 h-8" text="text-xs" />
+                    <Avatar
+                      initials={getInitials(log.author?.fullname)}
+                      size="w-8 h-8"
+                      text="text-xs"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <p className="text-sm font-semibold text-gray-900">{log.author?.fullname || "Unknown"}</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {log.author?.fullname || "Unknown"}
+                        </p>
                         <span className="text-xs text-gray-400">•</span>
-                        <p className="text-xs text-gray-400">{formatTimeAgo(log?.updatedAt)}</p>
+                        <p className="text-xs text-gray-400">
+                          {formatTimeAgo(log?.updatedAt)}
+                        </p>
                       </div>
                       {isEditing ? (
                         <div className="mt-2 space-y-2">
@@ -385,46 +557,80 @@ export default function TaskActivityModal({ id: taskId }) {
                               onChange={(e) => setEditingStatus(e.target.value)}
                               className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
                             >
-                              {STATUS_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                              {STATUS_OPTIONS.map((s) => (
+                                <option key={s.value} value={s.value}>
+                                  {s.label}
+                                </option>
+                              ))}
                             </select>
                             <button
                               type="button"
                               disabled={loadingUpdate}
-                              onClick={() => updateTaskLog({ variables: { id: log.id, content: editingContent.trim(), status: editingStatus } })}
+                              onClick={() =>
+                                updateTaskLog({
+                                  variables: {
+                                    id: log.id,
+                                    content: editingContent.trim(),
+                                    status: editingStatus,
+                                  },
+                                })
+                              }
                               className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
-                            >Save</button>
+                            >
+                              Save
+                            </button>
                             <button
                               type="button"
-                              onClick={() => { setEditingId(null); setEditingContent(""); setEditingStatus("in_progress"); }}
+                              onClick={() => {
+                                setEditingId(null);
+                                setEditingContent("");
+                                setEditingStatus("in_progress");
+                              }}
                               className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
-                            >Cancel</button>
+                            >
+                              Cancel
+                            </button>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-700 mt-1 wrap-break-words">{log.content}</p>
+                        <p className="text-sm text-gray-700 mt-1 wrap-break-words">
+                          {log.content}
+                        </p>
                       )}
                     </div>
                   </div>
 
                   {/* right side: badge + actions */}
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${st.color}`}>
+                    <div
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${st.color}`}
+                    >
                       <Icon size={11} />
-                      <span className="text-xs font-semibold hidden sm:inline">{st.label}</span>
+                      <span className="text-xs font-semibold hidden sm:inline">
+                        {st.label}
+                      </span>
                     </div>
                     {isMine && !isEditing && (
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
-                          onClick={() => { setEditingId(log.id); setEditingContent(log.content || ""); setEditingStatus(log.status || "in_progress"); }}
+                          onClick={() => {
+                            setEditingId(log.id);
+                            setEditingContent(log.content || "");
+                            setEditingStatus(log.status || "in_progress");
+                          }}
                           className="p-1.5 text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
-                        ><Pencil size={13} /></button>
+                        >
+                          <Pencil size={13} />
+                        </button>
                         <button
                           type="button"
                           disabled={loadingDelete}
                           onClick={() => handleDelete(log.id)}
                           className="p-1.5 text-white bg-red-600 hover:bg-red-700 rounded transition-colors"
-                        ><Trash2 size={13} /></button>
+                        >
+                          <Trash2 size={13} />
+                        </button>
                       </div>
                     )}
                   </div>
@@ -453,7 +659,6 @@ export default function TaskActivityModal({ id: taskId }) {
         >
           {/* Modal container — full screen on mobile, constrained on desktop */}
           <div className="bg-white w-full sm:rounded-2xl sm:max-w-4xl sm:max-h-[90vh] h-full sm:h-auto flex flex-col rounded-t-2xl max-h-[95vh]">
-
             {/* ── HEADER ── */}
             <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex items-start justify-between gap-3 shrink-0">
               <div className="flex-1 min-w-0">
@@ -468,26 +673,49 @@ export default function TaskActivityModal({ id: taskId }) {
                 {assignedUsers.length > 0 && (
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <div className="flex items-center gap-1 text-xs text-gray-400">
-                      <Users size={12} /><span>Assigned:</span>
+                      <Users size={12} />
+                      <span>Assigned:</span>
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
                       {assignedUsers.map((u) => {
                         const summary = userSummary.get(u.id);
-                        const lastSt = summary ? getStatus(summary.lastStatus) : null;
+                        const lastSt = summary
+                          ? getStatus(summary.lastStatus)
+                          : null;
                         return (
                           <button
                             key={u.id}
-                            onClick={() => setSelectedUser(selectedUser === u.id ? "all" : u.id)}
+                            onClick={() =>
+                              setSelectedUser(
+                                selectedUser === u.id ? "all" : u.id,
+                              )
+                            }
                             className={`flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium transition-all ${
                               selectedUser === u.id
                                 ? "border-blue-500 bg-blue-50 text-blue-700"
                                 : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
                             }`}
                           >
-                            <Avatar initials={getInitials(u.fullname)} size="w-4 h-4" text="text-[8px]" />
-                            <span className="max-w-20 truncate">{u.fullname.split(" ")[0]}</span>
-                            {lastSt && <span className={`px-1 py-0.5 rounded-full text-[9px] font-semibold ${lastSt.color}`}>{lastSt.label}</span>}
-                            {summary && <span className="text-gray-400 text-[10px]">{summary.total}</span>}
+                            <Avatar
+                              initials={getInitials(u.fullname)}
+                              size="w-4 h-4"
+                              text="text-[8px]"
+                            />
+                            <span className="max-w-20 truncate">
+                              {u.fullname.split(" ")[0]}
+                            </span>
+                            {lastSt && (
+                              <span
+                                className={`px-1 py-0.5 rounded-full text-[9px] font-semibold ${lastSt.color}`}
+                              >
+                                {lastSt.label}
+                              </span>
+                            )}
+                            {summary && (
+                              <span className="text-gray-400 text-[10px]">
+                                {summary.total}
+                              </span>
+                            )}
                           </button>
                         );
                       })}
@@ -516,13 +744,21 @@ export default function TaskActivityModal({ id: taskId }) {
             <div className="flex sm:hidden border-b border-gray-100 shrink-0">
               <button
                 onClick={() => setMobileTab("timeline")}
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === "timeline" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
+                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                  mobileTab === "timeline"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500"
+                }`}
               >
                 Activity
               </button>
               <button
                 onClick={() => setMobileTab("post")}
-                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${mobileTab === "post" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
+                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                  mobileTab === "post"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500"
+                }`}
               >
                 Post Update
               </button>
@@ -537,7 +773,9 @@ export default function TaskActivityModal({ id: taskId }) {
               ) : (
                 <div className="flex-1 overflow-y-auto p-4">
                   <div className="bg-linear-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-                    <h3 className="text-sm font-bold text-gray-800 mb-4">Post Today's Update</h3>
+                    <h3 className="text-sm font-bold text-gray-800 mb-4">
+                      Post Today's Update
+                    </h3>
                     {PostForm}
                   </div>
                 </div>
@@ -549,7 +787,9 @@ export default function TaskActivityModal({ id: taskId }) {
               {/* Left: Post form */}
               <div className="w-72 shrink-0 border-r border-gray-100 overflow-y-auto p-5">
                 <div className="bg-linear-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-                  <h3 className="text-sm font-bold text-gray-800 mb-4">Post Today's Update</h3>
+                  <h3 className="text-sm font-bold text-gray-800 mb-4">
+                    Post Today's Update
+                  </h3>
                   {PostForm}
                 </div>
               </div>
@@ -559,7 +799,6 @@ export default function TaskActivityModal({ id: taskId }) {
                 {Timeline}
               </div>
             </div>
-
           </div>
         </div>
       )}

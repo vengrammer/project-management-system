@@ -1,11 +1,11 @@
-// title, description, project, assignedTo, priority, status, dueDate
+// title, description, project, users, priority, status, dueDate
 const taskSchema = `#graphql
     type Task {
         id: ID!
         title: String
         description: String
         project: Project
-        assignedTo: User
+        users: [User]
         priority: String
         status: String
         dueDate: String
@@ -23,7 +23,7 @@ const taskSchema = `#graphql
             priority: String
             status: String
             dueDate: String
-            assignedTo: ID
+            users: [ID]
         ): Task
 
         # Edit/update an existing task (alias of updateTask)
@@ -34,7 +34,7 @@ const taskSchema = `#graphql
             priority: String
             status: String
             dueDate: String
-            assignedTo: ID
+            users: [ID]
         ): Task
 
         updateTask(
@@ -44,7 +44,7 @@ const taskSchema = `#graphql
             priority: String
             status: String
             dueDate: String
-            assignedTo: ID
+            users: [ID]
         ): Task
 
         deleteTask(

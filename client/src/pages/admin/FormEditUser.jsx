@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useId, useState } from "react";
 import { Eye, EyeOff, Pen } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { gql } from "@apollo/client";
@@ -84,6 +84,7 @@ const UPDATE_USER = gql`
 =========================== */
 
 export default function FormEditUser({ userId }) {
+  const id = useId();
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -94,47 +95,54 @@ export default function FormEditUser({ userId }) {
     role: "",
     position: "",
     email: "",
-    username: "",
-    password: "",
+    username: "", // intentionally blank
+    password: "", // intentionally blank
     status: true,
   });
-
-  /* ===========================
-     GET USER DATA
-     — fetch when modal opens using useEffect
-  =========================== */
-  const { loading: loadingUser, refetch } = useQuery(GET_USER, {
-    skip: true, // Always skip, we'll call refetch when modal opens
-    fetchPolicy: "network-only",
-    onCompleted: (data) => {
-      if (data?.user) {
-        setFormData({
-          id: data.user.id,
-          fullname: data.user.fullname || "",
-          department: data.user.department?.id || "",
-          role: data.user.role || "",
-          position: data.user.position || "",
-          email: data.user.email || "",
-          username: "",
-          password: "",
-          status: data.user.status ?? true,
-        });
-      }
-    },
-  });
-
-  // Trigger query when modal opens
-  useEffect(() => {
-    if (open && userId) {
-      refetch({ userId });
-    }
-  }, [open, userId, refetch]);
 
   /* ===========================
      INPUT HANDLER
   =========================== */
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  /* ===========================
+     GET USER — always mounted so
+     refetch() is always available
+  =========================== */
+  const { loading: loadingUser, refetch } = useQuery(GET_USER, {
+    variables: { userId },
+    skip: !userId,
+    fetchPolicy: "network-only",
+  });
+
+  const populateForm = (user) => {
+    setFormData({
+      id: user.id,
+      fullname: user.fullname || "",
+      department: user.department?.id || "",
+      role: user.role || "",
+      position: user.position || "",
+      email: user.email || "",
+      username: "", // intentionally blank
+      password: "", // intentionally blank
+      status: user.status ?? true,
+    });
+  };
+
+  /* ===========================
+     OPEN — refetch every click
+     so values are always fresh
+  =========================== */
+  const handleOpen = async () => {
+    setOpen(true);
+    try {
+      const { data } = await refetch({ userId });
+      if (data?.user) populateForm(data.user);
+    } catch {
+      toast.error("Failed to load user data");
+    }
   };
 
   /* ===========================
@@ -145,7 +153,7 @@ export default function FormEditUser({ userId }) {
   /* ===========================
      UPDATE MUTATION
   =========================== */
-  const [updateUser] = useMutation(UPDATE_USER, {
+  const [updateUser, { loading: loadingUpdate }] = useMutation(UPDATE_USER, {
     onCompleted: () => {
       toast.success("Successfully updated account!");
       setOpen(false);
@@ -157,15 +165,46 @@ export default function FormEditUser({ userId }) {
   });
 
   /* ===========================
-     SUBMIT
+     SUBMIT + VALIDATION
+     (same rules as FormAddUser)
   =========================== */
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Fullname — letters only
+    const nameRegex = /^[a-zA-Z\s.'-]+$/;
+    if (!nameRegex.test(formData.fullname)) {
+      toast.error(
+        "Fullname can only contain letters, spaces, dots, apostrophes, and hyphens",
+      );
+      return;
+    }
+
+    // Username — only validate if user typed something
+    if (formData.username && formData.username.length < 5) {
+      toast.error("Username must be at least 5 characters");
+      return;
+    }
+
+    // Password — only validate if user typed something
+    if (formData.password && formData.password.length < 5) {
+      toast.error("Password must be at least 5 characters");
+      return;
+    }
+
+    // Capitalize each word in fullname (same as FormAddUser)
+    const formatFullname = (name) =>
+      name
+        .split(" ")
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
+        .join(" ");
+
     updateUser({
       variables: {
         updateUserId: formData.id,
-        fullname: formData.fullname,
+        fullname: formatFullname(formData.fullname),
         department: formData.department,
         role: formData.role,
         position: formData.position,
@@ -184,7 +223,7 @@ export default function FormEditUser({ userId }) {
     <>
       {/* Trigger Button */}
       <button
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         title="Update User"
         className="flex items-center hover:cursor-pointer gap-2 bg-blue-600 text-white px-3 py-3 rounded-md text-sm font-medium hover:bg-blue-700"
       >
@@ -194,124 +233,205 @@ export default function FormEditUser({ userId }) {
       {/* Modal */}
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 p-4"
           onClick={(e) => e.target === e.currentTarget && setOpen(false)}
         >
-          {loadingUser ? (
-            <div className="flex justify-center items-center bg-white rounded-xl p-8">
-              <span className="loading loading-spinner loading-xl"></span>
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
+            {/* Header */}
+            <div className="flex justify-center mb-4">
+              <img src={logo} alt="logo" className="h-10 w-auto" />
             </div>
-          ) : (
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-              <div className="flex justify-center mb-4">
-                <img src={logo} alt="logo" className="h-10 w-auto" />
+            <h2 className="text-xl font-bold text-center text-gray-800">
+              Edit User
+            </h2>
+            <p className="text-sm text-center text-gray-500 mb-6">
+              Update the user's information below. Leave username and password
+              blank to keep them unchanged.
+            </p>
+
+            {loadingUser ? (
+              <div className="flex justify-center py-8">
+                <span className="loading loading-spinner loading-xl"></span>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                {/* Row 1: Fullname + Position */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor={`${id}-fullname`}
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Fullname
+                    </label>
+                    <input
+                      id={`${id}-fullname`}
+                      type="text"
+                      placeholder="Enter full name"
+                      value={formData.fullname}
+                      onChange={(e) =>
+                        handleInputChange("fullname", e.target.value)
+                      }
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
 
-              <h2 className="text-xl font-bold text-center">Edit User</h2>
-
-              <form
-                onSubmit={handleSubmit}
-                className="flex flex-col gap-4 mt-4"
-              >
-                {/* Fullname — pre-filled */}
-                <input
-                  type="text"
-                  placeholder="Fullname"
-                  value={formData.fullname}
-                  onChange={(e) =>
-                    handleInputChange("fullname", e.target.value)
-                  }
-                  className="border px-3 py-2 rounded-md"
-                />
-
-                {/* Department — pre-selected */}
-                <select
-                  value={formData.department}
-                  onChange={(e) =>
-                    handleInputChange("department", e.target.value)
-                  }
-                  className="border px-3 py-2 rounded-md"
-                >
-                  <option value="">Select Department</option>
-                  {dataDepartment?.departments?.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
-
-                {/* Role — pre-selected */}
-                <select
-                  value={formData.role}
-                  onChange={(e) => handleInputChange("role", e.target.value)}
-                  className="border px-3 py-2 rounded-md"
-                >
-                  <option value="">Select Role</option>
-                  <option value="admin">Admin</option>
-                  <option value="manager">Manager</option>
-                  <option value="user">Employee</option>
-                </select>
-
-                {/* Position — pre-filled */}
-                <input
-                  type="text"
-                  placeholder="Position"
-                  value={formData.position}
-                  onChange={(e) =>
-                    handleInputChange("position", e.target.value)
-                  }
-                  className="border px-3 py-2 rounded-md"
-                />
-
-                {/* Email — pre-filled */}
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="border px-3 py-2 rounded-md"
-                />
-
-                {/* Username — intentionally blank */}
-                <input
-                  type="text"
-                  placeholder="Username (leave blank to keep current)"
-                  value={formData.username}
-                  onChange={(e) =>
-                    handleInputChange("username", e.target.value)
-                  }
-                  className="border px-3 py-2 rounded-md"
-                />
-
-                {/* Password — intentionally blank */}
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Password (leave blank to keep current)"
-                    value={formData.password}
-                    onChange={(e) =>
-                      handleInputChange("password", e.target.value)
-                    }
-                    className="border px-3 py-2 rounded-md w-full pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2 text-gray-400"
-                  >
-                    {showPassword ? <EyeOff size={25} /> : <Eye size={25} />}
-                  </button>
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor={`${id}-position`}
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Position
+                    </label>
+                    <input
+                      id={`${id}-position`}
+                      type="text"
+                      placeholder="e.g. Network Engineer"
+                      value={formData.position}
+                      onChange={(e) =>
+                        handleInputChange("position", e.target.value)
+                      }
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 </div>
 
+                {/* Row 2: Department + Role */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor={`${id}-department`}
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Department *
+                    </label>
+                    <select
+                      id={`${id}-department`}
+                      value={formData.department}
+                      onChange={(e) =>
+                        handleInputChange("department", e.target.value)
+                      }
+                      required
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    >
+                      <option value="" disabled>
+                        Select department
+                      </option>
+                      {dataDepartment?.departments?.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor={`${id}-role`}
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Role *
+                    </label>
+                    <select
+                      id={`${id}-role`}
+                      value={formData.role}
+                      onChange={(e) =>
+                        handleInputChange("role", e.target.value)
+                      }
+                      required
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    >
+                      <option value="" disabled>
+                        Select role
+                      </option>
+                      <option value="admin">Admin</option>
+                      <option value="manager">Manager</option>
+                      <option value="user">Employee</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Row 3: Email + Username */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor={`${id}-email`}
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Email address
+                    </label>
+                    <input
+                      id={`${id}-email`}
+                      type="email"
+                      placeholder="Enter email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor={`${id}-username`}
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Username
+                    </label>
+                    <input
+                      id={`${id}-username`}
+                      type="text"
+                      placeholder="Leave blank to keep current"
+                      value={formData.username}
+                      onChange={(e) =>
+                        handleInputChange("username", e.target.value)
+                      }
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Row 4: Password */}
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor={`${id}-password`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id={`${id}-password`}
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Leave blank to keep current"
+                      value={formData.password}
+                      onChange={(e) =>
+                        handleInputChange("password", e.target.value)
+                      }
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Submit */}
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                  disabled={loadingUpdate}
+                  className="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Update Account
+                  {loadingUpdate ? "Updating..." : "Update Account"}
                 </button>
               </form>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </>

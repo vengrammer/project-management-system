@@ -6,9 +6,7 @@ const taskResolver = {
     // return all tasks
     tasks: async () => {
       try {
-        const tasks = await Task.find()
-          .populate("project")
-          .populate("assignedTo");
+        const tasks = await Task.find().populate("project").populate("users");
         return tasks;
       } catch (error) {
         console.error("Return tasks error:", error);
@@ -21,7 +19,7 @@ const taskResolver = {
       try {
         const task = await Task.findById(id)
           .populate("project")
-          .populate("assignedTo");
+          .populate("users");
         if (!task) throw new Error("Task not found");
         return task;
       } catch (error) {
@@ -35,7 +33,7 @@ const taskResolver = {
       try {
         const task = await Task.find({ project: id })
           .populate("project")
-          .populate("assignedTo");
+          .populate("users");
         if (!task) throw new Error("Task not found");
         return task;
       } catch (error) {
@@ -52,7 +50,7 @@ const taskResolver = {
           title: args.title,
           description: args.description,
           project: args.project,
-          assignedTo: args.assignedTo,
+          users: args.users,
           priority: args.priority,
           status: args.status,
           dueDate: args.dueDate,
@@ -78,7 +76,7 @@ const taskResolver = {
           "priority",
           "status",
           "dueDate",
-          "assignedTo",
+          "users",
         ];
 
         updatable.forEach((k) => {
@@ -89,7 +87,7 @@ const taskResolver = {
 
         const populated = await Task.findById(task._id)
           .populate("project")
-          .populate("assignedTo");
+          .populate("users");
 
         return populated;
       } catch (error) {

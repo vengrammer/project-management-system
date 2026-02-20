@@ -82,7 +82,7 @@ const GET_TASKS = gql`
       id
       title
       description
-      assignedTo {
+      users {
         id
         fullname
       }
@@ -294,8 +294,6 @@ const ProjectDetailsPage = () => {
     const percent = (taskComplete / taskLength) * 100;
     return Math.round(percent);
   };
-
-
 
   //show the error and loading when getting the projects
   if (projectLoading || taskLoading) {
@@ -557,11 +555,21 @@ const ProjectDetailsPage = () => {
                             {task.description}
                           </p>
                           <div className="flex flex-wrap gap-4 text-xs text-gray-600">
-                            <span className="flex items-center gap-1">
-                              <User size={14} />
-                              {task.assignedTo?.fullname ||
-                                task.assignedTo ||
-                                "Unassigned"}
+                            <span className="flex items-center gap-1 flex-wrap">
+                              {task.users?.length > 0 ? (
+                                task.users.map((u) => (
+                                  <span
+                                    key={u.id}
+                                    className="px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium"
+                                  >
+                                    {u.fullname.split(" ")[0]}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-gray-400 text-xs">
+                                  Unassigned
+                                </span>
+                              )}
                             </span>
                             <span className="flex items-center gap-1">
                               <Calendar size={14} />
@@ -621,10 +629,8 @@ const ProjectDetailsPage = () => {
               {(project?.users?.length || 0) > 0 ? (
                 <div className=" space-y-3 max-h-100 overflow-auto">
                   {(project?.users || []).map((member) => {
-                    const assignedTasks = tasks.filter(
-                      (t) =>
-                        (t.assignedTo?.fullname || t.assignedTo) ===
-                        member.fullname,
+                    const assignedTasks = tasks.filter((t) =>
+                      t.users?.some((u) => u.id === member.id),
                     );
                     const completedTasks = assignedTasks.filter((t) => {
                       const s = String(t.status).toLowerCase();

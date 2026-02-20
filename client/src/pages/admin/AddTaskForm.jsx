@@ -23,7 +23,7 @@ const GET_TASKS = gql`
       id
       title
       description
-      assignedTo {
+      users {
         id
         fullname
       }
@@ -42,7 +42,6 @@ const UPDATE_PROJECT_STATUS = gql`
   }
 `;
 
-
 const INSERT_TASK = gql`
   mutation createTask(
     $title: String!
@@ -51,7 +50,7 @@ const INSERT_TASK = gql`
     $priority: String
     $status: String
     $dueDate: String
-    $assignedTo: ID
+    $users: [ID]
   ) {
     createTask(
       title: $title
@@ -60,7 +59,7 @@ const INSERT_TASK = gql`
       priority: $priority
       status: $status
       dueDate: $dueDate
-      assignedTo: $assignedTo
+      users: $users
     ) {
       id
       title
@@ -103,7 +102,7 @@ function AddTaskForm() {
     title: "",
     description: "",
     priority: "medium",
-    assignedTo: "",
+    assignedTo: [],
     dueDate: "",
     status: "todo",
   });
@@ -117,7 +116,6 @@ function AddTaskForm() {
     },
     refetchQueries: [{ query: GET_PROJECTS, variables: { projectId: id } }],
   });
-
 
   //get the member
   const {
@@ -135,7 +133,7 @@ function AddTaskForm() {
         title: "",
         description: "",
         priority: "medium",
-        assignedTo: "",
+        assignedTo: [],
         dueDate: "",
         status: "todo",
       });
@@ -159,18 +157,17 @@ function AddTaskForm() {
         priority: newTask.priority,
         status: newTask.status,
         dueDate: newTask.dueDate || null,
-        assignedTo: newTask.assignedTo || null,
+        users: newTask.assignedTo.length > 0 ? newTask.assignedTo : null,
       },
     });
 
-     updateProject({
-       variables: {
-         updateProjectId: id,
-         status: "in progress",
-       },
-     });
+    updateProject({
+      variables: {
+        updateProjectId: id,
+        status: "in progress",
+      },
+    });
   };
-
 
   if (memberLoading) {
     return (
@@ -288,21 +285,47 @@ function AddTaskForm() {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Assign To *
                     </label>
-                    <select
-                      value={newTask.assignedTo}
-                      onChange={(e) =>
-                        setNewTask({ ...newTask, assignedTo: e.target.value })
-                      }
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="">Select team member</option>
-                      {(memberData?.project?.users || []).map((member) => (
-                        <option key={member.id} value={member.id}>
-                          {member.fullname} - {member.position}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="border border-gray-300 rounded-lg p-3 max-h-40 overflow-y-auto">
+                      {(memberData?.project?.users || []).length === 0 ? (
+                        <p className="text-gray-500 text-sm">
+                          No team members available
+                        </p>
+                      ) : (
+                        (memberData?.project?.users || []).map((member) => (
+                          <label
+                            key={member.id}
+                            className="flex items-center gap-2 py-1.5 cursor-pointer hover:bg-gray-50 rounded px-1"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={newTask.assignedTo.includes(member.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setNewTask({
+                                    ...newTask,
+                                    assignedTo: [
+                                      ...newTask.assignedTo,
+                                      member.id,
+                                    ],
+                                  });
+                                } else {
+                                  setNewTask({
+                                    ...newTask,
+                                    assignedTo: newTask.assignedTo.filter(
+                                      (id) => id !== member.id,
+                                    ),
+                                  });
+                                }
+                              }}
+                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">
+                              {member.fullname} - {member.position}
+                            </span>
+                          </label>
+                        ))
+                      )}
+                    </div>
                   </div>
 
                   <div>
