@@ -10,6 +10,7 @@ import AdminSidebar from "@/layout/AdminSideBar";
 import DepartmentTable from "@/pages/admin/DepartmentTable";
 import PracticeComponent from "@/pages/admin/PracticeComponent";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import ProjectDetailsPage from "@/pages/admin/ProjectDetailsPage";
 function HomeRoute() {
     return (
       <Routes>
@@ -25,6 +26,7 @@ function HomeRoute() {
           <Route path="practice" element={<PracticeComponent />} />
         </Route>
         <Route path="*" element={<NotFound />} />
+        <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
       </Routes>
     );
 }

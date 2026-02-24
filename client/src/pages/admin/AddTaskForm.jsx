@@ -34,9 +34,17 @@ const GET_TASKS = gql`
   }
 `;
 
-const UPDATE_PROJECT_STATUS = gql`
-  mutation updateProject($updateProjectId: ID!, $status: String) {
-    updateProject(id: $updateProjectId, status: $status) {
+const UPDATE_PROJECT_STATUS_AND_STARTDATE = gql`
+  mutation updateProject(
+    $updateProjectId: ID!
+    $status: String
+    $startDate: String
+  ) {
+    updateProject(
+      id: $updateProjectId
+      status: $status
+      startDate: $startDate
+    ) {
       message
     }
   }
@@ -110,11 +118,16 @@ function AddTaskForm() {
   const { id } = useParams();
 
   //update the project status to in progress when the user add task
-  const [updateProject] = useMutation(UPDATE_PROJECT_STATUS, {
+  const [updateProject] = useMutation(UPDATE_PROJECT_STATUS_AND_STARTDATE, {
     onError: () => {
       toast.error("Failed to update the project");
     },
     refetchQueries: [{ query: GET_PROJECTS, variables: { projectId: id } }],
+  });
+
+  //get the tasks to check if this is the first task
+  const { loading: tasksLoading, data: tasksData } = useQuery(GET_TASKS, {
+    variables: { taskByProjectId: id },
   });
 
   //get the member
@@ -149,6 +162,11 @@ function AddTaskForm() {
 
   const handleAddTask = (e) => {
     e.preventDefault();
+
+    // Check if this is the first task (no existing tasks)
+    const existingTasks = tasksData?.taskByProject || [];
+    const isFirstTask = existingTasks.length === 0;
+
     createTask({
       variables: {
         title: newTask.title,
@@ -161,15 +179,18 @@ function AddTaskForm() {
       },
     });
 
+    // Always update status to in progress
     updateProject({
       variables: {
         updateProjectId: id,
-        status: "in progress",
+        ...(isFirstTask && {status: "in progress"}),
+        // Only include start date if this is the first task
+        ...(isFirstTask && { startDate: new Date().toISOString() }),
       },
     });
   };
 
-  if (memberLoading) {
+  if (tasksLoading || memberLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <span className="loading loading-spinner loading-xl"></span>

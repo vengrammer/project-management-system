@@ -8,3 +8,4 @@ connectDB();
 http: app.listen(PORT, () => {
   console.log(`graphql running at http://localhost:${PORT}/graphql`);
 });
+

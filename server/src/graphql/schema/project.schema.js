@@ -17,6 +17,7 @@ export const projectSchema = `#graphql
     type Query {
         projects: [Project]!
         project(id: ID!) : Project
+        projectByUser(id: ID!): [Project]
     }
     type Message {
         message: String

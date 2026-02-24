@@ -309,7 +309,6 @@ function AddMembers() {
                                 checked={selectedEmployees?.includes(emp.id)}
                                 onChange={() => toggleEmployee(emp.id)}
                                 className="w-4 h-4 accent-blue-600 cursor-pointer"
-                                required
                               />
                               <div className="text-sm">
                                 <div className="font-medium text-gray-800">

@@ -211,7 +211,6 @@ export default function DepartmentTable() {
 
                   {/* Actions*/}
                   <div className="flex gap-2 pt-2 border-t border-gray-100 lg:border-t-0 lg:pt-0 lg:gap-3">
-                    
                     <FormEditDepartment departmentId={department.id} />
                     <button
                       onClick={() => handleDelete(department.id)}

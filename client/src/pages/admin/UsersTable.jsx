@@ -208,7 +208,7 @@ export default function UsersTable() {
                           user.role,
                         )}`}
                       >
-                        {user.role}
+                        {user?.role === "user" ? "employee" : user.role}
                       </span>
                     </div>
                   </div>
@@ -230,7 +230,7 @@ export default function UsersTable() {
                         user.role,
                       )}`}
                     >
-                      {user.role}
+                      {user?.role === "user" ? "employee" : user?.role}
                     </span>
                   </div>
 
@@ -260,7 +260,7 @@ export default function UsersTable() {
                       title="Ban User"
                     >
                       {user.status ? (
-                        <PowerOff size={20}  />
+                        <PowerOff size={20} />
                       ) : (
                         <Power size={20} />
                       )}

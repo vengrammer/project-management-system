@@ -1,6 +1,7 @@
 import Project from "../../model/project.model.js";
 import TaskLog from "../../model/TaskLogs.js";
 import Task from "../../model/Task.js";
+import mongoose from "mongoose";
 
 //projectData = title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
 export const projectResolvers = {
@@ -49,6 +50,36 @@ export const projectResolvers = {
           .populate("department")
           .populate("projectManager");
 
+        // const project2 = await Project.aggregate([
+        //   {
+        //     $match: {
+        //       _id: new mongoose.Types.ObjectId(id),
+        //     },
+        //     $lookup: {
+        //       from: "Users",
+        //       localField: "users",
+        //       foreignField: "_id",
+        //       as: "user",
+        //     },
+        //     $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+        //     $lookup: {
+        //       from: "Department",
+        //       localField: "department",
+        //       foreignField: "_id",
+        //       as: "dept",
+        //     },
+        //     $unwind: { path: "$dept", preserveNullAndEmptyArrays: true },
+        //     $lookup: {
+        //       from: "Users",
+        //       localField: "projectManager",
+        //       foreignField: "_id",
+        //       as: "pm",
+        //     },
+        //      $unwind: { path: "$pm", preserveNullAndEmptyArrays: true },
+        //   },
+        // ]);
+
+        // console.log(project2);
         const formattedDate = (date) => {
           return date?.toLocaleString("en-US", {
             year: "numeric",
@@ -78,6 +109,48 @@ export const projectResolvers = {
       } catch (error) {
         console.error("Return project error:", error);
         throw new Error("Failed to fetch project");
+      }
+    },
+
+    projectByUser: async (_, { id }) => {
+      try {
+        const project = await Project.find({ users: id })
+          .populate("users")
+          .populate("department")
+          .populate("projectManager");
+
+        if (project.length === 0) {
+          console.log("No project");
+          throw new Error("No project");
+        }
+
+        const formattedDate = (date) => {
+          return date?.toLocaleString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+        };
+
+        return project.map((project) => ({
+          id: project._id.toString(),
+          title: project.title,
+          description: project.description,
+          priority: project.priority,
+          status: project.status,
+          department: project.department,
+          client: project.client,
+          budget: project.budget,
+          users: project.users,
+          projectManager: project.projectManager,
+          startDate: formattedDate(project.startDate),
+          endDate: formattedDate(project.endDate),
+          createdAt: project.createdAt?.toISOString(),
+          updatedAt: project.updatedAt?.toISOString(),
+        }));
+      } catch (error) {
+        console.log(error);
+        throw new Error(error);
       }
     },
   },

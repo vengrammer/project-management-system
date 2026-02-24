@@ -20,7 +20,7 @@ import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { useParams } from "react-router-dom";
 
-const TEMP_AUTHOR_ID = "6997f38ed947212d48f71e03";
+const TEMP_AUTHOR_ID = "6992d115b034bbfbac83b8fb";
 
 const UPDATE_TASK_STATUS_IN_PROGRESS = gql`
   mutation UpdateTask($updateTaskId: ID!, $status: String) {

@@ -1,4 +1,4 @@
-import AddMembers from "./AddMembersForm";
+
 import {
   ArrowLeft,
   Calendar,
@@ -13,8 +13,8 @@ import {
   Pen,
   Check,
 } from "lucide-react";
-
-import { useNavigate, useParams } from "react-router-dom";
+import AddMembers from "./AddMembersForm";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import AddTaskForm from "./AddTaskForm";
 import FormEditProject from "./FormEditProject";
 import { gql } from "@apollo/client";
@@ -24,6 +24,7 @@ import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import FormEditTask from "./FormEditTask";
 import { motion } from "framer-motion";
+
 
 const UPDATE_PROJECT_STATUS = gql`
   mutation updateProject($updateProjectId: ID!, $status: String) {
@@ -142,6 +143,13 @@ const formatDate = (date) => {
 
 const ProjectDetailsPage = () => {
   const { id } = useParams();
+
+  //I want to hide the button that employee that only must admin can see
+  const location = useLocation();
+  const isEmployee = location.pathname.includes("employee");
+
+  console.log(isEmployee);
+
 
   // Get status color
 
@@ -320,6 +328,7 @@ const ProjectDetailsPage = () => {
     );
   }
 
+
   const project = projectData?.project;
   const tasks = taskData?.taskByProject ?? [];
 
@@ -329,7 +338,7 @@ const ProjectDetailsPage = () => {
       <div className="max-w-7xl mx-auto p-2 sm:p-6 lg:p-5">
         {/* Back Button */}
         <button
-          onClick={() => navigate("/admin/projects")}
+          onClick={() => navigate(`/${isEmployee ? "employee" : "admin"}/projects`)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
         >
           <ArrowLeft size={20} />
@@ -401,17 +410,17 @@ const ProjectDetailsPage = () => {
 
             {/* Buttons for edit project and add member*/}
             <div className="flex gap-3">
+              <div>{!isEmployee && <FormEditProject />}</div>
               <div>
-                <FormEditProject />
-              </div>
-              <div>
-                <button
-                  onClick={handleMarkAsDone}
-                  className="flex items-center gap-2 px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  <Check size={20} />
-                  Mark As Done
-                </button>
+                {!isEmployee && (
+                  <button
+                    onClick={handleMarkAsDone}
+                    className="flex items-center gap-2 px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <Check size={20} />
+                    Mark As Done
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -519,7 +528,7 @@ const ProjectDetailsPage = () => {
                       {tasks.length ? tasks.length : "0"} total tasks
                     </p>
                   </div>
-                  <AddTaskForm />
+                  {!isEmployee && <AddTaskForm />}
                 </div>
               </div>
               {/*all task value*/}
@@ -591,18 +600,22 @@ const ProjectDetailsPage = () => {
                           </div>
 
                           {/* EYE FOR THE EDIT TASK*/}
-                          <div>
-                            <FormEditTask taskID={task?.id} />
-                          </div>
+                          {!isEmployee && (
+                            <div>
+                              <FormEditTask taskID={task?.id} />
+                            </div>
+                          )}
 
-                          <div>
-                            <button
-                              onClick={() => handleDeleteTask(task.id)}
-                              className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors cursor-pointer"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
+                          {!isEmployee && (
+                            <div>
+                              <button
+                                onClick={() => handleDeleteTask(task.id)}
+                                className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors cursor-pointer"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -622,7 +635,7 @@ const ProjectDetailsPage = () => {
                 <h2 className="text-xl font-bold text-gray-900">
                   Team Members
                 </h2>
-                <AddMembers />
+                {!isEmployee && <AddMembers />}
               </div>
 
               <div className="bg-black max-w-full h-px mb-4"></div>
@@ -664,13 +677,13 @@ const ProjectDetailsPage = () => {
                             </p>
                           </div>
                           <div className="pl-3">
-                            <button
+                            {!isEmployee && (<button
                               onClick={() => handleRemoveMember(member.id)}
                               className="py-2 px-2 text-white bg-red-600 hover:bg-red-700 rounded transition-colors cursor-pointer"
                               title="Delete row"
                             >
                               <Trash2 size={16} />
-                            </button>
+                            </button>)}
                           </div>
                         </div>
                       </div>

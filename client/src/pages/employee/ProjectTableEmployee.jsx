@@ -1,36 +1,22 @@
+
 import {
-  Archive,
   CalendarArrowDown,
   CalendarArrowUp,
   Eye,
-  Pen,
-  Trash2,
 } from "lucide-react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useQuery, useMutation } from "@apollo/client/react";
+import { useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-import FormAddProjectModal from "./FormAddProjectModal";
-import Swal from "sweetalert2";
 
-export default function ProjectTable() {
+export default function ProjectTableEmployee() {
   const navigate = useNavigate();
-  const DELETE_PROJECT = gql`
-    mutation DeleteProject($id: ID!) {
-      deleteProject(id: $id) {
-        message
-        project {
-          id
-        }
-      }
-    }
-  `;
-  const [deleteProject] = useMutation(DELETE_PROJECT);
+
   const GET_PROJECTS = gql`
-    query Projects {
-      projects {
+    query ProjectByUser($projectByUserId: ID!) {
+      projectByUser(id: $projectByUserId) {
         id
         title
         priority
@@ -53,8 +39,14 @@ export default function ProjectTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Get the projects data using Apollo Client
-  const { loading, error, data, refetch } = useQuery(GET_PROJECTS);
+  const temporaryId = "6992d115b034bbfbac83b8fb"
+
+  // Get the projectByUser data using Apollo Client
+  const { loading, error, data } = useQuery(GET_PROJECTS, {
+    variables: {
+      projectByUserId: temporaryId,
+    },
+  });
 
   // Handle loading state
   if (loading) {
@@ -70,16 +62,16 @@ export default function ProjectTable() {
     toast.error(`Error: ${error.message}`);
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-red-600">Failed to load projects</div>
+        <div className="text-red-600">Failed to load projectByUser</div>
       </div>
     );
   }
 
-  // Extract projects from response
-  const projects = data?.projects || [];
+  // Extract projectByUser from response
+  const projectByUser = data?.projectByUser || [];
 
   // Search filter
-  const filteredProjects = projects.filter((project) => {
+  const filteredProjects = projectByUser.filter((project) => {
     const search = searchTerm.toLowerCase();
     return (
       project.title?.toLowerCase().includes(search) ||
@@ -97,34 +89,9 @@ export default function ProjectTable() {
 
   // Actions
   const handleView = (project) => {
-    navigate(`/admin/projectdetails/${project.id}`);
+    navigate(`/employee/projectdetails/${project.id}`);
     // console.log("View project:", project);
     // alert(`Viewing: ${project.title}`);
-  };
-
-  const handleDelete = async (id) => {
-    Swal.fire({
-      title: "Are you sure you want to delete this project?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const { data } = await deleteProject({ variables: { id } });
-          if (data.deleteProject) {
-            toast.success("Project deleted successfully");
-            // Refetch projects to update the list
-            refetch();
-          }
-        } catch (error) {
-          toast.error(`Error deleting project: ${error.message}`);
-        }
-      }
-    });
   };
 
   // Helper functions
@@ -156,14 +123,6 @@ export default function ProjectTable() {
       <div className="bg-white rounded-lg shadow">
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-            <h1 className="text-2xl font-bold text-gray-800">Projects</h1>
-            <FormAddProjectModal />
-            {/* <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">
-              
-            </button> */}
-          </div>
-
           <input
             type="text"
             placeholder="Search by title, description, department, or status..."
@@ -191,9 +150,9 @@ export default function ProjectTable() {
 
         {/* Grid Body - Unified responsive layout */}
         <div className="divide-y divide-gray-200 max-h-150 overflow-auto">
-          {projects.length === 0 ? (
+          {projectByUser.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
-              No projects found
+              No projectByUser found
             </div>
           ) : currentProjects.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
@@ -316,32 +275,13 @@ export default function ProjectTable() {
                   <div className="flex gap-2 pt-2  border-t border-gray-100 lg:border-t-0 lg:pt-0 lg:gap-1">
                     <button
                       onClick={() => handleView(project)}
-                      className="flex-1 cursor-pointer lg:flex-none  bg-blue-600 text-white hover:bg-blue-700  py-2 lg:py-1 lg:px-1 rounded  text-sm font-medium"
+                      className="flex-1 cursor-pointer lg:flex-none  bg-blue-600 text-white hover:bg-blue-700  py-2 lg:py-2 lg:px-2 rounded  text-sm font-medium"
                       title="View"
                     >
                       <span className="lg:hidden text-white">View</span>
-                      <Eye size={20} className="hidden lg:inline text-white" />
+                      <Eye size={20} className="hidden lg:inline text-white " />
                     </button>
 
-                    <button
-                      className="flex-1 cursor-pointer lg:flex-none  bg-gray-500 text-white hover:bg-gray-600  py-2 lg:py-1 lg:px-1 rounded  text-sm font-medium"
-                      title="View"
-                    >
-                      <span className="lg:hidden text-white">Archive</span>
-                      <Archive size={20} className="hidden lg:inline text-white" />
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(project.id)}
-                      className="flex-1 cursor-pointer lg:flex-none  bg-red-600 text-white hover:bg-red-700 py-2 lg:py-1 lg:px-1 rounded  text-sm font-medium"
-                      title="Delete"
-                    >
-                      <span className="lg:hidden">Delete</span>
-                      <Trash2
-                        size={18}
-                        className="hidden lg:inline text-white"
-                      />
-                    </button>
                   </div>
                 </div>
               </div>
@@ -355,7 +295,7 @@ export default function ProjectTable() {
             <div className="text-sm text-gray-600">
               Showing {startIndex + 1} to{" "}
               {Math.min(endIndex, filteredProjects.length)} of{" "}
-              {filteredProjects.length} projects
+              {filteredProjects.length} projectByUser
             </div>
 
             <div className="flex gap-2">
@@ -381,8 +321,8 @@ export default function ProjectTable() {
         <div className="px-4 md:px-6 py-4 border-t border-gray-200">
           <div className="text-sm text-gray-600">
             Total: {filteredProjects.length}{" "}
-            {filteredProjects.length === 1 ? "project" : "projects"}
-            {searchTerm && ` (filtered from ${projects.length} total)`}
+            {filteredProjects.length === 1 ? "project" : "projectByUser"}
+            {searchTerm && ` (filtered from ${projectByUser.length} total)`}
           </div>
         </div> */}
       </div>

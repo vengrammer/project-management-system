@@ -5,6 +5,7 @@ import AdminRoute from "./Router/AdminRoute";
 import ProjectDetailsPage from "./pages/admin/ProjectDetailsPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import EmployeeRoute from "./Router/EmployeeRoute";
 
 function App() {
   return (
@@ -12,8 +13,9 @@ function App() {
       <Routes>
         <Route path="/*" element={<LandingPageRoute />} />
         <Route path="admin/*" element={<AdminRoute />} />
+        <Route path="employee/*" element={<EmployeeRoute />} />
         <Route path="*" element={<NotFound />} />
-        <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
+        
       </Routes>
       <ToastContainer
         position="bottom-right"

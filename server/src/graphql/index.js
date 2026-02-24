@@ -15,8 +15,6 @@ import { departmentResolver } from "./resolver/department.resolver.js";
 import taskResolver from "./resolver/task.resolver.js";
 import taskLogResolver from "./resolver/tasklog.resolver.js";
 
-
-
 const rootSchema = `
   type Query{
     _empty: String

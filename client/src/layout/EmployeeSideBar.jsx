@@ -6,16 +6,12 @@ import {
   Menu,
   X,
   FolderOpenDot,
-  Users,
-  UserCheck,
   LogOut,
   User,
-  LayoutDashboard,
-  Building2,
   Archive,
 } from "lucide-react";
 
-export default function AdminSideBar() {
+export default function EmployeeSideBar() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,32 +63,18 @@ export default function AdminSideBar() {
 
         {/* Navigation Links */}
         <nav className="flex-1 p-4 overflow-y-auto">
-          <div className="px-4 py-2 mb-4 rounded-2xl border shadow-blue-800 shadow-2xs">
+          <div className="px-4 py-2 mb-4 rounded-2xl shadow-blue-800 border shadow-2xs">
             <h1 className=" font-semibold text-gray-800">
-              Welcome, <span className="text-blue-600">Admin</span>
+              Welcome, <span className="text-blue-600">Employee</span>
             </h1>
           </div>
           <ul className="space-y-2">
+            
             <li>
               <Link
-                to="/admin/dashboard"
+                to="/employee/projects"
                 className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/admin/dashboard")
-                    ? "bg-blue-100 text-blue-600"
-                    : ""
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <LayoutDashboard size={20} />
-                <span>Dashboard</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/admin/projects"
-                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/admin/projects") ? "bg-blue-100 text-blue-600" : ""
+                  isActive("/employee/projects") ? "bg-blue-100 text-blue-600" : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
@@ -100,58 +82,16 @@ export default function AdminSideBar() {
                 <span>Project</span>
               </Link>
             </li>
-
             <li>
               <Link
-                to="/admin/users"
+                to="/sads"
                 className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/admin/users") ? "bg-blue-100 text-blue-600" : ""
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <UserCheck size={20} />
-                <span>Users</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/admin/department"
-                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/admin/department")
-                    ? "bg-blue-100 text-blue-600"
-                    : ""
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <Building2 size={20} />
-                <span>Department</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/admin/practice"
-                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/settings") ? "bg-blue-100 text-blue-600" : ""
+                  isActive("/nbmnb") ? "bg-blue-100 text-blue-600" : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
                 <Archive size={20} />
                 <span>Archive</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/admin/practice"
-                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/settings") ? "bg-blue-100 text-blue-600" : ""
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <Users size={20} />
-                <span>Team</span>
               </Link>
             </li>
           </ul>
