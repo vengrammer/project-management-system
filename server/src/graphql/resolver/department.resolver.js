@@ -13,6 +13,15 @@ export const departmentResolver = {
         console.log("error", error);
       }
     },
+    department: async (_, {id}) => {
+      try{
+        const department = await Department.findById(id)
+        return department;
+      }catch(error){
+        console.log(error);
+        throw new Error(error);
+      }
+    }
   },
   Department: {
     users: async (parent) => {

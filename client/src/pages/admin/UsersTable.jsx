@@ -259,12 +259,10 @@ export default function UsersTable() {
                       }  text-white  px-3 py-3 rounded-md text-sm font-medium`}
                       title="Ban User"
                     >
-                      <span className="md:hidden">Delete</span>
-
                       {user.status ? (
-                        <PowerOff size={20} className="hidden md:block" />
+                        <PowerOff size={20}  />
                       ) : (
-                        <Power size={20} className="hidden md:block" />
+                        <Power size={20} />
                       )}
                     </button>
                   </div>

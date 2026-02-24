@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
 import FormAddDepartment from "./FormAddDepartment";
 import Swal from "sweetalert2";
+import FormEditDepartment from "./FormEditDepartment";
 
 const GET_DEPARTMENT = gql`
   query Departments {
@@ -210,14 +211,8 @@ export default function DepartmentTable() {
 
                   {/* Actions*/}
                   <div className="flex gap-2 pt-2 border-t border-gray-100 lg:border-t-0 lg:pt-0 lg:gap-3">
-                    <button
-                      onClick={() => handleEdit(department)}
-                      className="flex-1 lg:flex-none px-2 py-2 rounded cursor-pointer  bg-green-600 text-white hover:bg-green-700  text-sm font-medium lg:font-normal"
-                      title="Edit"
-                    >
-                      <span className="lg:hidden">Edit</span>
-                      <Pen size={20} className="hidden lg:block" />
-                    </button>
+                    
+                    <FormEditDepartment departmentId={department.id} />
                     <button
                       onClick={() => handleDelete(department.id)}
                       className="flex-1 lg:flex-none bg-red-600 px-2 py-2 rounded cursor-pointer text-white hover:bg-red-700 text-sm font-medium lg:font-normal"

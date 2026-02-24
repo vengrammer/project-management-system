@@ -1,230 +1,57 @@
-// ================================================================
-//  PMDashboard.jsx
-//  A Project Management Calendar Dashboard
-//
-//  HOW TO USE THIS FILE:
-//  1. Edit the DATA SECTION below to add your own projects, team,
-//     and events.
-//  2. Each component (Header, Sidebar, Calendar, etc.) is clearly
-//     labeled so you can find and change any part easily.
-//  3. All colors and sizes live in the STYLES section at the bottom.
-//
-//  To use in your app:
-//     import PMDashboard from "./PMDashboard";
-//     <PMDashboard />
-// ================================================================
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@apollo/client/react";
+import { gql } from "@apollo/client";
 
-// ================================================================
-//  STEP 1 — EDIT YOUR DATA HERE
-//  This is the only section you need to change to customize the
-//  dashboard with your own projects and events.
-// ================================================================
+//  GRAPHQL QUERIES
 
-// --- Your projects ---
-// Each project needs: id, name, color (text color), bg (background color)
-// Add or remove projects by adding/removing lines here.
-const PROJECTS = [
-  { id: 1, name: "Website Redesign", color: "#E03131", bg: "#FFF5F5" },
-  { id: 2, name: "Mobile App v2", color: "#0CA678", bg: "#E6FAF5" },
-  { id: 3, name: "API Integration", color: "#E67700", bg: "#FFF4E6" },
-  { id: 4, name: "Brand Campaign", color: "#7048E8", bg: "#F3F0FF" },
-];
+const GET_PROJECTS = gql`
+  query GetProjects {
+    projects {
+      id
+      title
+      status
+      priority
+      startDate
+      endDate
+      client
+      projectManager {
+        id
+        fullname
+      }
+    }
+  }
+`;
 
-// --- Your team members ---
-// Key = short initials shown on the avatar (e.g. "AK")
-// name = full name shown in the detail panel
-// color = avatar background color
-const TEAM = {
-  AK: { name: "Alex K.", color: "#E03131" },
-  SR: { name: "Sam R.", color: "#0CA678" },
-  JL: { name: "Jordan L.", color: "#E67700" },
-  MT: { name: "Morgan T.", color: "#7048E8" },
-};
+const GET_LOGS_BY_PROJECT = gql`
+  query GetLogsByProject(
+    $projectId: String!
+    $startDate: String
+    $endDate: String
+  ) {
+    taskLogsByProject(
+      projectId: $projectId
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      id
+      content
+      status
+      createdAt
+      task {
+        id
+        title
+        priority
+        status
+      }
+      author {
+        id
+        fullname
+      }
+    }
+  }
+`;
 
-// --- Your calendar events ---
-// projectId  → must match one of the ids in PROJECTS above
-// day        → day of the month (1–31)
-// priority   → "high", "medium", or "low"
-// who        → must match a key in TEAM above (e.g. "AK")
-// action     → description shown in the detail panel
-// time       → display time (just a string, e.g. "9:30 AM")
-const EVENTS = [
-  {
-    id: 1,
-    projectId: 1,
-    title: "Design Review",
-    day: 3,
-    priority: "high",
-    who: "AK",
-    time: "9:30 AM",
-    action:
-      "Uploaded new wireframes and marked 3 components as ready for handoff.",
-  },
-  {
-    id: 2,
-    projectId: 2,
-    title: "Sprint Planning",
-    day: 3,
-    priority: "medium",
-    who: "SR",
-    time: "11:00 AM",
-    action:
-      "Created sprint backlog with 12 user stories and assigned story points.",
-  },
-  {
-    id: 3,
-    projectId: 3,
-    title: "API Kickoff",
-    day: 5,
-    priority: "high",
-    who: "JL",
-    time: "10:00 AM",
-    action:
-      "Shared API spec document and set up Postman workspace for the team.",
-  },
-  {
-    id: 4,
-    projectId: 1,
-    title: "Stakeholder Demo",
-    day: 7,
-    priority: "high",
-    who: "AK",
-    time: "2:00 PM",
-    action:
-      "Presented homepage prototype. Client approved color palette and nav.",
-  },
-  {
-    id: 5,
-    projectId: 4,
-    title: "Campaign Brief",
-    day: 9,
-    priority: "medium",
-    who: "MT",
-    time: "3:15 PM",
-    action:
-      "Finalized target audience segments and submitted brief to creative team.",
-  },
-  {
-    id: 6,
-    projectId: 2,
-    title: "Beta Launch",
-    day: 12,
-    priority: "high",
-    who: "SR",
-    time: "8:00 AM",
-    action: "Deployed v0.9 to TestFlight. Invited 50 beta testers.",
-  },
-  {
-    id: 7,
-    projectId: 3,
-    title: "QA Testing",
-    day: 14,
-    priority: "low",
-    who: "JL",
-    time: "1:00 PM",
-    action:
-      "Ran 200 automated tests. 4 endpoints returned 500 errors — filed tickets.",
-  },
-  {
-    id: 8,
-    projectId: 1,
-    title: "Final Handoff",
-    day: 17,
-    priority: "high",
-    who: "AK",
-    time: "4:00 PM",
-    action:
-      "Delivered all assets to dev team. Design system exported to Zeplin.",
-  },
-  {
-    id: 9,
-    projectId: 4,
-    title: "Ad Creative Review",
-    day: 19,
-    priority: "medium",
-    who: "MT",
-    time: "10:30 AM",
-    action:
-      "Reviewed 6 ad variants. 2 approved, 1 revised, 3 sent back for changes.",
-  },
-  {
-    id: 10,
-    projectId: 2,
-    title: "App Store Submit",
-    day: 21,
-    priority: "high",
-    who: "SR",
-    time: "9:00 AM",
-    action:
-      "Submitted iOS build 1.0 to App Store Review. Expected approval in 48 hrs.",
-  },
-  {
-    id: 11,
-    projectId: 3,
-    title: "Go Live",
-    day: 23,
-    priority: "high",
-    who: "JL",
-    time: "12:00 PM",
-    action:
-      "API v1 deployed to production. All endpoints responding. Monitoring on.",
-  },
-  {
-    id: 12,
-    projectId: 4,
-    title: "Campaign Launch",
-    day: 26,
-    priority: "high",
-    who: "MT",
-    time: "8:00 AM",
-    action:
-      "Launched across Google & Meta. Day 1 impressions: 84K. CTR at 3.2%.",
-  },
-  {
-    id: 13,
-    projectId: 1,
-    title: "Post-Launch Review",
-    day: 28,
-    priority: "low",
-    who: "AK",
-    time: "3:00 PM",
-    action:
-      "Conducted retrospective. Documented lessons learned and updated wiki.",
-  },
-];
-
-// --- Stats shown across the top ---
-// Update the `value` numbers to match your real data.
-const STATS = [
-  {
-    label: "Total Tasks",
-    value: 13,
-    color: "#3B5BDB",
-    bg: "#EEF2FF",
-    icon: "📋",
-  },
-  {
-    label: "In Progress",
-    value: 6,
-    color: "#0CA678",
-    bg: "#E6FAF5",
-    icon: "⚙️",
-  },
-  { label: "Overdue", value: 2, color: "#E67700", bg: "#FFF4E6", icon: "⚠️" },
-  { label: "Completed", value: 5, color: "#2F9E44", bg: "#F3FFF0", icon: "✅" },
-];
-
-// --- Priority badge colors ---
-// You can change these colors to match your brand.
-const PRIORITY_STYLE = {
-  high: { label: "HIGH", color: "#E03131", bg: "#FFF5F5" },
-  medium: { label: "MEDIUM", color: "#E67700", bg: "#FFF4E6" },
-  low: { label: "LOW", color: "#2F9E44", bg: "#F3FFF0" },
-};
-
-// --- Calendar helpers (no need to edit these) ---
 const MONTH_NAMES = [
   "January",
   "February",
@@ -239,1030 +66,810 @@ const MONTH_NAMES = [
   "November",
   "December",
 ];
-const DAY_NAMES_SHORT = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-const DAY_NAMES_FULL = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+
+
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+const STATUS_STYLE = {
+  "not started": "bg-slate-100 text-slate-500",
+  "in progress": "bg-blue-100 text-blue-600",
+  completed: "bg-green-100 text-green-600",
+};
+
+const LOG_STATUS = {
+  in_progress: {
+    dot: "bg-blue-500",
+    badge: "bg-blue-50 text-blue-600",
+    label: "In Progress",
+  },
+  done: {
+    dot: "bg-green-500",
+    badge: "bg-green-50 text-green-600",
+    label: "Done",
+  },
+  stuck: { dot: "bg-red-500", badge: "bg-red-50 text-red-600", label: "Stuck" },
+};
+
+const PRIORITY_BORDER = {
+  high: "border-l-red-400",
+  medium: "border-l-amber-400",
+  low: "border-l-green-400",
+};
+
+const PRIORITY_LABEL = {
+  high: { bg: "bg-red-50", text: "text-red-500", label: "High" },
+  medium: { bg: "bg-amber-50", text: "text-amber-600", label: "Medium" },
+  low: { bg: "bg-green-50", text: "text-green-600", label: "Low" },
+};
+
+// Accent colors assigned to projects by index
+const ACCENTS = [
+  {
+    ring: "ring-violet-400",
+    chip: "bg-violet-500",
+    chipHex: "#8B5CF6",
+    light: "bg-violet-50",
+    text: "text-violet-700",
+    border: "border-violet-200",
+  },
+  {
+    ring: "ring-blue-400",
+    chip: "bg-blue-500",
+    chipHex: "#3B82F6",
+    light: "bg-blue-50",
+    text: "text-blue-700",
+    border: "border-blue-200",
+  },
+  {
+    ring: "ring-emerald-400",
+    chip: "bg-emerald-500",
+    chipHex: "#10B981",
+    light: "bg-emerald-50",
+    text: "text-emerald-700",
+    border: "border-emerald-200",
+  },
+  {
+    ring: "ring-amber-400",
+    chip: "bg-amber-500",
+    chipHex: "#F59E0B",
+    light: "bg-amber-50",
+    text: "text-amber-700",
+    border: "border-amber-200",
+  },
+  {
+    ring: "ring-pink-400",
+    chip: "bg-pink-500",
+    chipHex: "#EC4899",
+    light: "bg-pink-50",
+    text: "text-pink-700",
+    border: "border-pink-200",
+  },
+  {
+    ring: "ring-cyan-400",
+    chip: "bg-cyan-500",
+    chipHex: "#06B6D4",
+    light: "bg-cyan-50",
+    text: "text-cyan-700",
+    border: "border-cyan-200",
+  },
 ];
 
-// ================================================================
-//  HELPER FUNCTIONS
-//  Small reusable functions used by the components below.
-// ================================================================
-
-// Returns events for a specific day, filtered by project if needed.
-// projectFilter = 0 means "show all projects"
-function getEventsForDay(day, projectFilter) {
-  return EVENTS.filter(
-    (event) =>
-      event.day === day &&
-      (projectFilter === 0 || event.projectId === projectFilter),
-  );
+function buildYears() {
+  const cur = new Date().getFullYear();
+  const list = [];
+  for (let y = 2020; y <= cur + 5; y++) list.push(y);
+  return list;
 }
 
-// Builds the grid of calendar cells for a given month/year.
-// Returns an array like: [{ type: "prev", day: 29 }, { type: "current", day: 1 }, ...]
-function buildCalendarCells(year, month) {
-  const firstWeekday = new Date(year, month, 1).getDay(); // 0=Sun, 6=Sat
+
+function buildCells(year, month) {
+  const firstJsDay = new Date(year, month, 1).getDay();
+  const offset = (firstJsDay + 6) % 7; // Mon=0
   const totalDays = new Date(year, month + 1, 0).getDate();
   const prevTotal = new Date(year, month, 0).getDate();
-
   const cells = [];
 
-  // Fill in greyed-out days from the previous month
-  for (let i = 0; i < firstWeekday; i++) {
-    cells.push({ type: "prev", day: prevTotal - firstWeekday + 1 + i });
+  for (let i = offset - 1; i >= 0; i--) {
+    const d = prevTotal - i;
+    cells.push({
+      day: d,
+      month: month === 0 ? 11 : month - 1,
+      year: month === 0 ? year - 1 : year,
+      isCurrentMonth: false,
+    });
   }
-
-  // Fill in the actual days of the current month
   for (let d = 1; d <= totalDays; d++) {
-    cells.push({ type: "current", day: d });
+    cells.push({ day: d, month, year, isCurrentMonth: true });
   }
-
-  // Fill trailing greyed-out days from next month to complete the last row
-  const remainder = cells.length % 7;
-  if (remainder !== 0) {
-    for (let i = 1; i <= 7 - remainder; i++) {
-      cells.push({ type: "next", day: i });
+  const rem = cells.length % 7;
+  if (rem !== 0) {
+    for (let i = 1; i <= 7 - rem; i++) {
+      cells.push({
+        day: i,
+        month: month === 11 ? 0 : month + 1,
+        year: month === 11 ? year + 1 : year,
+        isCurrentMonth: false,
+      });
     }
   }
-
   return cells;
 }
 
-// Build the list of years for the year dropdown
-function buildYearList() {
-  const currentYear = new Date().getFullYear();
-  const years = [];
-  for (let y = currentYear - 10; y <= currentYear + 5; y++) {
-    years.push(y);
+function parseCreatedAt(createdAt) {
+  if (!createdAt) return new Date();
+  // If it's all digits, it's a Unix ms timestamp
+  if (/^\d+$/.test(String(createdAt))) {
+    return new Date(Number(createdAt));
   }
-  return years;
+  // Otherwise try as ISO string
+  return new Date(createdAt);
 }
 
-// ================================================================
-//  COMPONENT: Avatar
-//  A small colored circle showing someone's initials.
-//
-//  Props:
-//    initials — letters to show, e.g. "AK"
-//    color    — background color
-//    size     — circle size in pixels (default: 28)
-// ================================================================
-function Avatar({ initials, color, size = 28 }) {
+// Build lookup key from a date object: "YYYY-M-D"
+function dateKey(d) {
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+// ISO string for first ms of a month — used as startDate param
+function monthStart(year, month) {
+  return new Date(year, month, 1, 0, 0, 0, 0).toISOString();
+}
+
+// ISO string for last ms of a month — used as endDate param
+function monthEnd(year, month) {
+  return new Date(year, month + 1, 0, 23, 59, 59, 999).toISOString();
+}
+
+// Parse a date string that might be "January 10, 2025" (locale) or ISO
+function parseProjectDate(str) {
+  if (!str) return null;
+  const d = new Date(str);
+  if (!isNaN(d))
+    return { year: d.getFullYear(), month: d.getMonth(), day: d.getDate() };
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  SUB-COMPONENTS
+// ─────────────────────────────────────────────────────────────
+
+function Skeleton({ className = "" }) {
   return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: "50%",
-        background: color,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#fff",
-        fontWeight: 700,
-        fontSize: size * 0.35,
-        flexShrink: 0,
-      }}
-    >
-      {initials}
-    </div>
+    <div className={`animate-pulse bg-slate-200 rounded-xl ${className}`} />
   );
 }
 
-// ================================================================
-//  COMPONENT: Header
-//  The top bar with the app name and current user info.
-// ================================================================
-function Header() {
-  return (
-    <div style={S.header}>
-      {/* App name — change "OrbitPM" to whatever you like */}
-      <span style={S.logo}>📋 OrbitPM</span>
-
-      {/* Current user — replace "JD" and "John Doe" with real data */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <Avatar initials="JD" color="#3B5BDB" size={30} />
-        <span style={{ fontSize: 13, fontWeight: 600, color: "#333" }}>
-          John Doe
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ================================================================
-//  COMPONENT: StatsRow
-//  Four summary cards showing task counts at the top.
-//  Edit the STATS array at the top of this file to change values.
-// ================================================================
-function StatsRow() {
-  return (
-    <div style={S.statsRow}>
-      {STATS.map((stat, index) => (
-        <div
-          key={index}
-          style={{
-            ...S.statBox,
-            borderRight:
-              index < STATS.length - 1 ? "1px solid #E8EAF0" : "none",
-          }}
-        >
-          {/* Colored icon circle */}
-          <div style={{ ...S.statIcon, background: stat.bg }}>{stat.icon}</div>
-
-          {/* Label and number */}
-          <div>
-            <div style={S.statLabel}>{stat.label}</div>
-            <div style={{ ...S.statNumber, color: stat.color }}>
-              {stat.value}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ================================================================
-//  COMPONENT: Sidebar
-//  Left panel with:
-//    - Month and year dropdowns + navigation arrows
-//    - Project filter buttons (clicking one filters the calendar)
-//    - Priority color legend
-//
-//  Props:
-//    activeFilter   — which project is selected (0 = show all)
-//    onFilterChange — called with the new projectId when user clicks
-//    curMonth       — current month number (0–11)
-//    curYear        — current year number (e.g. 2026)
-//    onMonthChange  — called with new month number
-//    onYearChange   — called with new year number
-//    onNavMonth     — called with -1 (prev) or +1 (next)
-// ================================================================
-function Sidebar({
-  activeFilter,
-  onFilterChange,
-  curMonth,
-  curYear,
-  onMonthChange,
-  onYearChange,
-  onNavMonth,
-}) {
-  const years = buildYearList();
-
-  return (
-    <div style={S.sidebar}>
-      {/* ── Date Navigation ──────────────────────────────── */}
-      <div style={S.sideSection}>
-        <div style={S.sideSectionTitle}>DATE</div>
-
-        {/* Month selector */}
-        <select
-          value={curMonth}
-          onChange={(e) => onMonthChange(Number(e.target.value))}
-          style={S.select}
-        >
-          {MONTH_NAMES.map((name, i) => (
-            <option key={i} value={i}>
-              {name}
-            </option>
-          ))}
-        </select>
-
-        {/* Year selector */}
-        <select
-          value={curYear}
-          onChange={(e) => onYearChange(Number(e.target.value))}
-          style={{ ...S.select, marginTop: 6 }}
-        >
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
-
-        {/* Arrow buttons to go to prev/next month */}
-        <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-          <button style={S.navBtn} onClick={() => onNavMonth(-1)}>
-            ‹ Prev
-          </button>
-          <button style={S.navBtn} onClick={() => onNavMonth(1)}>
-            Next ›
-          </button>
-        </div>
-      </div>
-
-      {/* ── Project Filter ───────────────────────────────── */}
-      <div style={S.sideSection}>
-        <div style={S.sideSectionTitle}>PROJECTS</div>
-
-        {/* "All Projects" — shows everything */}
-        <SidebarItem
-          label="All Projects"
-          dotColor="#3B5BDB"
-          isActive={activeFilter === 0}
-          count={EVENTS.length}
-          onClick={() => onFilterChange(0)}
-        />
-
-        {/* One button per project */}
-        {PROJECTS.map((project) => {
-          const count = EVENTS.filter((e) => e.projectId === project.id).length;
-          return (
-            <SidebarItem
-              key={project.id}
-              label={project.name}
-              dotColor={project.color}
-              isActive={activeFilter === project.id}
-              count={count}
-              onClick={() => onFilterChange(project.id)}
-            />
-          );
-        })}
-      </div>
-
-      {/* ── Priority Legend ──────────────────────────────── */}
-      <div style={S.sideSection}>
-        <div style={S.sideSectionTitle}>PRIORITY</div>
-        {Object.entries(PRIORITY_STYLE).map(([key, val]) => (
-          <div
-            key={key}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 6,
-            }}
-          >
-            <div
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: val.color,
-                flexShrink: 0,
-              }}
-            />
-            <span style={{ fontSize: 12, color: "#555" }}>{val.label}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ================================================================
-//  COMPONENT: SidebarItem
-//  A single clickable row inside the sidebar project list.
-//
-//  Props:
-//    label    — text to show (project name or "All Projects")
-//    dotColor — color of the dot on the left
-//    isActive — true if this item is currently selected
-//    count    — number of events (shown on the right)
-//    onClick  — function to call when this item is clicked
-// ================================================================
-function SidebarItem({ label, dotColor, isActive, count, onClick }) {
+function ProjectItem({ project, accent, isSelected, onClick }) {
   return (
     <button
       onClick={onClick}
-      style={{
-        ...S.sidebarItem,
-        // Change style depending on whether it's active (selected)
-        background: isActive ? dotColor + "18" : "transparent",
-        borderColor: isActive ? dotColor + "55" : "transparent",
-        color: isActive ? dotColor : "#555",
-        fontWeight: isActive ? 600 : 400,
-      }}
+      className={[
+        "w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-150 flex items-center gap-3",
+        isSelected
+          ? `bg-white shadow-sm ring-2 ${accent.ring} ${accent.border}`
+          : "border-transparent hover:bg-white hover:border-slate-200",
+      ].join(" ")}
     >
-      {/* Colored dot indicator */}
-      <div
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: "50%",
-          background: dotColor,
-          flexShrink: 0,
-        }}
+      <span
+        className={`w-2.5 h-2.5 rounded-full shrink-0 ${accent.chip}`}
       />
-
-      {/* Project name */}
-      <span style={{ flex: 1, textAlign: "left", fontSize: 13 }}>{label}</span>
-
-      {/* Event count */}
-      <span style={{ fontSize: 11, color: isActive ? dotColor : "#BBB" }}>
-        {count}
-      </span>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-slate-800 truncate">
+          {project.title}
+        </p>
+        <p className="text-[11px] text-slate-400 truncate">
+          {project.client ?? "No client"} ·{" "}
+          <span
+            className={`font-semibold ${
+              STATUS_STYLE[project.status ?? "not started"]
+            }`}
+          >
+            {project.status ?? "not started"}
+          </span>
+        </p>
+      </div>
     </button>
   );
 }
 
-// ================================================================
-//  COMPONENT: CalendarGrid
-//  The monthly calendar in the center of the screen.
-//
-//  Props:
-//    curMonth      — month to show (0–11)
-//    curYear       — year to show
-//    selectedDay   — the day number currently selected
-//    activeFilter  — project filter (0 = all)
-//    onSelectDay   — called with the day number when user clicks a day
-// ================================================================
-function CalendarGrid({
-  curMonth,
-  curYear,
-  selectedDay,
-  activeFilter,
-  onSelectDay,
-}) {
-  const today = new Date();
-  const cells = buildCalendarCells(curYear, curMonth);
-
-  return (
-    <div style={S.calendarPanel}>
-      {/* Month + year title at top of calendar */}
-      <div style={S.calTitle}>
-        {MONTH_NAMES[curMonth]} {curYear}
-      </div>
-
-      {/* Day-of-week column headers */}
-      <div style={S.dayNamesRow}>
-        {DAY_NAMES_SHORT.map((name) => (
-          <div key={name} style={S.dayNameCell}>
-            {name}
-          </div>
-        ))}
-      </div>
-
-      {/* The calendar cells grid */}
-      <div style={S.calGrid}>
-        {cells.map((cell, index) => {
-          const isThisMonth = cell.type === "current";
-
-          // Is this cell today's date?
-          const isToday =
-            isThisMonth &&
-            cell.day === today.getDate() &&
-            curMonth === today.getMonth() &&
-            curYear === today.getFullYear();
-
-          // Is this the day the user clicked?
-          const isSelected = isThisMonth && cell.day === selectedDay;
-
-          // Events to show on this cell (empty array for non-current-month cells)
-          const dayEvents = isThisMonth
-            ? getEventsForDay(cell.day, activeFilter)
-            : [];
-
-          return (
-            <CalendarCell
-              key={index}
-              day={cell.day}
-              isThisMonth={isThisMonth}
-              isToday={isToday}
-              isSelected={isSelected}
-              events={dayEvents}
-              onClick={isThisMonth ? () => onSelectDay(cell.day) : undefined}
-            />
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ================================================================
-//  COMPONENT: CalendarCell
-//  One individual day box inside the calendar grid.
-//
-//  Props:
-//    day         — the day number (1–31)
-//    isThisMonth — false for greyed-out overflow days
-//    isToday     — true if this is today's date
-//    isSelected  — true if the user has clicked this day
-//    events      — array of events on this day
-//    onClick     — function called when user clicks this cell
-// ================================================================
-function CalendarCell({
-  day,
-  isThisMonth,
-  isToday,
-  isSelected,
-  events,
-  onClick,
-}) {
-  const [isHovered, setIsHovered] = useState(false);
+// ─── DayCell: responsive ─────────────────────────────────────
+// Large screen (md+): shows task name chips inside the cell
+// Small screen:       shows colored dot + tinted background only
+function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
+  const [hov, setHov] = useState(false);
+  const hasLogs = logs.length > 0;
 
   return (
     <div
       onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        ...S.calCell,
-        // Dim non-current-month cells
-        opacity: isThisMonth ? 1 : 0.25,
-        cursor: isThisMonth ? "pointer" : "default",
-        // Change background and border based on state
-        background: isSelected
-          ? "#EEF2FF"
-          : isHovered && isThisMonth
-          ? "#FAFBFF"
-          : "#fff",
-        borderColor: isSelected
-          ? "#3B5BDB"
-          : isHovered && isThisMonth
-          ? "#C5CBEF"
-          : "#EDEFF5",
-      }}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      className={[
+        "border-b border-r border-slate-100 transition-all duration-150 relative select-none",
+        // Height: taller on md+ to fit chips, compact on small
+        "min-h-13 md:min-h-22.5",
+        "p-1 md:p-2",
+        !cell.isCurrentMonth
+          ? "cursor-default bg-slate-50/50"
+          : "cursor-pointer",
+        // Selected: blue ring
+        isSelected && cell.isCurrentMonth
+          ? "ring-2 ring-inset ring-blue-500 bg-blue-50/40 z-10"
+          : "",
+        // Hover
+        hov && cell.isCurrentMonth && !isSelected ? "bg-slate-50" : "",
+        // Has logs + not selected: tinted bg with project color (both screen sizes)
+        hasLogs && !isSelected && cell.isCurrentMonth ? accent.light : "",
+      ].join(" ")}
     >
-      {/* Day number — highlighted blue circle if today */}
+      {/* Day number */}
       <div
-        style={{
-          ...S.dayNumber,
-          background: isToday ? "#3B5BDB" : "transparent",
-          color: isToday ? "#fff" : "#333",
-          borderRadius: "50%",
-        }}
+        className={[
+          "w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold mb-1 transition-colors shrink-0",
+          isToday
+            ? "bg-blue-600 text-white shadow-sm"
+            : isSelected && cell.isCurrentMonth
+            ? "bg-blue-500 text-white"
+            : hasLogs && cell.isCurrentMonth
+            ? `${accent.chip} text-white` // project-colored circle = has logs
+            : cell.isCurrentMonth
+            ? "text-slate-700"
+            : "text-slate-300",
+        ].join(" ")}
       >
-        {day}
+        {cell.day}
       </div>
 
-      {/* Show up to 2 event chips per cell */}
-      {events.slice(0, 2).map((event) => {
-        const project = PROJECTS.find((p) => p.id === event.projectId);
-        return (
+      {/* ── LARGE SCREEN ONLY: task name chips ── */}
+      {hasLogs && (
+        <div className="hidden md:flex flex-col gap-0.5">
+          {logs.slice(0, 2).map((log) => (
+            <div
+              key={log.id}
+              title={log.content}
+              className={[
+                "text-[10px] font-semibold px-1.5 py-0.5 rounded-md truncate",
+                "border-l-2 bg-white/80 shadow-sm",
+                PRIORITY_BORDER[log.task?.priority] ?? "border-l-slate-300",
+                accent.text,
+              ].join(" ")}
+            >
+              {/* Show task title if available, fallback to log content */}
+              {log.task?.title ?? log.content}
+            </div>
+          ))}
+          {logs.length > 2 && (
+            <span className={`text-[9px] font-bold pl-1 ${accent.text}`}>
+              +{logs.length - 2} more
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* ── SMALL SCREEN ONLY: activity dot indicator ── */}
+      {hasLogs && (
+        <span
+          className={`md:hidden absolute bottom-1 right-1 w-2 h-2 rounded-full ${accent.chip} shadow-sm`}
+        />
+      )}
+
+      {/* ── LARGE SCREEN: subtle dot even when chips shown ── */}
+      {hasLogs && (
+        <span
+          className={`hidden md:block absolute bottom-1.5 right-1.5 w-1.5 h-1.5 rounded-full ${accent.chip} opacity-60`}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── DayDetail: right panel ──────────────────────────────────
+function DayDetail({ selectedDate, logs, loading, project, accent }) {
+  if (!selectedDate) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-16 text-slate-400 text-center px-6">
+        <div className="text-4xl mb-3">📅</div>
+        <p className="text-sm font-semibold text-slate-600">Select a day</p>
+        <p className="text-xs mt-1 leading-relaxed">
+          Highlighted days have task log updates. Click one to see details.
+        </p>
+      </div>
+    );
+  }
+
+  const { year, month, day } = selectedDate;
+  const dayOfWeek = new Date(year, month, day).toLocaleDateString("en-US", {
+    weekday: "long",
+  });
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Heading */}
+      <div className="px-4 pt-4 pb-3 border-b border-slate-100 shrink-0">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          {dayOfWeek}
+        </p>
+        <p className="text-lg font-extrabold text-slate-800 leading-tight">
+          {MONTH_NAMES[month]} {day}, {year}
+        </p>
+        {project && (
           <div
-            key={event.id}
-            style={{
-              ...S.eventChip,
-              background: project.bg,
-              color: project.color,
-            }}
+            className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${accent.light} ${accent.text}`}
           >
-            {event.title}
+            <span className={`w-1.5 h-1.5 rounded-full ${accent.chip}`} />
+            {project.title}
           </div>
-        );
-      })}
-
-      {/* If more than 2 events, show a "+N more" label */}
-      {events.length > 2 && (
-        <div style={S.moreLabel}>+{events.length - 2} more</div>
-      )}
-    </div>
-  );
-}
-
-// ================================================================
-//  COMPONENT: DetailPanel
-//  Right-side panel showing full details for the selected day.
-//
-//  Props:
-//    curMonth     — current month (for display)
-//    curYear      — current year (for display)
-//    selectedDay  — the day the user has clicked
-//    activeFilter — which project is filtered (0 = all)
-// ================================================================
-function DetailPanel({ curMonth, curYear, selectedDay, activeFilter }) {
-  // Get events for the selected day (filtered by project)
-  const todaysEvents = getEventsForDay(selectedDay, activeFilter);
-
-  // Get upcoming events after the selected day (up to 4)
-  const upcomingEvents = EVENTS.filter(
-    (e) =>
-      e.day > selectedDay &&
-      (activeFilter === 0 || e.projectId === activeFilter),
-  ).slice(0, 4);
-
-  // Find the active project object (null if "All Projects" is selected)
-  const activeProject =
-    activeFilter !== 0 ? PROJECTS.find((p) => p.id === activeFilter) : null;
-
-  // Build the full day name, e.g. "Thursday"
-  const dateObj = new Date(curYear, curMonth, selectedDay);
-  const dayName = DAY_NAMES_FULL[dateObj.getDay()];
-
-  return (
-    <div style={S.detailPanel}>
-      {/* Banner showing which project is being viewed — only shows when filtered */}
-      {activeProject && (
-        <div
-          style={{
-            ...S.viewingBanner,
-            background: activeProject.bg,
-            borderColor: activeProject.color + "44",
-          }}
-        >
-          <div style={{ ...S.viewingDot, background: activeProject.color }} />
-          <span style={{ ...S.viewingText, color: activeProject.color }}>
-            Viewing: {activeProject.name}
-          </span>
-        </div>
-      )}
-
-      {/* Selected day heading */}
-      <div>
-        <div style={S.detailDate}>{dayName}</div>
-        <div style={S.detailSubDate}>
-          {MONTH_NAMES[curMonth]} {selectedDay}, {curYear}
-        </div>
-      </div>
-
-      <div style={S.divider} />
-
-      {/* Events / updates for the selected day */}
-      <div>
-        <div style={S.panelSectionTitle}>
-          UPDATES TODAY ({todaysEvents.length})
-        </div>
-
-        {todaysEvents.length === 0 ? (
-          <div style={S.emptyState}>
-            <div style={{ fontSize: 28, marginBottom: 6 }}>📭</div>
-            No updates for this day
-          </div>
-        ) : (
-          todaysEvents.map((event) => (
-            <UpdateCard key={event.id} event={event} />
-          ))
         )}
       </div>
 
-      <div style={S.divider} />
+      {/* Log count bar */}
+      <div className="px-4 pt-3 pb-1 shrink-0">
+        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+          {loading
+            ? "Loading logs…"
+            : `${logs.length} log${logs.length !== 1 ? "s" : ""} this day`}
+        </p>
+      </div>
 
-      {/* Upcoming events later this month */}
-      <div>
-        <div style={S.panelSectionTitle}>UPCOMING</div>
-        {upcomingEvents.length === 0 ? (
-          <div style={{ fontSize: 12, color: "#CCC" }}>
-            No more events this month
+      {/* Scrollable log list */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-2.5">
+        {/* Loading */}
+        {loading &&
+          [1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full" />)}
+
+        {/* Empty */}
+        {!loading && logs.length === 0 && (
+          <div className="text-center py-12 text-slate-400">
+            <div className="text-3xl mb-2">📭</div>
+            <p className="text-sm">No task logs for this day</p>
+            <p className="text-xs mt-1 text-slate-300">
+              Only days with colored circles have logs
+            </p>
           </div>
-        ) : (
-          upcomingEvents.map((event) => (
-            <UpcomingRow key={event.id} event={event} curMonth={curMonth} />
-          ))
         )}
+
+        {/* Log cards */}
+        {!loading &&
+          logs.map((log) => {
+            const s = LOG_STATUS[log.status] ?? LOG_STATUS.in_progress;
+            const p =
+              PRIORITY_LABEL[log.task?.priority] ?? PRIORITY_LABEL.medium;
+            const time = parseCreatedAt(log.createdAt);
+
+            return (
+              <div
+                key={log.id}
+                className={[
+                  "bg-white rounded-xl border border-slate-100 p-3 shadow-sm",
+                  "border-l-4",
+                  PRIORITY_BORDER[log.task?.priority] ?? "border-l-slate-300",
+                ].join(" ")}
+              >
+                {/* Task title + status */}
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className={`w-2 h-2 rounded-full shrink-0 ${s.dot}`}
+                    />
+                    <span className="text-sm font-bold text-slate-800 truncate">
+                      {log.task?.title ?? "Unknown Task"}
+                    </span>
+                  </div>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${s.badge}`}
+                  >
+                    {s.label}
+                  </span>
+                </div>
+
+                {/* Log content */}
+                <p className="text-xs text-slate-600 leading-relaxed pl-4 mb-2">
+                  {log.content}
+                </p>
+
+                {/* Task priority badge */}
+                <div className="pl-4 flex items-center gap-2 flex-wrap">
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${p.bg} ${p.text}`}
+                  >
+                    {p.label} priority
+                  </span>
+                </div>
+
+                {/* Footer: author + time */}
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-50">
+                  <div className="flex items-center gap-1.5">
+                    <div
+                      className={`w-5 h-5 rounded-full ${accent.chip} flex items-center justify-center text-white text-[9px] font-bold`}
+                    >
+                      {(log.author?.fullname ?? "?")[0].toUpperCase()}
+                    </div>
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      {log.author?.fullname ?? "—"}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {time.toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
       </div>
     </div>
   );
 }
 
-// ================================================================
-//  COMPONENT: UpdateCard
-//  A card showing one event's full details inside the detail panel.
-//
-//  Props:
-//    event — one event object from the EVENTS array
-// ================================================================
-function UpdateCard({ event }) {
-  const project = PROJECTS.find((p) => p.id === event.projectId);
-  const member = TEAM[event.who];
-  const priority = PRIORITY_STYLE[event.priority];
-
-  return (
-    <div
-      style={{
-        ...S.updateCard,
-        borderColor: project.color,
-        background: project.bg,
-      }}
-    >
-      {/* Who updated + what time */}
-      <div style={S.updateHeader}>
-        <Avatar initials={event.who} color={member.color} size={24} />
-        <span style={S.updateName}>{member.name}</span>
-        <span style={S.updateTime}>{event.time}</span>
-      </div>
-
-      {/* Project name + task title */}
-      <div style={{ ...S.updateProject, color: project.color }}>
-        📁 {project.name} — {event.title}
-      </div>
-
-      {/* Description of what was done */}
-      <div style={S.updateAction}>{event.action}</div>
-
-      {/* Priority badge (HIGH / MEDIUM / LOW) */}
-      <span
-        style={{
-          ...S.priorityBadge,
-          color: priority.color,
-          background: priority.bg,
-        }}
-      >
-        ● {priority.label}
-      </span>
-    </div>
-  );
-}
-
-// ================================================================
-//  COMPONENT: UpcomingRow
-//  A single line in the "Upcoming" list at the bottom of the panel.
-//
-//  Props:
-//    event    — one event object
-//    curMonth — used to display the month name
-// ================================================================
-function UpcomingRow({ event, curMonth }) {
-  const project = PROJECTS.find((p) => p.id === event.projectId);
-  const member = TEAM[event.who];
-
-  return (
-    <div style={S.upcomingRow}>
-      {/* Colored dot matching the project */}
-      <div style={{ ...S.upcomingDot, background: project.color }} />
-
-      <div>
-        <div style={S.upcomingTitle}>{event.title}</div>
-        <div style={S.upcomingMeta}>
-          {MONTH_NAMES[curMonth]} {event.day} · {project.name} · {member.name}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ================================================================
-//  MAIN COMPONENT: PMDashboard
-//  This is the root of the whole dashboard.
-//  It holds all the "state" (data that changes when you interact)
-//  and passes it down to the child components.
-//
-//  State variables:
-//    curMonth     — which month is showing (0 = Jan, 11 = Dec)
-//    curYear      — which year is showing
-//    selectedDay  — which day the user clicked
-//    activeFilter — which project is filtered (0 = all)
-// ================================================================
+// ─────────────────────────────────────────────────────────────
+//  MAIN COMPONENT
+// ─────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const today = new Date();
+  const years = buildYears();
 
-  // useState(initialValue) creates a variable that React tracks.
-  // When it changes, React re-renders the component automatically.
-  const [curMonth, setCurMonth] = useState(today.getMonth());
   const [curYear, setCurYear] = useState(today.getFullYear());
-  const [selectedDay, setSelectedDay] = useState(today.getDate());
-  const [activeFilter, setActiveFilter] = useState(0); // 0 = "All Projects"
+  const [curMonth, setCurMonth] = useState(today.getMonth());
+  const [selectedDay, setSelectedDay] = useState(null); // { day, month, year }
+  const [selectedProj, setSelectedProj] = useState(null); // project object
 
-  // Go to previous or next month
-  // dir = -1 means go back, +1 means go forward
-  function handleNavMonth(dir) {
-    let newMonth = curMonth + dir;
-    let newYear = curYear;
+  // ── Fetch all projects ──
+  const {
+    data: projData,
+    loading: projLoading,
+    error: projError,
+  } = useQuery(GET_PROJECTS);
+  const projects = projData?.projects ?? [];
 
-    if (newMonth < 0) {
-      newMonth = 11;
-      newYear = newYear - 1;
-    } // wrap to December
-    if (newMonth > 11) {
-      newMonth = 0;
-      newYear = newYear + 1;
-    } // wrap to January
+  // Assign a stable accent color per project by index
+  const accentMap = useMemo(() => {
+    const map = {};
+    projects.forEach((p, i) => {
+      map[p.id] = ACCENTS[i % ACCENTS.length];
+    });
+    return map;
+  }, [projects]);
 
-    setCurMonth(newMonth);
-    setCurYear(newYear);
+  // ── Fetch logs for selected project + visible month ──
+  // skip=true means this query won't fire until a project is selected
+  const { data: logData, loading: logLoading } = useQuery(GET_LOGS_BY_PROJECT, {
+    skip: !selectedProj,
+    variables: {
+      projectId: selectedProj?.id ?? "",
+      startDate: monthStart(curYear, curMonth),
+      endDate: monthEnd(curYear, curMonth),
+    },
+    fetchPolicy: "cache-and-network",
+  });
+
+  const allLogs = logData?.taskLogsByProject ?? [];
+
+  // Build "YYYY-M-D" → [logs] map using the fixed parseCreatedAt helper
+  const logsByDay = useMemo(() => {
+    const map = {};
+    allLogs.forEach((log) => {
+      const d = parseCreatedAt(log.createdAt);
+      const key = dateKey(d);
+      (map[key] = map[key] ?? []).push(log);
+    });
+    return map;
+  }, [allLogs]);
+
+  // Logs for the selected day
+  const selectedDayLogs = useMemo(() => {
+    if (!selectedDay) return [];
+    const key = `${selectedDay.year}-${selectedDay.month}-${selectedDay.day}`;
+    return logsByDay[key] ?? [];
+  }, [selectedDay, logsByDay]);
+
+  // ── Navigation ──
+  function navMonth(dir) {
+    let m = curMonth + dir,
+      y = curYear;
+    if (m < 0) {
+      m = 11;
+      y--;
+    }
+    if (m > 11) {
+      m = 0;
+      y++;
+    }
+    setCurMonth(m);
+    setCurYear(y);
+    setSelectedDay(null);
   }
 
-  // Called when the user clicks a day on the calendar
-  function handleSelectDay(day) {
-    setSelectedDay(day);
+  function handleYearChange(e) {
+    setCurYear(Number(e.target.value));
+    setSelectedDay(null);
+  }
+  function handleMonthChange(e) {
+    setCurMonth(Number(e.target.value));
+    setSelectedDay(null);
   }
 
-  // Called when the user clicks a project in the sidebar
-  // projectId = 0 means "All Projects"
-  function handleFilterChange(projectId) {
-    setActiveFilter(projectId);
+  function handleProjectClick(project) {
+    if (selectedProj?.id === project.id) {
+      setSelectedProj(null);
+      setSelectedDay(null);
+      return;
+    }
+    setSelectedProj(project);
+    setSelectedDay(null);
+    // Jump to project start date
+    const start = parseProjectDate(project.startDate);
+    if (start) {
+      setCurYear(start.year);
+      setCurMonth(start.month);
+    }
   }
+
+  function handleDayClick(cell) {
+    if (!cell.isCurrentMonth) return;
+    const next = { day: cell.day, month: cell.month, year: cell.year };
+    if (
+      selectedDay?.day === next.day &&
+      selectedDay?.month === next.month &&
+      selectedDay?.year === next.year
+    ) {
+      setSelectedDay(null);
+    } else {
+      setSelectedDay(next);
+    }
+  }
+
+  const cells = buildCells(curYear, curMonth);
+  const todayKey = dateKey(today);
+  const activeAccent = selectedProj
+    ? accentMap[selectedProj.id] ?? ACCENTS[0]
+    : ACCENTS[0];
 
   return (
-    <div style={S.root}>
-      {/* ── Top bar ── */}
-      <Header />
+    <div className="min-h-screen bg-slate-100 font-sans">
+      {/* ── Header ── */}
+      <header
+        className="bg-white border-b border-slate-200 px-4 md:px-6 py-3.5
+        flex items-center justify-between gap-4 flex-wrap sticky top-0 z-20 shadow-sm"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-7 rounded-full bg-blue-600" />
+          <h1 className="text-base md:text-lg font-extrabold tracking-tight text-slate-900">
+            Project Calendar
+          </h1>
+        </div>
 
-      {/* ── Summary stats ── */}
-      <StatsRow />
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Year dropdown: loops 2020 → currentYear+5 */}
+          <select
+            value={curYear}
+            onChange={handleYearChange}
+            className="border border-slate-200 bg-white rounded-lg px-3 py-2 text-sm font-semibold
+              text-slate-700 outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer"
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
 
-      {/* ── Three-column layout ── */}
-      <div style={S.mainLayout}>
-        {/* LEFT: Sidebar (date picker + project filter) */}
-        <Sidebar
-          activeFilter={activeFilter}
-          onFilterChange={handleFilterChange}
-          curMonth={curMonth}
-          curYear={curYear}
-          onMonthChange={setCurMonth}
-          onYearChange={setCurYear}
-          onNavMonth={handleNavMonth}
-        />
+          {/* Month dropdown: loops all 12 months */}
+          <select
+            value={curMonth}
+            onChange={handleMonthChange}
+            className="border border-slate-200 bg-white rounded-lg px-3 py-2 text-sm font-semibold
+              text-slate-700 outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer"
+          >
+            {MONTH_NAMES.map((name, i) => (
+              <option key={i} value={i}>
+                {name}
+              </option>
+            ))}
+          </select>
 
-        {/* MIDDLE: Monthly calendar */}
-        <CalendarGrid
-          curMonth={curMonth}
-          curYear={curYear}
-          selectedDay={selectedDay}
-          activeFilter={activeFilter}
-          onSelectDay={handleSelectDay}
-        />
+          <button
+            onClick={() => navMonth(-1)}
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200
+              bg-white text-slate-500 hover:bg-slate-50 transition-colors font-bold text-lg"
+          >
+            ‹
+          </button>
+          <button
+            onClick={() => navMonth(1)}
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200
+              bg-white text-slate-500 hover:bg-slate-50 transition-colors font-bold text-lg"
+          >
+            ›
+          </button>
 
-        {/* RIGHT: Day detail panel */}
-        <DetailPanel
-          curMonth={curMonth}
-          curYear={curYear}
-          selectedDay={selectedDay}
-          activeFilter={activeFilter}
-        />
+          <button
+            onClick={() => {
+              setCurYear(today.getFullYear());
+              setCurMonth(today.getMonth());
+              setSelectedDay(null);
+            }}
+            className="px-4 h-9 rounded-lg border border-slate-200 bg-white text-sm font-semibold
+              text-slate-600 hover:bg-slate-50 transition-colors"
+          >
+            Today
+          </button>
+        </div>
+      </header>
+
+      {/* ── Body: 3 columns ── */}
+      <div
+        className="flex flex-col lg:flex-row"
+        style={{ height: "calc(100vh - 57px)" }}
+      >
+        {/* ════ LEFT: Projects ════ */}
+        <aside
+          className="w-full lg:w-64 xl:w-72 bg-white border-b lg:border-b-0 lg:border-r
+          border-slate-200 flex flex-col shrink-0 overflow-hidden"
+        >
+          <div className="px-4 pt-4 pb-2 border-b border-slate-100 shrink-0">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+              Projects ({projLoading ? "…" : projects.length})
+            </p>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              Click a project to view its logs
+            </p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-3 py-2.5 flex flex-col gap-1">
+            {projLoading &&
+              [1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-14 w-full" />
+              ))}
+            {projError && (
+              <p className="text-xs text-red-500 p-3">
+                ⚠ Failed to load projects.
+              </p>
+            )}
+            {!projLoading &&
+              projects.map((p, idx) => (
+                <ProjectItem
+                  key={p.id}
+                  project={p}
+                  accent={accentMap[p.id] ?? ACCENTS[idx % ACCENTS.length]}
+                  isSelected={selectedProj?.id === p.id}
+                  onClick={() => handleProjectClick(p)}
+                />
+              ))}
+            {!projLoading && projects.length === 0 && (
+              <p className="text-xs text-slate-400 text-center py-10">
+                No projects found.
+              </p>
+            )}
+          </div>
+
+          {/* Active project info card */}
+          {selectedProj && (
+            <div
+              className={`mx-3 mb-3 p-3 rounded-xl border ${activeAccent.light} ${activeAccent.border} shrink-0`}
+            >
+              <p
+                className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${activeAccent.text}`}
+              >
+                Active
+              </p>
+              <p className="text-sm font-bold text-slate-800 truncate">
+                {selectedProj.title}
+              </p>
+              {selectedProj.projectManager && (
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  PM: {selectedProj.projectManager.fullname ?? "—"}
+                </p>
+              )}
+              <div className="flex gap-1.5 mt-2 flex-wrap">
+                {selectedProj.startDate && (
+                  <span className="text-[10px] bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-600 font-mono">
+                    ▶ {selectedProj.startDate}
+                  </span>
+                )}
+                {selectedProj.endDate && (
+                  <span className="text-[10px] bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-600 font-mono">
+                    ■ {selectedProj.endDate}
+                  </span>
+                )}
+              </div>
+              <span
+                className={`mt-2 inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  STATUS_STYLE[selectedProj.status ?? "not started"]
+                }`}
+              >
+                {selectedProj.status ?? "not started"}
+              </span>
+            </div>
+          )}
+        </aside>
+
+        {/* ════ CENTER: Calendar ════ */}
+        <main className="flex-1 bg-white flex flex-col min-w-0 overflow-hidden">
+          {/* Month header bar */}
+          <div className="px-4 md:px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <p className="text-base font-extrabold text-slate-800 tracking-tight">
+              {MONTH_NAMES[curMonth]}{" "}
+              <span className="text-slate-400 font-normal">{curYear}</span>
+            </p>
+            {!selectedProj && (
+              <p className="text-xs text-slate-400 italic hidden sm:block">
+                ← Select a project first
+              </p>
+            )}
+            {selectedProj && logLoading && (
+              <p className="text-xs text-slate-400 animate-pulse">Loading…</p>
+            )}
+            {selectedProj && !logLoading && (
+              <div className="flex items-center gap-2">
+                {/* Legend */}
+                <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-slate-400">
+                  <span
+                    className={`w-3 h-3 rounded-full ${activeAccent.chip}`}
+                  />
+                  <span>= has logs</span>
+                </div>
+                <p className="text-xs text-slate-500 font-semibold">
+                  {allLogs.length} log{allLogs.length !== 1 ? "s" : ""}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Day-of-week headers */}
+          <div className="grid grid-cols-7 border-b border-slate-100 shrink-0">
+            {DAY_LABELS.map((label) => (
+              <div
+                key={label}
+                className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2"
+              >
+                {label}
+              </div>
+            ))}
+          </div>
+
+          {/* Day cells */}
+          <div className="grid grid-cols-7 flex-1 overflow-y-auto content-start">
+            {cells.map((cell, idx) => {
+              const key = `${cell.year}-${cell.month}-${cell.day}`;
+              const isToday = key === todayKey;
+              const isSelected =
+                selectedDay?.day === cell.day &&
+                selectedDay?.month === cell.month &&
+                selectedDay?.year === cell.year;
+              const cellLogs =
+                cell.isCurrentMonth && selectedProj ? logsByDay[key] ?? [] : [];
+
+              return (
+                <DayCell
+                  key={idx}
+                  cell={cell}
+                  logs={cellLogs}
+                  isToday={isToday}
+                  isSelected={isSelected}
+                  accent={activeAccent}
+                  onClick={() => handleDayClick(cell)}
+                />
+              );
+            })}
+          </div>
+        </main>
+
+        {/* ════ RIGHT: Day detail ════ */}
+        <aside
+          className="w-full lg:w-72 xl:w-80 bg-white border-t lg:border-t-0 lg:border-l
+          border-slate-200 flex flex-col shrink-0 overflow-hidden"
+        >
+          <DayDetail
+            selectedDate={selectedDay}
+            logs={selectedDayLogs}
+            loading={logLoading && !!selectedDay}
+            project={selectedProj}
+            accent={activeAccent}
+          />
+        </aside>
       </div>
     </div>
   );
 }
-
-// ================================================================
-//  STYLES (S)
-//  All visual styles live here in one object.
-//  To change something, find the style name and update it.
-//
-//  Common things to change:
-//    Primary blue: "#3B5BDB"
-//    Page background: "#F5F6FA"
-//    Border color: "#E8EAF0"
-//    Text color: "#333" or "#555"
-// ================================================================
-const S = {
-  root: {
-    fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
-    background: "#F5F6FA",
-    color: "#1a1a2e",
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-  },
-
-  // ── Header ──
-  header: {
-    background: "#fff",
-    borderBottom: "1px solid #E8EAF0",
-    padding: "12px 20px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  logo: {
-    fontSize: 17,
-    fontWeight: 700,
-    color: "#3B5BDB",
-  },
-
-  // ── Stats ──
-  statsRow: {
-    display: "flex",
-    flexWrap: "wrap",
-    background: "#fff",
-    borderBottom: "1px solid #E8EAF0",
-  },
-  statBox: {
-    flex: "1 1 100px",
-    padding: "12px 16px",
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-  },
-  statIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 9,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 15,
-    flexShrink: 0,
-  },
-  statLabel: { fontSize: 10, color: "#999", marginBottom: 1 },
-  statNumber: { fontSize: 18, fontWeight: 700 },
-
-  // ── Layout ──
-  mainLayout: {
-    display: "flex",
-    flex: 1,
-    minHeight: 0,
-    overflow: "hidden",
-  },
-
-  // ── Sidebar ──
-  sidebar: {
-    width: 210,
-    minWidth: 210,
-    background: "#fff",
-    borderRight: "1px solid #E8EAF0",
-    padding: "16px 12px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 20,
-    overflowY: "auto",
-  },
-  sideSection: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 4,
-  },
-  sideSectionTitle: {
-    fontSize: 10,
-    fontWeight: 700,
-    color: "#AAB",
-    letterSpacing: "1.2px",
-    marginBottom: 6,
-  },
-  sidebarItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    padding: "8px 10px",
-    borderRadius: 8,
-    border: "1.5px solid",
-    cursor: "pointer",
-    fontFamily: "inherit",
-    marginBottom: 2,
-    width: "100%",
-    transition: "all 0.15s",
-  },
-  select: {
-    width: "100%",
-    padding: "7px 10px",
-    border: "1px solid #E0E2EA",
-    borderRadius: 8,
-    fontFamily: "inherit",
-    fontSize: 13,
-    color: "#333",
-    background: "#fff",
-    cursor: "pointer",
-    outline: "none",
-  },
-  navBtn: {
-    flex: 1,
-    padding: "6px 0",
-    border: "1px solid #E0E2EA",
-    borderRadius: 8,
-    background: "#fff",
-    fontFamily: "inherit",
-    fontSize: 12,
-    color: "#555",
-    cursor: "pointer",
-  },
-
-  // ── Calendar ──
-  calendarPanel: {
-    flex: 1,
-    padding: "16px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
-    minWidth: 0,
-    overflowY: "auto",
-  },
-  calTitle: {
-    fontSize: 17,
-    fontWeight: 700,
-    color: "#222",
-    marginBottom: 2,
-  },
-  dayNamesRow: {
-    display: "grid",
-    gridTemplateColumns: "repeat(7, 1fr)",
-    gap: 3,
-  },
-  dayNameCell: {
-    textAlign: "center",
-    fontSize: 10,
-    fontWeight: 600,
-    color: "#BBB",
-    padding: "3px 0",
-    letterSpacing: "0.5px",
-  },
-  calGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(7, 1fr)",
-    gap: 3,
-  },
-  calCell: {
-    minHeight: 80,
-    padding: 7,
-    borderRadius: 9,
-    border: "1.5px solid",
-    transition: "all 0.12s",
-  },
-  dayNumber: {
-    fontSize: 12,
-    fontWeight: 600,
-    width: 22,
-    height: 22,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 3,
-  },
-  eventChip: {
-    fontSize: 9,
-    fontWeight: 600,
-    padding: "2px 5px",
-    borderRadius: 4,
-    marginBottom: 2,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    display: "block",
-  },
-  moreLabel: { fontSize: 9, color: "#AAB" },
-
-  // ── Detail panel ──
-  detailPanel: {
-    width: 270,
-    minWidth: 250,
-    background: "#fff",
-    borderLeft: "1px solid #E8EAF0",
-    padding: 16,
-    overflowY: "auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: 12,
-  },
-  viewingBanner: {
-    display: "flex",
-    alignItems: "center",
-    gap: 7,
-    padding: "7px 10px",
-    borderRadius: 8,
-    border: "1px solid",
-  },
-  viewingDot: { width: 8, height: 8, borderRadius: "50%", flexShrink: 0 },
-  viewingText: { fontSize: 11, fontWeight: 600 },
-
-  detailDate: { fontSize: 19, fontWeight: 700 },
-  detailSubDate: { fontSize: 11, color: "#999", marginTop: 2 },
-  divider: { height: 1, background: "#F0F2F7", flexShrink: 0 },
-
-  panelSectionTitle: {
-    fontSize: 10,
-    fontWeight: 700,
-    color: "#AAB",
-    letterSpacing: "1px",
-    marginBottom: 8,
-  },
-  emptyState: {
-    textAlign: "center",
-    padding: "24px 0",
-    color: "#CCC",
-    fontSize: 12,
-  },
-
-  // ── Update card ──
-  updateCard: {
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 8,
-    borderLeft: "3px solid",
-  },
-  updateHeader: {
-    display: "flex",
-    alignItems: "center",
-    gap: 7,
-    marginBottom: 5,
-  },
-  updateName: { fontSize: 12, fontWeight: 600, color: "#333" },
-  updateTime: { fontSize: 10, color: "#BBB", marginLeft: "auto" },
-  updateProject: { fontSize: 11, fontWeight: 600, marginBottom: 4 },
-  updateAction: { fontSize: 11, color: "#555", lineHeight: 1.55 },
-  priorityBadge: {
-    display: "inline-block",
-    fontSize: 9,
-    fontWeight: 700,
-    padding: "2px 6px",
-    borderRadius: 4,
-    marginTop: 6,
-  },
-
-  // ── Upcoming row ──
-  upcomingRow: {
-    display: "flex",
-    gap: 8,
-    alignItems: "flex-start",
-    padding: "7px 0",
-    borderBottom: "1px solid #F5F5F8",
-  },
-  upcomingDot: {
-    width: 7,
-    height: 7,
-    borderRadius: "50%",
-    marginTop: 4,
-    flexShrink: 0,
-  },
-  upcomingTitle: { fontSize: 12, color: "#444", fontWeight: 500 },
-  upcomingMeta: { fontSize: 10, color: "#BBB", marginTop: 1 },
-};

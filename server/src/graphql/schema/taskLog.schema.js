@@ -20,6 +20,7 @@ const taskLogSchema = `#graphql
     type Query {
         taskLogs: [TaskLog]
         taskLogsByTask(taskId: ID!): [TaskLog]
+        taskLogsByProject(projectId: String!, startDate: String, endDate: String): [TaskLog]
         taskLog(id: ID!): TaskLog
     }
 

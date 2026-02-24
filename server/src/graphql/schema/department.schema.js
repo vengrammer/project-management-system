@@ -14,9 +14,12 @@ const departmentSchema = `#graphql
         message: String
         department: Department
     }
+
     type Query{
         departments: [Department]!
+        department(id: ID): Department
     }
+    
     type Mutation {
         createDepartment(
             name: String!
