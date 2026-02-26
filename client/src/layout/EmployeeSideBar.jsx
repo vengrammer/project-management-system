@@ -69,12 +69,28 @@ export default function EmployeeSideBar() {
             </h1>
           </div>
           <ul className="space-y-2">
-            
+            <li>
+              <Link
+                to="/employee/dashboard"
+                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
+                  isActive("/employee/dashboard")
+                    ? "bg-blue-100 text-blue-600"
+                    : ""
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <Archive size={20} />
+                <span>Dashboard</span>
+              </Link>
+            </li>
+
             <li>
               <Link
                 to="/employee/projects"
                 className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/employee/projects") ? "bg-blue-100 text-blue-600" : ""
+                  isActive("/employee/projects")
+                    ? "bg-blue-100 text-blue-600"
+                    : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
@@ -84,9 +100,11 @@ export default function EmployeeSideBar() {
             </li>
             <li>
               <Link
-                to="/sads"
+                to="/employee/archive"
                 className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/nbmnb") ? "bg-blue-100 text-blue-600" : ""
+                  isActive("/employee/archive")
+                    ? "bg-blue-100 text-blue-600"
+                    : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >

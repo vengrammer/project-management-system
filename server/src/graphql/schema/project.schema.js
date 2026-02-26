@@ -18,6 +18,7 @@ export const projectSchema = `#graphql
         projects: [Project]!
         project(id: ID!) : Project
         projectByUser(id: ID!): [Project]
+        projectsByArchive(isActive: Boolean!): [Project]
     }
     type Message {
         message: String

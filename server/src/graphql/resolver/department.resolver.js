@@ -13,15 +13,15 @@ export const departmentResolver = {
         console.log("error", error);
       }
     },
-    department: async (_, {id}) => {
-      try{
-        const department = await Department.findById(id)
+    department: async (_, { id }) => {
+      try {
+        const department = await Department.findById(id);
         return department;
-      }catch(error){
+      } catch (error) {
         console.log(error);
         throw new Error(error);
       }
-    }
+    },
   },
   Department: {
     users: async (parent) => {
@@ -83,5 +83,27 @@ export const departmentResolver = {
         throw error;
       }
     },
+
+    updateDepartment: async (_, {id, name, description}) => {
+      try{
+        const updatedDepartment = await Department.findByIdAndUpdate(
+          id, 
+          {name, description},
+          {new: true}
+        )
+
+        if(!updatedDepartment){
+          throw new Error("Department not found");
+        }
+        return {
+          message: "Successfully updated department",
+          deppartment: updatedDepartment,
+        }
+
+      }catch(error){
+        console.error(error);
+        throw new Error(error.message || "Failed to update department");
+      }
+    }
   },
 };

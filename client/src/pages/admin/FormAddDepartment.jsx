@@ -27,7 +27,6 @@ const GET_DEPARTMENT = gql`
   }
 `;
 
-
 function FormAddDepartment() {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");

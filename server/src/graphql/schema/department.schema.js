@@ -28,6 +28,8 @@ const departmentSchema = `#graphql
         ): ReturnMessage!
 
         deleteDepartment(id: ID!): ReturnMessage
+
+        updateDepartment(id: ID!, name: String, description: String): ReturnMessage
     }
 `;
 export default departmentSchema

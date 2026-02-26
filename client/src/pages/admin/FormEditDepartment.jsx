@@ -1,15 +1,10 @@
 import { gql } from "@apollo/client";
-import {  useQuery } from "@apollo/client/react";
-import { Pen, Plus, XCircle } from "lucide-react";
+import { useQuery } from "@apollo/client/react";
+import { Pen, XCircle } from "lucide-react";
 import { useState } from "react";
+import { useMutation } from "@apollo/client/react";
+import { toast } from "react-toastify";
 
-const CREATE_DEPARTMENT = gql`
-  mutation CreateDepartment($name: String!, $description: String) {
-    createDepartment(name: $name, description: $description) {
-      message
-    }
-  }
-`;
 
 const GET_DEPARTMENT = gql`
   query Departments {
@@ -25,6 +20,7 @@ const GET_DEPARTMENT = gql`
   }
 `;
 
+
 const GET_THE_DEPARTMENT = gql`
   query Department($departmentId: ID) {
     department(id: $departmentId) {
@@ -35,23 +31,60 @@ const GET_THE_DEPARTMENT = gql`
   }
 `;
 
+const UPDATE_DEPARTMENT = gql`
+  mutation updateDepartment(
+    $updateDepartmentId: ID!
+    $name: String
+    $description: String
+  ) {
+    updateDepartment(
+      id: $updateDepartmentId
+      name: $name
+      description: $description
+    ) {
+      message
+    }
+  }
+`;
+
 function FormEditDepartment({ departmentId }) {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-//   console.log(departmentId);
 
+  // Only fetch when modal is open
   const { data: dataDepartment } = useQuery(GET_THE_DEPARTMENT, {
-    variables: { id: departmentId },
-    skip: !isOpen, // ← only fetches when modal is open
+    variables: { departmentId },
+    skip: !isOpen,
   });
 
-  console.log(dataDepartment);
-
-  
+  const [updateDepartment] = useMutation(UPDATE_DEPARTMENT,
+    {
+      onCompleted: () => {
+        toast.success("Department updated successfully!");
+        setIsOpen(false);
+        setTitle("");
+        setDescription("");
+      },
+      onError: () => {
+        toast.error("Failed to update department. Please try again.");
+      },
+      refetchQueries: [{ query: GET_DEPARTMENT }],
+    }
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const updatedTitle = title || dataDepartment?.department?.name;
+    const updatedDescription = description || dataDepartment?.department?.description;
+    updateDepartment({
+      variables: {
+        updateDepartmentId: departmentId,
+        name: updatedTitle,
+        description: updatedDescription,
+      },
+    });
+    setIsOpen(false);
   };
 
   return (
@@ -73,10 +106,15 @@ function FormEditDepartment({ departmentId }) {
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">
-                Create Department
+                Edit Department
               </h2>
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                  // Reset form when closing
+                  setTitle("");
+                  setDescription("");
+                }}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <XCircle size={24} className="text-gray-500 cursor-pointer" />
@@ -93,7 +131,7 @@ function FormEditDepartment({ departmentId }) {
                   </label>
                   <input
                     type="text"
-                    value={title}
+                    value={title || dataDepartment?.department?.name || ""}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="e.g. Engineering, Marketing, Finance…"
                     required
@@ -107,7 +145,11 @@ function FormEditDepartment({ departmentId }) {
                     Description
                   </label>
                   <textarea
-                    value={description}
+                    value={
+                      description ||
+                      dataDepartment?.department?.description ||
+                      ""
+                    }
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Briefly describe this department's role and responsibilities…"
                     rows={4}
@@ -120,7 +162,11 @@ function FormEditDepartment({ departmentId }) {
               <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setTitle("");
+                    setDescription("");
+                  }}
                   className="px-6 py-2 cursor-pointer border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   Cancel
@@ -129,7 +175,7 @@ function FormEditDepartment({ departmentId }) {
                   type="submit"
                   className="px-6 py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
-                  Create
+                  Update
                 </button>
               </div>
             </form>
