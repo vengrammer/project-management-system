@@ -43,7 +43,7 @@ const taskSchema = mongoose.Schema(
       index: true,
     },
 
-    dueDate: {
+    completedDate: {
       type: Date,
     },
   },

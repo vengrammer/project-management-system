@@ -29,7 +29,7 @@ const GET_TASKS = gql`
       }
       priority
       status
-      dueDate
+      #dueDate
     }
   }
 `;
@@ -46,7 +46,7 @@ const GET_TASK = gql`
       }
       priority
       status
-      dueDate
+      #dueDate
     }
   }
 `;
@@ -58,7 +58,7 @@ const UPDATE_TASK = gql`
     $description: String
     $priority: String
     $status: String
-    $dueDate: String
+    #$dueDate: String
     $users: [ID]
   ) {
     updateTask(
@@ -67,7 +67,7 @@ const UPDATE_TASK = gql`
       description: $description
       priority: $priority
       status: $status
-      dueDate: $dueDate
+      #dueDate: $dueDate
       users: $users
     ) {
       id
@@ -91,7 +91,7 @@ function FormEditTask({ taskID }) {
     description: "",
     priority: "medium",
     assignedTo: [],
-    dueDate: "",
+    //dueDate: "",
     status: "todo",
   });
 
@@ -265,7 +265,7 @@ function FormEditTask({ taskID }) {
                       </select>
                     </div>
 
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Status *
                       </label>
@@ -281,10 +281,8 @@ function FormEditTask({ taskID }) {
                         <option value="in_progress">In Progress</option>
                         <option value="completed">Completed</option>
                       </select>
-                    </div>
-                  </div>
+                    </div> */}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Assign To *
@@ -331,8 +329,10 @@ function FormEditTask({ taskID }) {
                         )}
                       </div>
                     </div>
+                  </div>
 
-                    <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Due Date *
                       </label>
@@ -344,7 +344,7 @@ function FormEditTask({ taskID }) {
                         }
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
-                    </div>
+                    </div> */}
                   </div>
                 </div>
 

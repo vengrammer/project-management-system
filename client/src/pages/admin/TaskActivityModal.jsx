@@ -23,8 +23,16 @@ import { useParams } from "react-router-dom";
 const TEMP_AUTHOR_ID = "6992d115b034bbfbac83b8fb";
 
 const UPDATE_TASK_STATUS_IN_PROGRESS = gql`
-  mutation UpdateTask($updateTaskId: ID!, $status: String) {
-    updateTask(id: $updateTaskId, status: $status) {
+  mutation UpdateTask(
+    $updateTaskId: ID!
+    $status: String
+    $completedDate: String
+  ) {
+    updateTask(
+      id: $updateTaskId
+      status: $status
+      completedDate: $completedDate
+    ) {
       id
     }
   }
@@ -34,6 +42,7 @@ const GET_TASK = gql`
     task(id: $taskId) {
       id
       title
+      completedDate
       users {
         id
         fullname
@@ -108,13 +117,23 @@ const GET_TASKS = gql`
       }
       priority
       status
-      dueDate
+      completedDate
+      #dueDate
+      createdAt
     }
   }
 `;
 const UPDATE_TASK_STATUS_TO_COMPLETED = gql`
-  mutation updateTask($updateTaskId: ID!, $status: String) {
-    updateTask(id: $updateTaskId, status: $status) {
+  mutation updateTask(
+    $updateTaskId: ID!
+    $status: String
+    $completedDate: String
+  ) {
+    updateTask(
+      id: $updateTaskId
+      status: $status
+      completedDate: $completedDate
+    ) {
       id
     }
   }
@@ -236,7 +255,11 @@ export default function TaskActivityModal({ id: taskId }) {
     }).then((result) => {
       if (result.isConfirmed)
         updateTaskCompleted({
-          variables: { updateTaskId: tId, status: "completed" },
+          variables: {
+            updateTaskId: tId,
+            status: "completed",
+            completedDate: String(Date.now()),
+          },
         });
     });
   };
@@ -311,8 +334,10 @@ export default function TaskActivityModal({ id: taskId }) {
         author: TEMP_AUTHOR_ID,
       },
     });
+    //when user add a new log, if the task is not in progress,
+    //change it to in progress. and if the task is completed before, change the completedDate to null
     await updateTask({
-      variables: { updateTaskId: taskId, status: "in_progress" },
+      variables: { updateTaskId: taskId, status: "in_progress", completedDate: null },
     });
   };
 

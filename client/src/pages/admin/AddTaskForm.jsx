@@ -29,7 +29,7 @@ const GET_TASKS = gql`
       }
       priority
       status
-      dueDate
+      #dueDate
     }
   }
 `;
@@ -57,7 +57,7 @@ const INSERT_TASK = gql`
     $description: String
     $priority: String
     $status: String
-    $dueDate: String
+   # $dueDate: String
     $users: [ID]
   ) {
     createTask(
@@ -66,7 +66,7 @@ const INSERT_TASK = gql`
       description: $description
       priority: $priority
       status: $status
-      dueDate: $dueDate
+      #dueDate: $dueDate
       users: $users
     ) {
       id
@@ -111,7 +111,7 @@ function AddTaskForm() {
     description: "",
     priority: "medium",
     assignedTo: [],
-    dueDate: "",
+   // dueDate: "",
     status: "todo",
   });
 
@@ -282,26 +282,6 @@ function AddTaskForm() {
                     </select>
                   </div>
 
-                  {/* <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Status *
-                    </label>
-                    <select
-                      value={newTask.status}
-                      onChange={(e) =>
-                        setNewTask({ ...newTask, status: e.target.value })
-                      }
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="todo">To Do</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                  </div> */}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Assign To *
@@ -349,7 +329,27 @@ function AddTaskForm() {
                     </div>
                   </div>
 
-                  <div>
+                  {/* <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Status *
+                    </label>
+                    <select
+                      value={newTask.status}
+                      onChange={(e) =>
+                        setNewTask({ ...newTask, status: e.target.value })
+                      }
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="todo">To Do</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="completed">Completed</option>
+                    </select>
+                  </div> */}
+                </div>
+
+                {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Due Date *
                     </label>
@@ -362,8 +362,8 @@ function AddTaskForm() {
                       required
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
-                  </div>
-                </div>
+                  </div> 
+                </div> */}
               </div>
 
               <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">

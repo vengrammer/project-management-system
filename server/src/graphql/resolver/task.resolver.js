@@ -53,7 +53,7 @@ const taskResolver = {
           users: args.users,
           priority: args.priority,
           status: args.status,
-          dueDate: args.dueDate,
+          //dueDate: args.dueDate,
         });
         return newTask;
       } catch (error) {
@@ -75,8 +75,8 @@ const taskResolver = {
           "description",
           "priority",
           "status",
-          "dueDate",
           "users",
+          "completedDate",
         ];
 
         updatable.forEach((k) => {

@@ -89,7 +89,9 @@ const GET_TASKS = gql`
       }
       priority
       status
-      dueDate
+      completedDate
+      #dueDate
+      createdAt
     }
   }
 `;
@@ -140,6 +142,23 @@ const formatDate = (date) => {
     day: "numeric",
   });
 };
+
+function formatTimeAgo(value) {
+  if (!value) return "";
+  const now = new Date();
+  const date = new Date(Number(value));
+  const diffMs = now - date;
+  const minutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const weeks = Math.floor(days / 7);
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  if (weeks <= 2) return `${weeks}w ago`;
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 const ProjectDetailsPage = () => {
   const { id } = useParams();
@@ -338,7 +357,9 @@ const ProjectDetailsPage = () => {
       <div className="max-w-7xl mx-auto p-2 sm:p-6 lg:p-5">
         {/* Back Button */}
         <button
-          onClick={() => navigate(`/${isEmployee ? "employee" : "admin"}/projects`)}
+          onClick={() =>
+            navigate(`/${isEmployee ? "employee" : "admin"}/projects`)
+          }
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
         >
           <ArrowLeft size={20} />
@@ -582,7 +603,7 @@ const ProjectDetailsPage = () => {
                             </span>
                             <span className="flex items-center gap-1">
                               <Calendar size={14} />
-                              Due: {formatDate(task.dueDate)}
+                              Created: {formatTimeAgo(task.createdAt)}
                             </span>
                             {task.completedDate && (
                               <span className="flex items-center gap-1 text-green-600">
@@ -677,13 +698,15 @@ const ProjectDetailsPage = () => {
                             </p>
                           </div>
                           <div className="pl-3">
-                            {!isEmployee && (<button
-                              onClick={() => handleRemoveMember(member.id)}
-                              className="py-2 px-2 text-white bg-red-600 hover:bg-red-700 rounded transition-colors cursor-pointer"
-                              title="Delete row"
-                            >
-                              <Trash2 size={16} />
-                            </button>)}
+                            {!isEmployee && (
+                              <button
+                                onClick={() => handleRemoveMember(member.id)}
+                                className="py-2 px-2 text-white bg-red-600 hover:bg-red-700 rounded transition-colors cursor-pointer"
+                                title="Delete row"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>

@@ -8,7 +8,9 @@ const taskSchema = `#graphql
         users: [User]
         priority: String
         status: String
-        dueDate: String
+        #dueDate: String
+        completedDate: String
+        createdAt:String
     }
     type Query {
         task(id: ID!): Task
@@ -22,8 +24,9 @@ const taskSchema = `#graphql
             project: ID!
             priority: String
             status: String
-            dueDate: String
+            #dueDate: String
             users: [ID]
+            
         ): Task
 
         # Edit/update an existing task (alias of updateTask)
@@ -33,7 +36,7 @@ const taskSchema = `#graphql
             description: String
             priority: String
             status: String
-            dueDate: String
+            #dueDate: String
             users: [ID]
         ): Task
 
@@ -43,7 +46,8 @@ const taskSchema = `#graphql
             description: String
             priority: String
             status: String
-            dueDate: String
+            completedDate: String
+            #dueDate: String
             users: [ID]
         ): Task
 
