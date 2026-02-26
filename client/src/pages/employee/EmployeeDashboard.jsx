@@ -1,4 +1,6 @@
 
+
+
 import { useState, useMemo } from "react";
 import { useQuery } from "@apollo/client/react";
 import { gql } from "@apollo/client";
@@ -506,7 +508,7 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
 // ─────────────────────────────────────────────────────────────
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
-export default function AdminDashboard() {
+export default function EmployeeDashboard() {
   const today = new Date();
   const years = buildYears();
 

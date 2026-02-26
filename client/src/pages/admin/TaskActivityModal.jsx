@@ -12,7 +12,6 @@ import {
   Search,
   Users,
   ChevronDown,
-  ChevronUp,
   Loader,
 } from "lucide-react";
 import { gql } from "@apollo/client";
@@ -140,6 +139,14 @@ const UPDATE_TASK_STATUS_TO_COMPLETED = gql`
     }
   }
 `;
+const GET_PROJECT = gql`
+  query Project($projectId: ID!) {
+    project(id: $projectId) {
+      startDate
+    }
+  }
+`;
+
 
 const STATUS_OPTIONS = [
   {
@@ -228,6 +235,11 @@ export default function TaskActivityModal({ id: taskId }) {
     skip: !shouldFetch,
   });
 
+  const { data: projectData} = useQuery(GET_PROJECT, {
+    variables: { projectId: id },
+  });
+
+  // console.log("Project start date:", projectData?.project?.startDate);
   const {
     data: dataTasksLog,
     loading: loadingTasksLog,
@@ -247,14 +259,13 @@ export default function TaskActivityModal({ id: taskId }) {
   });
 
   const handleMarkAsDone = (tId, currentStatus) => {
-
     Swal.fire({
-      title: "Mark this task as done?",
+      title: currentStatus === "in_progress" ? "Mark this task as done?" : "Mark this task as in progress?",
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#16a34a",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Mark as done",
+      confirmButtonText: currentStatus === "in_progress" ? "Mark as done" : "Mark as in progress",
     }).then((result) => {
       if (result.isConfirmed)
         updateTaskCompleted({
@@ -328,6 +339,17 @@ export default function TaskActivityModal({ id: taskId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+   if (
+     projectData?.project?.startDate &&
+     new Date(projectData.project.startDate).getTime() > Date.now()
+   ) {
+     toast.error(
+       "You cannot post an update for a task that hasn't started yet.",
+     );
+     return;
+   }
+
     if (!comment.trim()) return;
     await createTaskLog({
       variables: {
@@ -395,9 +417,7 @@ export default function TaskActivityModal({ id: taskId }) {
     });
     return map;
   }, [allLogs]);
-
-  console.log(taskData?.task?.status);
-
+  // console.log(taskData?.task?.status);
   // ── Post form (shared between desktop left panel and mobile tab) ──
   const PostForm = (
     <form onSubmit={handleSubmit} className="space-y-3">

@@ -114,7 +114,7 @@ export default function LoginUI() {
             <button
               type="submit"
               disabled={isLoading}
-              onClick={() => navigate('/admin/dashboard')}
+              onClick={() => navigate('/employee/dashboard')}
               className="w-full px-6 py-4 bg-linear-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 text-white rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 hover:shadow-lg hover:shadow-blue-900/50 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group mt-8"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">

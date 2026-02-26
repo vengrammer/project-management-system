@@ -30,7 +30,7 @@ export const projectResolvers = {
           status: project.status,
           department: project.department,
           client: project.client,
-          budget: project.budget,
+          budget: project.budget || "0",
           users: project.users,
           projectManager: project.projectManager,
           startDate: formattedDate(project.startDate),

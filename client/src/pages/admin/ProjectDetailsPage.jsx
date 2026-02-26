@@ -1,4 +1,3 @@
-
 import {
   ArrowLeft,
   Calendar,
@@ -318,7 +317,7 @@ const ProjectDetailsPage = () => {
   };
 
   const handleDeleteTask = (taskID) => {
-    console.log(taskID);
+    // console.log(taskID);
     Swal.fire({
       title: "Are you sure you want to delete this task?",
       text: "You won't be able to revert this!",
@@ -369,14 +368,13 @@ const ProjectDetailsPage = () => {
     );
   }
 
-
   const project = projectData?.project;
   const tasks = taskData?.taskByProject ?? [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Trigger Button */}
-      <div className="max-w-7xl mx-auto p-2 sm:p-6 lg:p-5">
+      <div className="w-full  p-2 sm:p-6 lg:py-8">
         {/* Back Button */}
         <button
           onClick={() =>
@@ -392,23 +390,23 @@ const ProjectDetailsPage = () => {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-3"
+          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-2"
         >
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
+          <div className="flex flex-col w-full h-full lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                   {project?.title ? project?.title : "No project title"}
                 </h1>
                 <span
-                  className={`first-letter:uppercase px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                  className={`whitespace-nowrap first-letter:uppercase px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
                     project?.status,
                   )}`}
                 >
                   {project?.status ? project?.status : "No project status"}
                 </span>
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(
+                  className={`whitespace-nowrap px-2   py-1 rounded-full text-xs font-medium border ${getPriorityColor(
                     project?.priority,
                   )}`}
                 >
@@ -561,7 +559,7 @@ const ProjectDetailsPage = () => {
           className="grid grid-cols-1 lg:grid-cols-3 gap-6"
         >
           {/* Tasks Section (2 columns) */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 flex h-full w-full  flex-col gap-4">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-3 border-b border-gray-200">
                 <div className="flex items-center justify-between">

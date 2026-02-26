@@ -55,8 +55,19 @@ export default function DepartmentTable() {
     refetchQueries: [{ query: GET_DEPARTMENT }],
     awaitRefetchQueries: true,
   });
-  const handleDelete = (id) => {
-    console.log(id);
+  const handleDelete = (id, department) => {
+   
+    if (!department){
+      Swal.fire({
+        title:
+          "Unable to delete department. It is currently linked to active users or projects.",
+        text: "Failed to delete department",
+        icon: "error",
+        confirmButtonColor: "#3085d6",
+        confirmButtonText: "Okay",
+      });
+      return;
+    } 
     Swal.fire({
       title: "Are you sure you want to delete department?",
       text: "You won't be able to revert this!",
@@ -111,10 +122,10 @@ export default function DepartmentTable() {
   const endIndex = startIndex + itemsPerPage;
   const currentDepartments = filteredDepartments.slice(startIndex, endIndex);
 
-  const handleEdit = (department) => {
-    console.log("Edit department:", department);
-    alert(`Editing: ${department.name}`);
-  };
+  // const handleEdit = (department) => {
+  //   console.log("Edit department:", department);
+  //   alert(`Editing: ${department.name}`);
+  // };
 
   const getStatusColor = (isActive) => {
     return isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
@@ -213,7 +224,9 @@ export default function DepartmentTable() {
                   <div className="flex gap-2 pt-2 border-t border-gray-100 lg:border-t-0 lg:pt-0 lg:gap-3">
                     <FormEditDepartment departmentId={department.id} />
                     <button
-                      onClick={() => handleDelete(department.id)}
+                      onClick={() =>
+                        handleDelete(department.id, department.users?.length < 1 ? true : false)
+                      }
                       className="flex-1 lg:flex-none bg-red-600 px-2 py-2 rounded cursor-pointer text-white hover:bg-red-700 text-sm font-medium lg:font-normal"
                       title="Delete"
                     >
