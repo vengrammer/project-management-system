@@ -25,7 +25,6 @@ import Swal from "sweetalert2";
 import FormEditTask from "./FormEditTask";
 import { motion } from "framer-motion";
 
-
 const UPDATE_PROJECT_STATUS = gql`
   mutation updateProject($updateProjectId: ID!, $status: String) {
     updateProject(id: $updateProjectId, status: $status) {
@@ -167,9 +166,6 @@ const ProjectDetailsPage = () => {
   const location = useLocation();
   const isEmployee = location.pathname.includes("employee");
 
-  console.log(isEmployee);
-
-
   // Get status color
 
   const getStatusColor = (status) => {
@@ -207,14 +203,32 @@ const ProjectDetailsPage = () => {
     loading: projectLoading,
     error: projectError,
     data: projectData,
-  } = useQuery(GET_PROJECTS, { variables: { projectId: id } });
+    refetch: refetchProject,
+  } = useQuery(GET_PROJECTS, {
+    variables: { projectId: id },
+    notifyOnNetworkStatusChange: true,
+  });
 
   //GET THE TASK
   const {
     loading: taskLoading,
     error: taskError,
     data: taskData,
-  } = useQuery(GET_TASKS, { variables: { taskByProjectId: id } });
+    refetch: refetchTasks,
+  } = useQuery(GET_TASKS, {
+    variables: { taskByProjectId: id },
+    notifyOnNetworkStatusChange: true,
+  });
+
+  // note: no need to manually refetch on mount, queries already run automatically and
+  // mutations have refetchQueries. Removing this effect prevents double fetching
+  // which caused a blink/flashing UI during initial mount.
+
+  //this will trigger the add refetch
+  const refetching = async () => {
+    await refetchProject();
+    await refetchTasks();
+  };
 
   //remove the member from the project
   const [updateProject] = useMutation(REMOVE_MEMBER, {
@@ -274,7 +288,15 @@ const ProjectDetailsPage = () => {
     });
   };
 
-  const handleRemoveMember = (userId) => {
+  const handleRemoveMember = (userId, assignedTasksCount) => {
+    if (assignedTasksCount > 0) {
+      Swal.fire({
+        title: "Cannot Remove Member",
+        text: "This member has assigned tasks. Please reassign or delete tasks first.",
+        icon: "error",
+      });
+      return;
+    }
     Swal.fire({
       title: "Are you sure you want to remove this member?",
       text: "remove member from project!",
@@ -549,7 +571,11 @@ const ProjectDetailsPage = () => {
                       {tasks.length ? tasks.length : "0"} total tasks
                     </p>
                   </div>
-                  {!isEmployee && <AddTaskForm />}
+                  {!isEmployee && (
+                    <AddTaskForm
+                      refetchProjects={async () => await refetching()}
+                    />
+                  )}
                 </div>
               </div>
               {/*all task value*/}
@@ -700,7 +726,12 @@ const ProjectDetailsPage = () => {
                           <div className="pl-3">
                             {!isEmployee && (
                               <button
-                                onClick={() => handleRemoveMember(member.id)}
+                                onClick={() =>
+                                  handleRemoveMember(
+                                    member.id,
+                                    assignedTasks.length,
+                                  )
+                                }
                                 className="py-2 px-2 text-white bg-red-600 hover:bg-red-700 rounded transition-colors cursor-pointer"
                                 title="Delete row"
                               >

@@ -6,24 +6,24 @@ import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 
-//to refresh the table of projects
-const GET_PROJECTS = gql`
-  query Projects {
-    projects {
-      id
-      title
-      description
-      priority
-      status
-      department {
-        name
-      }
-      budget
-      startDate
-      endDate
-    }
-  }
-`;
+// //to refresh the table of projects
+// const GET_PROJECTS = gql`
+//   query Projects {
+//     projects {
+//       id
+//       title
+//       description
+//       priority
+//       status
+//       department {
+//         name
+//       }
+//       budget
+//       startDate
+//       endDate
+//     }
+//   }
+// `;
 
 //query to get the departments
 const GET_DEPARTMENTS = gql`
@@ -95,7 +95,8 @@ const DELETE_PROJECT = gql`
   }
 `;
 
-export default function FormAddProjectModal() {
+export default function FormAddProjectModal({refechProjects}) {
+  // console.log("refechProjects in modal:", refechProjects);
   const [selectedEmployees, setSelectedEmployees] = useState([]);
   const managerRef = useRef(null);
   const departmentRef = useRef(null);
@@ -162,20 +163,30 @@ export default function FormAddProjectModal() {
     loading: loadindDepartments,
     error: errorDepartments,
     data: dataDepartments,
-  } = useQuery(GET_DEPARTMENTS);
+    refetch: refetchDepartments,
+  } = useQuery(GET_DEPARTMENTS, { notifyOnNetworkStatusChange: true });
 
   //GET THE USER WITH A ROLE OF MANAGER
   const {
     loading: loadingUserManager,
     error: errorUserManager,
     data: dataUserManager,
-  } = useQuery(GET_USER_MANAGER);
+    refetch: refetchUserManager,
+  } = useQuery(GET_USER_MANAGER, { notifyOnNetworkStatusChange: true });
+
+  useEffect(() => {
+    const refetching = async () => {
+      await refetchUserManager();
+      await refetchDepartments();
+    };
+    refetching();
+  }, []);
 
   // CREATE PROJECT
   const [createProject, { loading: loadingCreateProject }] = useMutation(
     CREATE_PROJECT,
     {
-      onCompleted: () => {
+      onCompleted: async () => {
         toast.success("Project created successfully");
         // reset form and selection
         setFormData({
@@ -190,6 +201,7 @@ export default function FormAddProjectModal() {
           startDate: "",
           endDate: "",
         });
+        await refechProjects();
         setSelectedEmployees([]);
         setManagerSearch("");
         setDepartmentSearch("");
@@ -198,9 +210,6 @@ export default function FormAddProjectModal() {
       onError: () => {
         toast.error("Failed to create project");
       },
-      // refresh project list (server query name)
-      refetchQueries: [{ query: GET_PROJECTS }],
-      awaitRefetchQueries: true,
     },
   );
 
@@ -646,6 +655,7 @@ export default function FormAddProjectModal() {
                         <input
                           type="date"
                           value={formData.endDate}
+                          min={formData.startDate}
                           onChange={(e) =>
                             handleInputChange("endDate", e.target.value)
                           }

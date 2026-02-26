@@ -203,10 +203,10 @@ export default function AdminSideBar() {
       )}
       {/* Main Content Area */}
       <main
-        className="flex-1 overflow-y-auto p-6 md:p-8"
-        style={{
-          minHeight: "calc(100vh - 1px)",
-        }}
+        className="flex-1 flex overflow-hidden p-2"
+        // style={{
+        //   minHeight: "calc(100vh - 1px)",
+        // }}
       >
         <Outlet />
       </main>

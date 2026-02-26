@@ -24,6 +24,7 @@ export const projectSchema = `#graphql
         message: String
         project: Project
     }
+
     type Mutation {
         createProject(
             title: String!

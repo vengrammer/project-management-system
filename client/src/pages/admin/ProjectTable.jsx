@@ -7,6 +7,7 @@ import {
   Trash2,
 } from "lucide-react";
 import React, { useState } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
@@ -54,7 +55,9 @@ export default function ProjectTable() {
   const itemsPerPage = 10;
 
   // Get the projects data using Apollo Client
-  const { loading, error, data, refetch } = useQuery(GET_PROJECTS);
+  const { loading, error, data, refetch } = useQuery(GET_PROJECTS, {
+    notifyOnNetworkStatusChange: true,
+  });
 
   // Handle loading state
   if (loading) {
@@ -118,7 +121,7 @@ export default function ProjectTable() {
           if (data.deleteProject) {
             toast.success("Project deleted successfully");
             // Refetch projects to update the list
-            refetch();
+            await refetch();
           }
         } catch (error) {
           toast.error(`Error deleting project: ${error.message}`);
@@ -153,12 +156,12 @@ export default function ProjectTable() {
       transition={{ duration: 0.8, ease: "easeInOut" }}
       className="w-full md:p-2 max-w-8xl mx-auto"
     >
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-lg shadow w-full h-full flex flex-col">
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
             <h1 className="text-2xl font-bold text-gray-800">Projects</h1>
-            <FormAddProjectModal />
+            <FormAddProjectModal refechProjects={async () => await refetch()} />
             {/* <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">
               
             </button> */}
@@ -190,7 +193,7 @@ export default function ProjectTable() {
         </div>
 
         {/* Grid Body - Unified responsive layout */}
-        <div className="divide-y divide-gray-200 max-h-150 overflow-auto">
+        <div className="divide-y divide-gray-200 max-h-full overflow-auto">
           {projects.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
               No projects found
@@ -203,7 +206,7 @@ export default function ProjectTable() {
             currentProjects.map((project) => (
               <div
                 key={project.id}
-                className="hover:bg-gray-50 transition-colors p-4 lg:px-6 lg:py-4"
+                className="hover:bg-gray-50 transition-colors p-4 lg:px-6 border lg:py-4"
               >
                 {/* Unified Responsive Layout */}
                 <div className="lg:grid lg:grid-cols-9 lg:gap-4 lg:items-center space-y-3 lg:space-y-0">
@@ -328,7 +331,10 @@ export default function ProjectTable() {
                       title="View"
                     >
                       <span className="lg:hidden text-white">Archive</span>
-                      <Archive size={20} className="hidden lg:inline text-white" />
+                      <Archive
+                        size={20}
+                        className="hidden lg:inline text-white"
+                      />
                     </button>
 
                     <button

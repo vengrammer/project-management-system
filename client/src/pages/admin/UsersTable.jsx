@@ -133,9 +133,10 @@ export default function UsersTable() {
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeInOut" }}
-      className="w-full md:p-2 max-w-8xl mx-auto"
+      // className="w-full md:p-2 max-w-8xl mx-auto border-8"
+      className="overflow-hidden w-full h-full flex"
     >
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-lg shadow w-full h-full flex flex-col">
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
@@ -168,7 +169,7 @@ export default function UsersTable() {
         </div>
 
         {/* Grid Body*/}
-        <div className="divide-y divide-gray-200 max-h-150 overflow-auto">
+        <div className="divide-y divide-gray-200  h-full overflow-auto">
           {users.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
               No users found

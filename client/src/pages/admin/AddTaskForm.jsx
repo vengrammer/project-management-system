@@ -1,5 +1,5 @@
 import { Plus, XCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useParams } from "react-router-dom";
@@ -38,12 +38,10 @@ const UPDATE_PROJECT_STATUS_AND_STARTDATE = gql`
   mutation updateProject(
     $updateProjectId: ID!
     $status: String
-    $startDate: String
   ) {
     updateProject(
       id: $updateProjectId
       status: $status
-      startDate: $startDate
     ) {
       message
     }
@@ -75,43 +73,43 @@ const INSERT_TASK = gql`
   }
 `;
 
-const GET_PROJECTS = gql`
-  query Project($projectId: ID!) {
-    project(id: $projectId) {
-      title
-      client
-      budget
-      description
-      priority
-      startDate
-      status
-      endDate
-      id
-      department {
-        id
-        name
-      }
-      projectManager {
-        id
-        fullname
-      }
-      users {
-        id
-        fullname
-        position
-      }
-    }
-  }
-`;
+// const GET_PROJECTS = gql`
+//   query Project($projectId: ID!) {
+//     project(id: $projectId) {
+//       title
+//       client
+//       budget
+//       description
+//       priority
+//       startDate
+//       status
+//       endDate
+//       id
+//       department {
+//         id
+//         name
+//       }
+//       projectManager {
+//         id
+//         fullname
+//       }
+//       users {
+//         id
+//         fullname
+//         position
+//       }
+//     }
+//   }
+// `;
 
-function AddTaskForm() {
+function AddTaskForm({refetchProjects}) {
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     priority: "medium",
     assignedTo: [],
-   // dueDate: "",
+
     status: "todo",
   });
 
@@ -122,7 +120,7 @@ function AddTaskForm() {
     onError: () => {
       toast.error("Failed to update the project");
     },
-    refetchQueries: [{ query: GET_PROJECTS, variables: { projectId: id } }],
+    // refetchQueries: [{ query: GET_PROJECTS, variables: { projectId: id } }],
   });
 
   //get the tasks to check if this is the first task
@@ -137,6 +135,8 @@ function AddTaskForm() {
     data: memberData,
   } = useQuery(GET_MEMBERS, { variables: { projectId: id } });
 
+ 
+
   //insert the task
   const [createTask] = useMutation(INSERT_TASK, {
     onCompleted: () => {
@@ -150,14 +150,15 @@ function AddTaskForm() {
         dueDate: "",
         status: "todo",
       });
+      refetchProjects();
       setIsAddTaskOpen(false);
     },
     onError: () => {
       toast.error("Failed to create task");
     },
     // refetch task list
-    refetchQueries: [{ query: GET_TASKS, variables: { taskByProjectId: id } }],
-    awaitRefetchQueries: true,
+    // refetchQueries: [{ query: GET_TASKS, variables: { taskByProjectId: id } }],
+    // awaitRefetchQueries: true,
   });
 
   const handleAddTask = (e) => {
@@ -185,7 +186,7 @@ function AddTaskForm() {
         updateProjectId: id,
         ...(isFirstTask && {status: "in progress"}),
         // Only include start date if this is the first task
-        ...(isFirstTask && { startDate: new Date().toISOString() }),
+        // ...(isFirstTask && { startDate: new Date().toISOString() }),
       },
     });
   };
@@ -204,6 +205,8 @@ function AddTaskForm() {
       </div>
     );
   }
+
+ 
   return (
     <>
       {/* Button to open modal */}

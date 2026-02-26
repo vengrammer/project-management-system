@@ -13,6 +13,7 @@ import {
   Users,
   ChevronDown,
   ChevronUp,
+  Loader,
 } from "lucide-react";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
@@ -43,6 +44,7 @@ const GET_TASK = gql`
       id
       title
       completedDate
+      status
       users {
         id
         fullname
@@ -212,7 +214,7 @@ export default function TaskActivityModal({ id: taskId }) {
   // mobile: toggle between "post" and "timeline" tabs
   const [mobileTab, setMobileTab] = useState("timeline");
   // mobile: collapse post form
-  const [postFormOpen, setPostFormOpen] = useState(false);
+  // const [postFormOpen, setPostFormOpen] = useState(false);
 
   const { id } = useParams();
   const shouldFetch = isOpen && Boolean(taskId);
@@ -238,13 +240,14 @@ export default function TaskActivityModal({ id: taskId }) {
   });
 
   const [updateTaskCompleted] = useMutation(UPDATE_TASK_STATUS_TO_COMPLETED, {
-    onCompleted: () => toast.success("Task marked as done!"),
+    onCompleted: () => toast.success("Task status updated!"),
     onError: () => toast.error("Failed to update task!"),
     refetchQueries: [{ query: GET_TASKS, variables: { taskByProjectId: id } }],
     awaitRefetchQueries: true,
   });
 
-  const handleMarkAsDone = (tId) => {
+  const handleMarkAsDone = (tId, currentStatus) => {
+
     Swal.fire({
       title: "Mark this task as done?",
       icon: "question",
@@ -257,8 +260,8 @@ export default function TaskActivityModal({ id: taskId }) {
         updateTaskCompleted({
           variables: {
             updateTaskId: tId,
-            status: "completed",
-            completedDate: String(Date.now()),
+            status: currentStatus === "in_progress" ? "completed" : "in_progress",
+            completedDate: currentStatus === "in_progress" ? String(Date.now()) : null,
           },
         });
     });
@@ -271,7 +274,7 @@ export default function TaskActivityModal({ id: taskId }) {
         setComment("");
         await refetchTaskLogs();
         toast.success("Update posted");
-        setPostFormOpen(false);
+        // setPostFormOpen(false);
         setMobileTab("timeline");
       },
       onError: () => toast.error("Failed to post update"),
@@ -392,6 +395,8 @@ export default function TaskActivityModal({ id: taskId }) {
     });
     return map;
   }, [allLogs]);
+
+  console.log(taskData?.task?.status);
 
   // ── Post form (shared between desktop left panel and mobile tab) ──
   const PostForm = (
@@ -746,12 +751,30 @@ export default function TaskActivityModal({ id: taskId }) {
                       })}
                     </div>
                     <button
-                      onClick={() => handleMarkAsDone(taskData?.task?.id)}
-                      className="flex items-center gap-1 px-2.5 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs font-semibold shrink-0"
+                      onClick={() =>
+                        handleMarkAsDone(
+                          taskData?.task?.id,
+                          taskData?.task?.status,
+                        )
+                      }
+                      className={`flex items-center gap-1 px-2.5 py-1.5 ${
+                        taskData?.task?.status === "in_progress"
+                          ? "bg-green-600 text-white rounded-lg hover:bg-green-700"
+                          : "bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                      } transition-colors text-xs font-semibold shrink-0`}
                     >
-                      <Check size={13} />
-                      <span className="hidden xs:inline">Mark as Done</span>
-                      <span className="xs:hidden">Done</span>
+                      {taskData?.task?.status === "in_progress" ? (
+                        <>
+                          <Check size={13} />
+                          <span className="text-xs">Mark as Done</span>
+                        </>
+                      ) : (
+                        <>
+                          <Loader size={13} />
+                          <span className="text-xs">Mark as In Progress</span>
+                        </>
+                      )}
+                      {/* <span className="xs:hidden">Done</span> */}
                     </button>
                   </div>
                 )}
