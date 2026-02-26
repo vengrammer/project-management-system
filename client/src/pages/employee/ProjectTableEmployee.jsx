@@ -1,9 +1,4 @@
-
-import {
-  CalendarArrowDown,
-  CalendarArrowUp,
-  Eye,
-} from "lucide-react";
+import { CalendarArrowDown, CalendarArrowUp, Eye } from "lucide-react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@apollo/client/react";
@@ -39,7 +34,7 @@ export default function ProjectTableEmployee() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const temporaryId = "6992d115b034bbfbac83b8fb"
+  const temporaryId = "6992d115b034bbfbac83b8fb";
 
   // Get the projectByUser data using Apollo Client
   const { loading, error, data } = useQuery(GET_PROJECTS, {
@@ -281,7 +276,6 @@ export default function ProjectTableEmployee() {
                       <span className="lg:hidden text-white">View</span>
                       <Eye size={20} className="hidden lg:inline text-white " />
                     </button>
-
                   </div>
                 </div>
               </div>

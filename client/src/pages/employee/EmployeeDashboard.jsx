@@ -1,15 +1,14 @@
-
-
-
 import { useState, useMemo } from "react";
 import { useQuery } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 
 //  GRAPHQL QUERIES
 
+//dashboard by employee
+
 const GET_PROJECTS = gql`
-  query GetProjects {
-    projects {
+  query projectByUser($projectByUserId: ID!) {
+    projectByUser(id: $projectByUserId) {
       id
       title
       status
@@ -68,7 +67,6 @@ const MONTH_NAMES = [
   "November",
   "December",
 ];
-
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -163,7 +161,6 @@ function buildYears() {
   return list;
 }
 
-
 function buildCells(year, month) {
   const firstJsDay = new Date(year, month, 1).getDay();
   const offset = (firstJsDay + 6) % 7; // Mon=0
@@ -252,9 +249,7 @@ function ProjectItem({ project, accent, isSelected, onClick }) {
           : "border-transparent hover:bg-white hover:border-slate-200",
       ].join(" ")}
     >
-      <span
-        className={`w-2.5 h-2.5 rounded-full shrink-0 ${accent.chip}`}
-      />
+      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${accent.chip}`} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-slate-800 truncate">
           {project.title}
@@ -517,13 +512,19 @@ export default function EmployeeDashboard() {
   const [selectedDay, setSelectedDay] = useState(null); // { day, month, year }
   const [selectedProj, setSelectedProj] = useState(null); // project object
 
+  const temporaryId = "6992d115b034bbfbac83b8fb"; // placeholder until auth is implemented
+
   // ── Fetch all projects ──
   const {
     data: projData,
     loading: projLoading,
     error: projError,
-  } = useQuery(GET_PROJECTS);
-  const projects = projData?.projects ?? [];
+  } = useQuery(GET_PROJECTS, { variables: { projectByUserId: temporaryId } });
+
+  console.log("Project Data:", projData);
+  console.log("Project Error:", projError);
+
+  const projects = projData?.projectByUser ?? [];
 
   // Assign a stable accent color per project by index
   const accentMap = useMemo(() => {

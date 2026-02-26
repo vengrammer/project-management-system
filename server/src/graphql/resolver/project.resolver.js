@@ -112,16 +112,23 @@ export const projectResolvers = {
       }
     },
 
-    projectByUser: async (_, { id }) => {
+    projectByUser: async (_, { id }, context) => {
+      // allow callers to omit the id and fall back to authenticated user
+      const userId = id || context?.user?.id;
+      if (!userId) {
+        throw new Error("User ID is required to fetch projects");
+      }
+
       try {
-        const project = await Project.find({ users: id })
+        const project = await Project.find({ users: userId })
           .populate("users")
           .populate("department")
           .populate("projectManager");
 
         if (project.length === 0) {
           console.log("No project");
-          throw new Error("No project");
+          // return empty array rather than throwing so UI can handle gracefully
+          return [];
         }
 
         const formattedDate = (date) => {
