@@ -11,7 +11,6 @@ import {
   KeyRound,
   AtSign,
   Save,
-  Pen,
 } from "lucide-react";
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
@@ -242,7 +241,7 @@ function Profile() {
     return (
       <div className="w-full h-full flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-3">
-          <Loader size={30} className="animate-spin text-blue-500" />
+          <Loader size={70} className="animate-spin text-blue-500" />
         </div>
       </div>
     );

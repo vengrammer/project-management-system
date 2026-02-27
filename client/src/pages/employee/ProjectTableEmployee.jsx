@@ -1,4 +1,4 @@
-import { CalendarArrowDown, CalendarArrowUp, Eye } from "lucide-react";
+import { CalendarArrowDown, CalendarArrowUp, Eye, Loader } from "lucide-react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@apollo/client/react";
@@ -47,8 +47,10 @@ export default function ProjectTableEmployee() {
   // Handle loading state
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-xl"></span>
+      <div className="w-full h-full flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <Loader size={70} className="animate-spin text-blue-500" />
+        </div>
       </div>
     );
   }

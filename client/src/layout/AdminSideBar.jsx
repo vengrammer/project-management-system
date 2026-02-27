@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 
 import {
   Menu,
@@ -13,12 +15,39 @@ import {
   LayoutDashboard,
   Building2,
   Archive,
+  Loader,
 } from "lucide-react";
+import { toast } from "react-toastify";
+
+
+const GET_USER = gql`
+  query User($userId: ID!) {
+    user(id: $userId) {
+      id
+      fullname
+      email
+    }
+  }
+`;
 
 export default function AdminSideBar() {
+  const user = "6992d115b034bbfbac83b8fb";;
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const getInitials = (name) => {
+    if (!name) return "";
+
+    const words = name.trim().split(" ");
+
+    if (words.length === 1) {
+      return words[0][0].toUpperCase();
+    }
+
+    return (words[0][0] + words[1][0]).toUpperCase();
+  };
+
 
   // Remove async - not needed for simple path checking
   const isActive = (route) => {
@@ -29,6 +58,25 @@ export default function AdminSideBar() {
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
+
+  const {loading: loadingUser, error: userError, data: userData} = useQuery(GET_USER, {
+    variables: {userId : user}
+  });
+
+  if (loadingUser) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <Loader size={70} className="animate-spin text-blue-500" />
+        </div>
+      </div>
+    );
+  }
+  if(userError) {
+    toast.error("Failed to load user data");
+  }
+
+  console.log("Current User Data:", userData.user.fullname);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -162,11 +210,15 @@ export default function AdminSideBar() {
           {/* User Info */}
           <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-gray-50 rounded-lg">
             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-              JD
+              {getInitials(userData?.user.fullname || "U")}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-800">John Doe</p>
-              <p className="text-xs text-gray-500">john@example.com</p>
+              <p className="text-sm font-semibold text-gray-800">
+                {userData?.user.fullname || "Unknown user"}{" "}
+              </p>
+              <p className="text-xs text-gray-500">
+                {userData?.user.email || "no email"}
+              </p>
             </div>
           </div>
 

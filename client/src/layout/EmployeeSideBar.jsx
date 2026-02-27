@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
+import { gql } from "@apollo/client";
+import { toast } from "react-toastify";
 
 import {
   Menu,
@@ -10,12 +12,37 @@ import {
   User,
   Archive,
   LayoutDashboard,
+  Loader,
 } from "lucide-react";
+import { useQuery } from "@apollo/client/react";
+
+const GET_USER = gql`
+  query User($userId: ID!) {
+    user(id: $userId) {
+      id
+      fullname
+      email
+    }
+  }
+`;
 
 export default function EmployeeSideBar() {
+  const user = "6997ef02e934b856db1ab557";
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+   const getInitials = (name) => {
+     if (!name) return "";
+
+     const words = name.trim().split(" ");
+
+     if (words.length === 1) {
+       return words[0][0].toUpperCase();
+     }
+
+     return (words[0][0] + words[1][0]).toUpperCase();
+   };
 
   // Remove async - not needed for simple path checking
   const isActive = (route) => {
@@ -26,6 +53,15 @@ export default function EmployeeSideBar() {
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
+
+  const { error: userError, data: userData} = useQuery(GET_USER, {
+      variables: {userId : user}
+    });
+  
+  
+    if(userError) {
+      toast.error("Failed to load user data");
+    }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -121,11 +157,15 @@ export default function EmployeeSideBar() {
           {/* User Info */}
           <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-gray-50 rounded-lg">
             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-              JD
+              {getInitials(userData?.user.fullname || "U")}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-800">John Doe</p>
-              <p className="text-xs text-gray-500">john@example.com</p>
+              <p className="text-sm font-semibold text-gray-800">
+                {userData?.user.fullname || "Unknown user"}{" "}
+              </p>
+              <p className="text-xs text-gray-500">
+                {userData?.user.email || "no email"}
+              </p>
             </div>
           </div>
 
