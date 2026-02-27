@@ -8,14 +8,12 @@ import {
   Menu,
   X,
   FolderOpenDot,
-  Users,
   UserCheck,
   LogOut,
   User,
   LayoutDashboard,
   Building2,
   Archive,
-  Loader,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -59,24 +57,24 @@ export default function AdminSideBar() {
     setIsOpen(!isOpen);
   };
 
-  const {loading: loadingUser, error: userError, data: userData} = useQuery(GET_USER, {
+  const { error: userError, data: userData} = useQuery(GET_USER, {
     variables: {userId : user}
   });
 
-  if (loadingUser) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-3">
-          <Loader size={70} className="animate-spin text-blue-500" />
-        </div>
-      </div>
-    );
-  }
+  // if (loadingUser) {
+  //   return (
+  //     <div className="w-full h-full flex items-center justify-center bg-slate-50">
+  //       <div className="flex flex-col items-center gap-3">
+  //         <Loader size={70} className="animate-spin text-blue-500" />
+  //       </div>
+  //     </div>
+  //   );
+  // }
   if(userError) {
     toast.error("Failed to load user data");
   }
 
-  console.log("Current User Data:", userData.user.fullname);
+  // console.log("Current User Data:", userData.user.fullname);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -189,22 +187,8 @@ export default function AdminSideBar() {
                 <span>Archive</span>
               </Link>
             </li>
-
-            <li>
-              <Link
-                to="/admin/practice"
-                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/settings") ? "bg-blue-100 text-blue-600" : ""
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <Users size={20} />
-                <span>Team</span>
-              </Link>
-            </li>
           </ul>
         </nav>
-
         {/* Account Section at Bottom */}
         <div className="p-4 border-t">
           {/* User Info */}
@@ -224,9 +208,9 @@ export default function AdminSideBar() {
 
           {/* Account Links */}
           <Link
-            to="/profile"
+            to="/admin/profile"
             className={`flex items-center gap-3 px-4 py-2 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors mb-1 ${
-              isActive("/profile") ? "bg-blue-100 text-blue-600" : ""
+              isActive("/admin/profile") ? "bg-blue-100 text-blue-600" : ""
             }`}
             onClick={() => setIsOpen(false)}
           >

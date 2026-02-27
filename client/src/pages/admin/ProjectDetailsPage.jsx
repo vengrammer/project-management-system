@@ -9,8 +9,8 @@ import {
   CheckCircle2,
   Trash2,
   User,
-  Pen,
   Check,
+  Loader,
 } from "lucide-react";
 import AddMembers from "./AddMembersForm";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
@@ -259,7 +259,7 @@ const ProjectDetailsPage = () => {
 
   const [updateProjectStatus] = useMutation(UPDATE_PROJECT_STATUS, {
     onCompleted: () => {
-      toast.success("Marked as completed successfully.");
+      toast.success("Project status updated successfully.");
     },
     onError: () => {
       toast.error("Failed to update the project");
@@ -267,9 +267,9 @@ const ProjectDetailsPage = () => {
     refetchQueries: [{ query: GET_PROJECTS, variables: { projectId: id } }],
   });
 
-  const handleMarkAsDone = () => {
+  const handleMarkAsDone = (status) => {
     Swal.fire({
-      title: "Mark this project as done?",
+      title: `${status === "completed" ? "Mark this project as in progress?" : "Mark this project as completed?"}`,
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
@@ -280,7 +280,7 @@ const ProjectDetailsPage = () => {
         updateProjectStatus({
           variables: {
             updateProjectId: id,
-            status: "completed",
+            status: status === "completed" ? "in progress" : "completed",
           },
         });
       }
@@ -455,11 +455,21 @@ const ProjectDetailsPage = () => {
               <div>
                 {!isEmployee && (
                   <button
-                    onClick={handleMarkAsDone}
-                    className="flex items-center gap-2 px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    onClick={() => handleMarkAsDone(project.status)}
+                    className={`flex items-center gap-2 px-2 py-2 ${
+                      project.status === "completed"
+                        ? "bg-amber-600 hover:bg-amber-700"
+                        : "bg-green-600 hover:bg-green-700"
+                    } text-white rounded-lg  transition-colors`}
                   >
-                    <Check size={20} />
-                    Mark As Done
+                    {project.status === "completed" ? (
+                      <Loader size={20} />
+                    ) : (
+                      <Check size={20} />
+                    )}
+                    {project.status === "completed"
+                      ? "Mark As In Progress"
+                      : "Mark As Completed"}
                   </button>
                 )}
               </div>

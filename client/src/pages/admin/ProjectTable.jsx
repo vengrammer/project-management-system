@@ -3,6 +3,7 @@ import {
   CalendarArrowDown,
   CalendarArrowUp,
   Eye,
+  Loader,
   Pen,
   Trash2,
 } from "lucide-react";
@@ -62,10 +63,12 @@ export default function ProjectTable() {
   // Handle loading state
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-xl"></span>
+      <div className="w-full h-full flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <Loader size={70} className="animate-spin text-blue-500" />
+        </div>
       </div>
-    );
+    );;
   }
 
   // Handle error state

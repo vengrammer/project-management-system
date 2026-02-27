@@ -345,7 +345,7 @@ export default function TaskActivityModal({ id: taskId }) {
      new Date(projectData.project.startDate).getTime() > Date.now()
    ) {
      toast.error(
-       "You cannot post an update for a task that hasn't started yet.",
+       "You cannot post an update for a project that hasn't started yet.",
      );
      return;
    }

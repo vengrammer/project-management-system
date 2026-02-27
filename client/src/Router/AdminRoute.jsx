@@ -11,6 +11,9 @@ import DepartmentTable from "@/pages/admin/DepartmentTable";
 import PracticeComponent from "@/pages/admin/PracticeComponent";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import ProjectDetailsPage from "@/pages/admin/ProjectDetailsPage";
+import Profile from "@/pages/admin/Profile";
+
+
 function HomeRoute() {
     return (
       <Routes>
@@ -24,6 +27,7 @@ function HomeRoute() {
           <Route path="users" element={<UsersTable />} />
           <Route path="department" element={<DepartmentTable />} />
           <Route path="practice" element={<PracticeComponent />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />

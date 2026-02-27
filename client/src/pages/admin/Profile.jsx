@@ -139,7 +139,7 @@ function Profile() {
   const handleInputChange = (name, value) =>
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-  const handleEditClick = () => setEditing(true);
+  const handleEditClick = () => setEditing(!isEditing);
 
   const populateForm = (user) => {
     setFormData({
@@ -299,9 +299,9 @@ function Profile() {
             <div>
               <button
                 onClick={handleEditClick}
-                className="bg flex bg-green-500 py-2 px-7 rounded-2xl cursor-pointer"
+                className={`${isEditing ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"} py-2 px-7 rounded-2xl cursor-pointer text-white font-medium`}
               >
-                Edit
+               { isEditing ? "Cancel" : "Edit"}
               </button>
             </div>
           </div>

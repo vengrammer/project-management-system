@@ -250,22 +250,33 @@ function ProjectItem({ project, accent, isSelected, onClick }) {
           : "border-transparent hover:bg-white hover:border-slate-200",
       ].join(" ")}
     >
-      <span
-        className={`w-2.5 h-2.5 rounded-full shrink-0 ${accent.chip}`}
-      />
+      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${accent.chip}`} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-slate-800 truncate">
           {project.title}
         </p>
-        <p className="text-[11px] text-slate-400 truncate">
+        <p className="text-[11px] text-slate-400 truncate gap-3 flex">
           {project.client ?? "No client"} ·{" "}
           <span
-            className={`font-semibold ${
+            className={`font-semibold rounded ${
               STATUS_STYLE[project.status ?? "not started"]
             }`}
           >
             {project.status ?? "not started"}
           </span>
+          {project.status != "completed" && project.endDate &&
+            (() => {
+              const today = new Date();
+              const dueDate = new Date(project.endDate);
+
+              // Remove time component for accurate day comparison
+              today.setHours(0, 0, 0, 0);
+              dueDate.setHours(0, 0, 0, 0);
+
+              return dueDate < today;
+            })() && (
+              <span className="ml-2 text-red-500 font-semibold">Overdue</span>
+            )}
         </p>
       </div>
     </button>

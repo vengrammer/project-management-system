@@ -1,4 +1,4 @@
-import { Power, PowerOff } from "lucide-react";
+import { Loader, Power, PowerOff } from "lucide-react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useMutation, useQuery } from "@apollo/client/react";
@@ -76,10 +76,12 @@ export default function UsersTable() {
   // Handle loading state
   if (loading || loadingUpdateUserStatus) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-xl"></span>
+      <div className="w-full h-full flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <Loader size={70} className="animate-spin text-blue-500" />
+        </div>
       </div>
-    );
+    );;
   }
 
   // Handle error state
