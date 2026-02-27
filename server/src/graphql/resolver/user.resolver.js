@@ -61,6 +61,29 @@ export const userResolvers = {
         throw new Error("Failed to show users manager");
       }
     },
+    // return info about the currently authenticated user
+    currentUser: async (_, __, context) => {
+      const uid = context?.user?.id;
+      if (!uid) {
+        throw new Error("Not authenticated");
+      }
+      const user = await User.findById(uid).populate("department");
+      if (!user) {
+        throw new Error("User not found");
+      }
+      return {
+        id: user._id.toString(),
+        fullname: user.fullname,
+        email: user.email,
+        username: user.username,
+        department: user.department,
+        position: user.position,
+        role: user.role,
+        status: user.status,
+        createdAt: user.createdAt?.toISOString() || null,
+        updatedAt: user.updatedAt?.toISOString() || null,
+      };
+    },
     //search user by their data
     searchUser: async (_, args) => {
       try {
@@ -105,7 +128,6 @@ export const userResolvers = {
   Mutation: {
     createUser: async (_, args) => {
       try {
-        
         // Check if email already exists
         const existingEmail = await User.findOne({ email: args.email });
         if (existingEmail) {
@@ -159,9 +181,13 @@ export const userResolvers = {
         throw new Error(error.message || "Failed to create user");
       }
     },
-    updateUser: async (_, args) => {
+    updateUser: async (_, args, context) => {
       try {
         const { id, ...updateData } = args;
+        // prevent user from deactivating themselves
+        if (context?.user?.id === id && updateData.status === false) {
+          throw new Error("Cannot deactivate your own account");
+        }
 
         // Check if user exists
         const existingUser = await User.findById(id);
@@ -242,6 +268,22 @@ export const userResolvers = {
       } catch (error) {
         console.error(error);
         throw new Error(error);
+      }
+    },
+    deactivateUser: async (_, { id }, context) => {
+      if (context?.user?.id === id) {
+        throw new Error("Cannot deactivate your own account");
+      }
+      try {
+        const user = await User.findByIdAndUpdate(
+          id,
+          { status: false },
+          { new: true },
+        );
+        return user;
+      } catch (error) {
+        console.error("Deactivate user error", error);
+        throw new Error("Failed to deactivate user");
       }
     },
   },

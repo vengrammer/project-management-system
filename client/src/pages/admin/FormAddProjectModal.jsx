@@ -127,11 +127,11 @@ export default function FormAddProjectModal({refechProjects}) {
     setIsOpen(false);
   };
 
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      handleClose();
-    }
-  };
+  // const handleBackdropClick = (e) => {
+  //   if (e.target === e.currentTarget) {
+  //     handleClose();
+  //   }
+  // };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -341,7 +341,7 @@ export default function FormAddProjectModal({refechProjects}) {
       {isOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4"
-          onClick={handleBackdropClick}
+          // onClick={handleBackdropClick}
         >
           {/* Modal Container */}
           <form
@@ -656,6 +656,7 @@ export default function FormAddProjectModal({refechProjects}) {
                           type="date"
                           value={formData.endDate}
                           min={formData.startDate}
+                          disabled={!formData.startDate}
                           onChange={(e) =>
                             handleInputChange("endDate", e.target.value)
                           }

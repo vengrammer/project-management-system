@@ -9,6 +9,7 @@ import {
   LogOut,
   User,
   Archive,
+  LayoutDashboard,
 } from "lucide-react";
 
 export default function EmployeeSideBar() {
@@ -79,7 +80,7 @@ export default function EmployeeSideBar() {
                 }`}
                 onClick={() => setIsOpen(false)}
               >
-                <Archive size={20} />
+                <LayoutDashboard size={20} />
                 <span>Dashboard</span>
               </Link>
             </li>
@@ -130,9 +131,9 @@ export default function EmployeeSideBar() {
 
           {/* Account Links */}
           <Link
-            to="/profile"
+            to="/employee/profile"
             className={`flex items-center gap-3 px-4 py-2 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors mb-1 ${
-              isActive("/profile") ? "bg-blue-100 text-blue-600" : ""
+              isActive("/employee/profile") ? "bg-blue-100 text-blue-600" : ""
             }`}
             onClick={() => setIsOpen(false)}
           >
@@ -161,10 +162,10 @@ export default function EmployeeSideBar() {
       )}
       {/* Main Content Area */}
       <main
-        className="flex-1 overflow-y-auto p-6 md:p-8"
-        style={{
-          minHeight: "calc(100vh - 1px)",
-        }}
+        className="flex-1 flex overflow-hidden p-2"
+        // style={{
+        //   minHeight: "calc(100vh - 1px)",
+        // }}
       >
         <Outlet />
       </main>

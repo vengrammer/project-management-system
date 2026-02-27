@@ -412,7 +412,7 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
       </div>
 
       {/* Scrollable log list */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-2.5">
+      <div className="w-full h-full overflow-y-auto px-4 pb-5 flex flex-col gap-2.5">
         {/* Loading */}
         {loading &&
           [1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full" />)}
@@ -627,7 +627,7 @@ export default function AdminDashboard() {
     : ACCENTS[0];
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-slate-100 font-sans">
+    <div className="h-full w-full flex flex-col rounded-2xl bg-slate-100 font-sans">
       {/* ── Header ── */}
       <header
         className="bg-white border-b border-slate-200 px-4 lg:px-6 py-3.5

@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { Plus, XCircle } from "lucide-react";
+import { Loader, Plus, XCircle } from "lucide-react";
 import { useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -173,21 +173,6 @@ function AddMembers() {
   };
 
   //show the error and loading
-  if (loadindDepartments) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-xl"></span>
-      </div>
-    );
-  }
-
-  if (loadingAddMember) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-xl"></span>
-      </div>
-    );
-  }
   if (errorDepartments) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -196,10 +181,10 @@ function AddMembers() {
     );
   }
 
-  if (loadingProject) {
+  if (loadingProject || loadingAddMember || loadindDepartments) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-xl"></span>
+      <div className="w-full h-full flex flex-col items-center justify-center dark:bg-zinc-950">
+        <Loader size={50} className="animate-spin text-violet-400" />
       </div>
     );
   }

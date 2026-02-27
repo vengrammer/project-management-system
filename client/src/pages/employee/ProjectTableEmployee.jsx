@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 
+
 export default function ProjectTableEmployee() {
   const navigate = useNavigate();
 
@@ -147,7 +148,7 @@ export default function ProjectTableEmployee() {
         <div className="divide-y divide-gray-200 max-h-150 overflow-auto">
           {projectByUser.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
-              No projectByUser found
+              No projects found
             </div>
           ) : currentProjects.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">

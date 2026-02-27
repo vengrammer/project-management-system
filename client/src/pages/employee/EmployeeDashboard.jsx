@@ -630,7 +630,7 @@ export default function EmployeeDashboard() {
     : ACCENTS[0];
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-slate-100 font-sans">
+    <div className="h-full w-full flex flex-col bg-slate-100 font-sans">
       {/* ── Header ── */}
       <header
         className="bg-white border-b border-slate-200 px-4 lg:px-6 py-3.5
