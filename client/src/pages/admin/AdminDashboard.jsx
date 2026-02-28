@@ -1,7 +1,8 @@
-
 import { useState, useMemo } from "react";
 import { useQuery } from "@apollo/client/react";
 import { gql } from "@apollo/client";
+
+import { useSelector } from "react-redux";
 
 //  GRAPHQL QUERIES
 
@@ -66,7 +67,6 @@ const MONTH_NAMES = [
   "November",
   "December",
 ];
-
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -160,7 +160,6 @@ function buildYears() {
   for (let y = 2020; y <= cur + 5; y++) list.push(y);
   return list;
 }
-
 
 function buildCells(year, month) {
   const firstJsDay = new Date(year, month, 1).getDay();
@@ -264,11 +263,12 @@ function ProjectItem({ project, accent, isSelected, onClick }) {
           >
             {project.status ?? "not started"}
           </span>
-          {project.status != "completed" && project.endDate &&
+          {project.status != "completed" &&
+            project.endDate &&
             (() => {
               const today = new Date();
               const dueDate = new Date(project.endDate);
-
+              
               // Remove time component for accurate day comparison
               today.setHours(0, 0, 0, 0);
               dueDate.setHours(0, 0, 0, 0);
@@ -518,6 +518,13 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
+
+  //get the current user from redux store
+  const user = useSelector((state) => state.auth.user);
+  const token = useSelector((state) => state.auth.token);
+
+  console.log(user, token);
+
   const today = new Date();
   const years = buildYears();
 

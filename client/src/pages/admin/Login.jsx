@@ -2,24 +2,65 @@ import React, { useState } from "react";
 import { Lock, User, Eye, EyeOff } from "lucide-react";
 import {motion} from "framer-motion"
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "@/middleware/authSlice";
+import { gql } from "@apollo/client";
+import {  useMutation } from "@apollo/client/react";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+
+const LOGIN = gql`
+  mutation Login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      token
+      user {
+        id
+        fullname
+      }
+    }
+  }
+`;
+
 
 export default function LoginUI() {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    // Simulate login
-    setTimeout(() => {
+  const dispatch = useDispatch();
+  const [login] = useMutation(LOGIN, {
+    onCompleted: () => {
       setIsLoading(false);
-      console.log("Login attempt:", { username, password });
-    }, 1500);
+      toast.success("Login successful!");
+    },
+    onError: () => {
+      setIsLoading(false);
+      toast.error("Wrong username or password. Please try again.");
+    },
+  });
+
+  //login logic
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const res = await login({
+      variables: {
+        username: username,
+        password: password,
+      },
+    });
+    console.log("Login response:", res);
+    dispatch(loginSuccess(res.data.login));
+
+    setIsLoading(false);
   };
+
+  //get the current user from redux store
+  const user = useSelector((state) => state.auth.user);
+  const token = useSelector((state) => state.auth.token);
+
+  console.log(user, token);
 
   return (
     <motion.div
@@ -110,11 +151,10 @@ export default function LoginUI() {
               </div>
             </div>
 
-          {/* Submit Button */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              onClick={() => navigate('/employee/dashboard')}
               className="w-full px-6 py-4 bg-linear-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 text-white rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 hover:shadow-lg hover:shadow-blue-900/50 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group mt-8"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
@@ -145,9 +185,7 @@ export default function LoginUI() {
               <div className="absolute inset-0 bg-white/10 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-xl" />
             </button>
           </form>
-
         </div>
-
       </div>
     </motion.div>
   );

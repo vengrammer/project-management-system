@@ -12,26 +12,29 @@ import PracticeComponent from "@/pages/admin/PracticeComponent";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import ProjectDetailsPage from "@/pages/admin/ProjectDetailsPage";
 import Profile from "@/pages/admin/Profile";
+import ProtectedRoute from "./ProtectedRoute";
 
 
 function HomeRoute() {
     return (
-      <Routes>
-        <Route element={<AdminSidebar />}>
-          <Route
-            path="/"
-            element={<Navigate to="/admin/dashboard" replace />}
-          />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="projects" element={<ProjectTable />} />
-          <Route path="users" element={<UsersTable />} />
-          <Route path="department" element={<DepartmentTable />} />
-          <Route path="practice" element={<PracticeComponent />} />
-          <Route path="profile" element={<Profile />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-        <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
-      </Routes>
+      <ProtectedRoute>
+        <Routes>
+          <Route element={<AdminSidebar />}>
+            <Route
+              path="/"
+              element={<Navigate to="/admin/dashboard" replace />}
+            />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="projects" element={<ProjectTable />} />
+            <Route path="users" element={<UsersTable />} />
+            <Route path="department" element={<DepartmentTable />} />
+            <Route path="practice" element={<PracticeComponent />} />
+            <Route path="profile" element={<Profile />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+          <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
+        </Routes>
+      </ProtectedRoute>
     );
 }
 export default HomeRoute;

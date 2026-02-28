@@ -4,6 +4,9 @@ import App from "./App.jsx";
 
 import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client";
 import { ApolloProvider } from "@apollo/client/react";
+import { Provider } from "react-redux";
+import { store } from "./middleware/store"
+
 
 const client = new ApolloClient({
   link: new HttpLink({
@@ -13,8 +16,9 @@ const client = new ApolloClient({
 });
 
 createRoot(document.getElementById("root")).render(
-  
+  <Provider store={store}>
     <ApolloProvider client={client}>
       <App />
     </ApolloProvider>
+  </Provider>, 
 );

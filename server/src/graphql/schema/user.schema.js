@@ -1,3 +1,4 @@
+
 export const userSchema = `#graphql
     type User {
         id: ID
@@ -17,15 +18,21 @@ export const userSchema = `#graphql
         user: User!
     }
 
+    type AuthPayLoad {
+        token: String!
+        user: User!
+    }
+
     type Query {
         users: [User]!
         userRoleManager: [User]
         user(id: ID!): User
-        currentUser: User           # fetch the logged-in user (based on context)
+        currentUser: User # fetch the logged-in user (based on context)
         searchUser(fullname: String, email: String, position: String, department: String, role: String): [User]!
     }
 
     type Mutation {
+        login(username: String!, password: String!): AuthPayLoad 
         createUser(
             fullname: String!
             email: String!

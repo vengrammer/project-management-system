@@ -2,13 +2,22 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPageRoute from "./Router/LandingPageRoute";
 import NotFound from "./components/NotFound";
 import AdminRoute from "./Router/AdminRoute";
-import ProjectDetailsPage from "./pages/admin/ProjectDetailsPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import EmployeeRoute from "./Router/EmployeeRoute";
 import ManagerRoute from "./Router/ManagerRoute";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "./middleware/authSlice";
 
 function App() {
+  const dispatch = useDispatch()
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      dispatch(loginSuccess({ token }));
+    }
+  }, []);
   return (
     <BrowserRouter>
       <Routes>

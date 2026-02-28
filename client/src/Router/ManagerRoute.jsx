@@ -8,23 +8,26 @@ import ProjectDetailsPage from "@/pages/admin/ProjectDetailsPage";
 import Profile from "@/pages/admin/Profile";
 import Archive from "@/pages/manager/Archive";
 import ProjectTableManager from "@/pages/manager/ProjectTableManager";
+import ProtectedRoute from "./ProtectedRoute";
 
 function ManagerRoute() {
   return (
-    <Routes>
-      <Route element={<ManagerSideBar />}>
-        <Route
-          path="/"
-          element={<Navigate to="/manager/dashboard" replace />}
-        />
-        <Route path="dashboard" element={<ManagerDashboard />} />
-        <Route path="projects" element={<ProjectTableManager />} />
-        <Route path="archive" element={<Archive />} />
-        <Route path="profile" element={<Profile />} />
-      </Route>
-      <Route path="*" element={<NotFound />} />
-      <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
-    </Routes>
+    <ProtectedRoute>
+      <Routes>
+        <Route element={<ManagerSideBar />}>
+          <Route
+            path="/"
+            element={<Navigate to="/manager/dashboard" replace />}
+          />
+          <Route path="dashboard" element={<ManagerDashboard />} />
+          <Route path="projects" element={<ProjectTableManager />} />
+          <Route path="archive" element={<Archive />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+        <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
+      </Routes>
+    </ProtectedRoute>
   );
 };
 

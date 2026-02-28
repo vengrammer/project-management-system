@@ -1,9 +1,38 @@
+import bcrypt from "bcryptjs";
 import Department from "../../model/department.model.js";
 import User from "../../model/user.model.js";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
+
+const SECRET = process.env.JWT_SECRET
 
 // data = fullname, department, role, email, username, password, timestamps
 export const userResolvers = {
   Query: {
+    // return info about the currently authenticated user
+    currentUser: async (_, __, context) => {
+      const uid = context?.user?.id;
+      if (!uid) {
+        throw new Error("Not authenticated");
+      }
+      const user = await User.findById(uid).populate("department");
+      if (!user) {
+        throw new Error("User not found");
+      }
+      return {
+        id: user._id.toString(),
+        fullname: user.fullname,
+        email: user.email,
+        username: user.username,
+        department: user.department,
+        position: user.position,
+        role: user.role,
+        status: user.status,
+        createdAt: user.createdAt?.toISOString() || null,
+        updatedAt: user.updatedAt?.toISOString() || null,
+      };
+    },
     //Return all user
     users: async () => {
       try {
@@ -61,29 +90,7 @@ export const userResolvers = {
         throw new Error("Failed to show users manager");
       }
     },
-    // return info about the currently authenticated user
-    currentUser: async (_, __, context) => {
-      const uid = context?.user?.id;
-      if (!uid) {
-        throw new Error("Not authenticated");
-      }
-      const user = await User.findById(uid).populate("department");
-      if (!user) {
-        throw new Error("User not found");
-      }
-      return {
-        id: user._id.toString(),
-        fullname: user.fullname,
-        email: user.email,
-        username: user.username,
-        department: user.department,
-        position: user.position,
-        role: user.role,
-        status: user.status,
-        createdAt: user.createdAt?.toISOString() || null,
-        updatedAt: user.updatedAt?.toISOString() || null,
-      };
-    },
+
     //search user by their data
     searchUser: async (_, args) => {
       try {
@@ -126,6 +133,25 @@ export const userResolvers = {
     },
   },
   Mutation: {
+    //login user and return user data
+    login: async (_, { username, password }) => {
+      try {
+        console.log(SECRET);
+        const user = await User.findOne({ username: username });
+        if (!user) throw new Error("Wrong Username or password");
+
+        const valid = bcrypt.compare(password, user.password);
+        if (!valid) throw new Error("Wrong Username or password");
+
+        const token = jwt.sign({ id: user._id }, SECRET, { expiresIn: "1d" });
+
+        return { token, user };
+      } catch (error) {
+        console.error("Login error:", error.message);
+        throw new Error("Login Failed: ", error.message);
+      }
+    },
+    
     createUser: async (_, args) => {
       try {
         // Check if email already exists
