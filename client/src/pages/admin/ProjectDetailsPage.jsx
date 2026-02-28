@@ -164,6 +164,9 @@ const ProjectDetailsPage = () => {
   //I want to hide the button that employee that only must admin can see
   const location = useLocation();
   const isEmployee = location.pathname.includes("employee");
+  const isManager = location.pathname.includes("manager");
+  const isAdmin = location.pathname.includes("admin");
+
 
   // Get status color
 
@@ -378,7 +381,7 @@ const ProjectDetailsPage = () => {
         {/* Back Button */}
         <button
           onClick={() =>
-            navigate(`/${isEmployee ? "employee" : "admin"}/projects`)
+            navigate(`/${isEmployee ? "employee" : isManager ? "manager" : "admin"}/projects`)
           }
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
         >

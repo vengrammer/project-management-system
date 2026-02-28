@@ -299,9 +299,13 @@ function Profile() {
             <div>
               <button
                 onClick={handleEditClick}
-                className={`${isEditing ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"} py-2 px-7 rounded-2xl cursor-pointer text-white font-medium`}
+                className={`${
+                  isEditing
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-blue-500 hover:bg-blue-600"
+                } py-2 px-7 rounded-2xl cursor-pointer text-white font-medium`}
               >
-               { isEditing ? "Cancel" : "Edit"}
+                {isEditing ? "Cancel" : "Edit"}
               </button>
             </div>
           </div>
@@ -350,7 +354,7 @@ function Profile() {
               {/* Row 2 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field
-                  label="Department *"
+                  label="Department"
                   htmlFor={`${id}-department`}
                   icon={Building2}
                 >
@@ -361,7 +365,7 @@ function Profile() {
                       handleInputChange("department", e.target.value)
                     }
                     required
-                    disabled={isEmployee}
+                    disabled={true}
                     className={inputCls + " appearance-none cursor-pointer"}
                   >
                     <option value="" disabled>
@@ -380,7 +384,7 @@ function Profile() {
                     value={formData.role}
                     onChange={(e) => handleInputChange("role", e.target.value)}
                     required
-                    disabled={isEmployee}
+                    disabled={true}
                     className={inputCls + " appearance-none cursor-pointer"}
                   >
                     <option value="" disabled>

@@ -7,8 +7,8 @@ import { gql } from "@apollo/client";
 //dashboard by employee
 
 const GET_PROJECTS = gql`
-  query projectByUser($projectByUserId: ID!) {
-    projectByUser(id: $projectByUserId) {
+  query ProjectsByManager($projectsByManagerId: ID) {
+    projectsByManager(id: $projectsByManagerId) {
       id
       title
       status
@@ -517,7 +517,7 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
 // ─────────────────────────────────────────────────────────────
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
-export default function EmployeeDashboard() {
+export default function ManagerDashboard() {
   const today = new Date();
   const years = buildYears();
 
@@ -526,19 +526,21 @@ export default function EmployeeDashboard() {
   const [selectedDay, setSelectedDay] = useState(null); // { day, month, year }
   const [selectedProj, setSelectedProj] = useState(null); // project object
 
-  const temporaryId = "6992d115b034bbfbac83b8fb"; // placeholder until auth is implemented
+  const temporaryId = "6997f38ed947212d48f71e03"; // placeholder until auth is implemented
 
   // ── Fetch all projects ──
   const {
     data: projData,
     loading: projLoading,
     error: projError,
-  } = useQuery(GET_PROJECTS, { variables: { projectByUserId: temporaryId } });
+  } = useQuery(GET_PROJECTS, {
+    variables: { projectsByManagerId: temporaryId },
+  });
 
   console.log("Project Data:", projData);
   console.log("Project Error:", projError);
 
-  const projects = projData?.projectByUser ?? [];
+  const projects = projData?.projectsByManager ?? [];
 
   // Assign a stable accent color per project by index
   const accentMap = useMemo(() => {

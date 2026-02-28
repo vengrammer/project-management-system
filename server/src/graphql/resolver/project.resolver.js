@@ -160,6 +160,55 @@ export const projectResolvers = {
         throw new Error(error);
       }
     },
+
+    projectsByManager: async (_, { id }, context) => {
+      // allow callers to omit the id and fall back to authenticated user
+      const userId = id || context?.user?.id;
+      if (!userId) {
+        throw new Error("User ID is required to fetch projects");
+      }
+
+      try {
+        const project = await Project.find({ projectManager: userId })
+          .populate("users")
+          .populate("department")
+          .populate("projectManager");
+
+        if (project.length === 0) {
+          console.log("No project");
+          // return empty array rather than throwing so UI can handle gracefully
+          return [];
+        }
+
+        const formattedDate = (date) => {
+          return date?.toLocaleString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+        };
+
+        return project.map((project) => ({
+          id: project._id.toString(),
+          title: project.title,
+          description: project.description,
+          priority: project.priority,
+          status: project.status,
+          department: project.department,
+          client: project.client,
+          budget: project.budget,
+          users: project.users,
+          projectManager: project.projectManager,
+          startDate: formattedDate(project.startDate),
+          endDate: formattedDate(project.endDate),
+          createdAt: project.createdAt?.toISOString(),
+          updatedAt: project.updatedAt?.toISOString(),
+        }));
+      } catch (error) {
+        console.log(error);
+        throw new Error(error);
+      }
+    },
   },
   Mutation: {
     createProject: async (_, args) => {
