@@ -2,10 +2,10 @@ import bcrypt from "bcryptjs";
 import Department from "../../model/department.model.js";
 import User from "../../model/user.model.js";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
 
-const SECRET = process.env.JWT_SECRET
+// Get SECRET at runtime (not at module load time) to ensure dotenv has already loaded
+const getSecret = () => process.env.JWT_SECRET;
+console.log("[user.resolver] Module loaded");
 
 // data = fullname, department, role, email, username, password, timestamps
 export const userResolvers = {
@@ -135,23 +135,32 @@ export const userResolvers = {
   Mutation: {
     //login user and return user data
     login: async (_, { username, password }) => {
-      try {
-        console.log(SECRET);
-        const user = await User.findOne({ username: username });
-        if (!user) throw new Error("Wrong Username or password");
+      const user = await User.findOne({ username }).select("+password");
+      if (!user) throw new Error("Wrong username or password");
 
-        const valid = bcrypt.compare(password, user.password);
-        if (!valid) throw new Error("Wrong Username or password");
+      const valid = await bcrypt.compare(password, user.password);
+      if (!valid) throw new Error("Wrong username or password");
 
-        const token = jwt.sign({ id: user._id }, SECRET, { expiresIn: "1d" });
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      });
 
-        return { token, user };
-      } catch (error) {
-        console.error("Login error:", error.message);
-        throw new Error("Login Failed: ", error.message);
-      }
+      return {
+        token,
+        user: {
+          id: user._id.toString(),
+          fullname: user.fullname,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+          position: user.position,
+          department: user.department,
+          status: user.status,
+          createdAt: user.createdAt?.toISOString() || null,
+          updatedAt: user.updatedAt?.toISOString() || null,
+        },
+      };
     },
-    
     createUser: async (_, args) => {
       try {
         // Check if email already exists

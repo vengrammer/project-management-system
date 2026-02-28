@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { gql } from "@apollo/client";
 import { toast } from "react-toastify";
-
+import { useSelector } from "react-redux";
 import {
   Menu,
   X,
@@ -27,6 +27,8 @@ const GET_USER = gql`
 `;
 
 export default function EmployeeSideBar() {
+  const auth = useSelector((state) => state.auth);
+  console.log("Auth state in EmployeeSideBar:", auth);
   const user = "6997ef02e934b856db1ab557";
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();

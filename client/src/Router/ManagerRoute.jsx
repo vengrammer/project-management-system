@@ -1,6 +1,5 @@
-
-import { Routes, Route, Navigate } from "react-router-dom"
-import NotFound from "@/components/Notfound"
+import { Routes, Route, Navigate } from "react-router-dom";
+import NotFound from "@/components/Notfound";
 // import ProjectTable from "@/pages/admin/ProjectTable";
 import ManagerSideBar from "@/layout/ManagerSideBar";
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";
@@ -12,7 +11,7 @@ import ProtectedRoute from "./ProtectedRoute";
 
 function ManagerRoute() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredRole="manager">
       <Routes>
         <Route element={<ManagerSideBar />}>
           <Route
@@ -29,6 +28,6 @@ function ManagerRoute() {
       </Routes>
     </ProtectedRoute>
   );
-};
+}
 
 export default ManagerRoute;

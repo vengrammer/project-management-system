@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { Lock, User, Eye, EyeOff } from "lucide-react";
-import {motion} from "framer-motion"
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "@/middleware/authSlice";
 import { gql } from "@apollo/client";
-import {  useMutation } from "@apollo/client/react";
+import { useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 
 const LOGIN = gql`
   mutation Login($username: String!, $password: String!) {
@@ -16,11 +15,11 @@ const LOGIN = gql`
       user {
         id
         fullname
+        role
       }
     }
   }
 `;
-
 
 export default function LoginUI() {
   const navigate = useNavigate();
@@ -30,37 +29,42 @@ export default function LoginUI() {
   const [showPassword, setShowPassword] = useState(false);
 
   const dispatch = useDispatch();
-  const [login] = useMutation(LOGIN, {
-    onCompleted: () => {
-      setIsLoading(false);
-      toast.success("Login successful!");
-    },
-    onError: () => {
-      setIsLoading(false);
-      toast.error("Wrong username or password. Please try again.");
-    },
-  });
+  const [login] = useMutation(LOGIN);
 
   //login logic
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await login({
-      variables: {
-        username: username,
-        password: password,
-      },
-    });
-    console.log("Login response:", res);
-    dispatch(loginSuccess(res.data.login));
+    setIsLoading(true);
+    try {
+      const res = await login({
+        variables: {
+          username: username,
+          password: password,
+        },
+      });
+      console.log("Login response:", res);
+      dispatch(loginSuccess(res.data.login));
+      toast.success("Login successful!");
 
-    setIsLoading(false);
+      // Navigate based on user role
+      const userRole = res.data.login.user.role;
+      if (userRole === "admin") {
+        navigate("/admin/dashboard");
+      } else if (userRole === "manager") {
+        navigate("/manager/dashboard");
+      } else if (userRole === "user") {
+        navigate("/employee/dashboard");
+      } else {
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error(
+        error.message || "Wrong username or password. Please try again.",
+      );
+      setIsLoading(false);
+    }
   };
-
-  //get the current user from redux store
-  const user = useSelector((state) => state.auth.user);
-  const token = useSelector((state) => state.auth.token);
-
-  console.log(user, token);
 
   return (
     <motion.div

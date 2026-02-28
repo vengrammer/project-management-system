@@ -11,13 +11,14 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "./middleware/authSlice";
 
 function App() {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      dispatch(loginSuccess({ token }));
+    const user = localStorage.getItem("user");
+    if (token && user) {
+      dispatch(loginSuccess({ token, user: JSON.parse(user) }));
     }
-  }, []);
+  }, [dispatch]);
   return (
     <BrowserRouter>
       <Routes>
