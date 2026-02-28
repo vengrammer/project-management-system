@@ -9,6 +9,8 @@ function LandingPageRoute() {
    const token = useSelector((state) => state.auth.token);
    const user = useSelector((state) => state.auth.user);
 
+   console.log("Auth state in LandingPageRoute:", { token, user });
+
     // If user is already logged in, redirect to their respective dashboard
     if (token && user) {
       if (user.role === "admin") {

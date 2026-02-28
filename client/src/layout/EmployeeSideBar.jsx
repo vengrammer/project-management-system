@@ -4,6 +4,9 @@ import logo from "../assets/logo.png";
 import { gql } from "@apollo/client";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { logout } from "@/middleware/authSlice";
+
 import {
   Menu,
   X,
@@ -27,9 +30,11 @@ const GET_USER = gql`
 `;
 
 export default function EmployeeSideBar() {
+  const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
-  console.log("Auth state in EmployeeSideBar:", auth);
-  const user = "6997ef02e934b856db1ab557";
+
+  console.log("Auth state in EmployeeSideBar:", auth.user.id);
+  const user = auth.user.id;
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -185,7 +190,8 @@ export default function EmployeeSideBar() {
 
           <button
             onClick={() => {
-              navigate("/");
+              dispatch(logout()); // clear redux + localStorage
+              navigate("/"); // redirect
             }}
             className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
           >

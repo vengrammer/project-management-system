@@ -34,7 +34,7 @@ app.use(
           const decoded = jwt.verify(token, process.env.JWT_SECRET);
           return { user: decoded };
         } catch (error) {
-          console.log("Invalid to ken");
+          console.log("Invalid token");
           return {}
         }
       }

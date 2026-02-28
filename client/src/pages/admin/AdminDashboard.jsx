@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@apollo/client/react";
 import { gql } from "@apollo/client";
-
 import { useSelector } from "react-redux";
 
 //  GRAPHQL QUERIES
@@ -521,10 +520,7 @@ export default function AdminDashboard() {
 
   //get the current user from redux store
   const user = useSelector((state) => state.auth.user);
-  const token = useSelector((state) => state.auth.token);
-
-  console.log(user, token);
-
+  // const token = useSelector((state) => state.auth.token);
   const today = new Date();
   const years = buildYears();
 

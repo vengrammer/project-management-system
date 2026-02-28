@@ -3,7 +3,9 @@ import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
-
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { logout } from "@/middleware/authSlice";
 import {
   Menu,
   X,
@@ -17,7 +19,6 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
-
 const GET_USER = gql`
   query User($userId: ID!) {
     user(id: $userId) {
@@ -29,7 +30,10 @@ const GET_USER = gql`
 `;
 
 export default function AdminSideBar() {
-  const user = "6992d115b034bbfbac83b8fb";;
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id; // may be undefined initially
+
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,7 +50,6 @@ export default function AdminSideBar() {
     return (words[0][0] + words[1][0]).toUpperCase();
   };
 
-
   // Remove async - not needed for simple path checking
   const isActive = (route) => {
     return location.pathname.includes(route);
@@ -57,8 +60,12 @@ export default function AdminSideBar() {
     setIsOpen(!isOpen);
   };
 
-  const { error: userError, data: userData} = useQuery(GET_USER, {
-    variables: {userId : user}
+  const {
+    error: userError,
+    data: userData,
+  } = useQuery(GET_USER, {
+    variables: { userId },
+    skip: !userId, // don't run until we have id
   });
 
   // if (loadingUser) {
@@ -70,9 +77,13 @@ export default function AdminSideBar() {
   //     </div>
   //   );
   // }
-  if(userError) {
+  if (userError) {
     toast.error("Failed to load user data");
   }
+
+  // show placeholder while loading
+  const fullname = userData?.user.fullname || "";
+  const email = userData?.user.email || "";
 
   // console.log("Current User Data:", userData.user.fullname);
 
@@ -194,15 +205,13 @@ export default function AdminSideBar() {
           {/* User Info */}
           <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-gray-50 rounded-lg">
             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-              {getInitials(userData?.user.fullname || "U")}
+              {getInitials(fullname || "U")}
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-gray-800">
-                {userData?.user.fullname || "Unknown user"}{" "}
+                {fullname || "Unknown user"}{" "}
               </p>
-              <p className="text-xs text-gray-500">
-                {userData?.user.email || "no email"}
-              </p>
+              <p className="text-xs text-gray-500">{email || "no email"}</p>
             </div>
           </div>
 
@@ -220,7 +229,8 @@ export default function AdminSideBar() {
 
           <button
             onClick={() => {
-              navigate("/");
+              dispatch(logout()); // clear redux + localStorage
+              navigate("/"); // redirect
             }}
             className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
           >

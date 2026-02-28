@@ -5,8 +5,14 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   const token = useSelector((state) => state.auth.token);
   const user = useSelector((state) => state.auth.user);
 
+  console.log("Auth state in ProtectedRoute:", { token, user });
   if (!token) {
     return <Navigate to="/landingpage" replace />;
+  }
+
+  // If required role and user not yet loaded, render children while user is fetched
+  if (requiredRole && !user) {
+    return children;
   }
 
   // If a specific role is required, check if user has it

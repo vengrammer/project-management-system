@@ -9,16 +9,50 @@ import ManagerRoute from "./Router/ManagerRoute";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "./middleware/authSlice";
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
+
+const CURRENT_USER = gql`
+  query CurrentUser {
+    currentUser {
+      id
+      fullname
+      email
+      username
+      role
+      position
+      department
+      status
+    }
+  }
+`;
 
 function App() {
   const dispatch = useDispatch();
+  const {
+    data: currentUserData,
+    loading: currentUserLoading,
+    error: currentUserError,
+  } = useQuery(CURRENT_USER, {
+    skip: !localStorage.getItem("token"), // Only query if token exists
+  });
+
+  console.log("currentUser query", {
+    currentUserData,
+    currentUserLoading,
+    currentUserError,
+  });
+
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
-    if (token && user) {
-      dispatch(loginSuccess({ token, user: JSON.parse(user) }));
+    console.log("App effect token", token, "userData", currentUserData);
+
+    // If token exists and we got user data from the API, dispatch to Redux
+    if (token && currentUserData?.currentUser) {
+      dispatch(loginSuccess({ token, user: currentUserData.currentUser }));
     }
-  }, [dispatch]);
+  }, [dispatch, currentUserData]);
+
   return (
     <BrowserRouter>
       <Routes>

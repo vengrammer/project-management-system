@@ -16,7 +16,7 @@ import {
   Archive,
 } from "lucide-react";
 import { toast } from "react-toastify";
-
+import { useSelector } from "react-redux";
 
 const GET_USER = gql`
   query User($userId: ID!) {
@@ -29,7 +29,8 @@ const GET_USER = gql`
 `;
 
 export default function ManagerSideBar() {
-  const user = "6997f38ed947212d48f71e03";
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id;
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,8 +57,12 @@ export default function ManagerSideBar() {
     setIsOpen(!isOpen);
   };
 
-  const { error: userError, data: userData } = useQuery(GET_USER, {
-    variables: { userId: user },
+  const {
+    error: userError,
+    data: userData,
+  } = useQuery(GET_USER, {
+    variables: { userId },
+    skip: !userId,
   });
 
   // if (loadingUser) {
@@ -72,6 +77,9 @@ export default function ManagerSideBar() {
   if (userError) {
     toast.error("Failed to load user data");
   }
+
+  const fullnameMgr = userData?.user.fullname || "";
+  const emailMgr = userData?.user.email || "";
 
   // console.log("Current User Data:", userData.user.fullname);
 
@@ -169,15 +177,13 @@ export default function ManagerSideBar() {
           {/* User Info */}
           <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-gray-50 rounded-lg">
             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-              {getInitials(userData?.user.fullname || "U")}
+              {getInitials(fullnameMgr || "U")}
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-gray-800">
-                {userData?.user.fullname || "Unknown user"}{" "}
+                {fullnameMgr || "Unknown user"}{" "}
               </p>
-              <p className="text-xs text-gray-500">
-                {userData?.user.email || "no email"}
-              </p>
+              <p className="text-xs text-gray-500">{emailMgr || "no email"}</p>
             </div>
           </div>
 
