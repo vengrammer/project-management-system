@@ -29,6 +29,7 @@ const GET_USER = gql`
   }
 `;
 
+
 export default function AdminSideBar() {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
@@ -60,23 +61,11 @@ export default function AdminSideBar() {
     setIsOpen(!isOpen);
   };
 
-  const {
-    error: userError,
-    data: userData,
-  } = useQuery(GET_USER, {
+  const { error: userError, data: userData } = useQuery(GET_USER, {
     variables: { userId },
     skip: !userId, // don't run until we have id
   });
 
-  // if (loadingUser) {
-  //   return (
-  //     <div className="w-full h-full flex items-center justify-center bg-slate-50">
-  //       <div className="flex flex-col items-center gap-3">
-  //         <Loader size={70} className="animate-spin text-blue-500" />
-  //       </div>
-  //     </div>
-  //   );
-  // }
   if (userError) {
     toast.error("Failed to load user data");
   }
@@ -229,7 +218,7 @@ export default function AdminSideBar() {
 
           <button
             onClick={() => {
-              dispatch(logout()); // clear redux + localStorage
+              dispatch(logout()); // clear redux state
               navigate("/"); // redirect
             }}
             className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"

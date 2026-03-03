@@ -5,7 +5,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   const token = useSelector((state) => state.auth.token);
   const user = useSelector((state) => state.auth.user);
 
-  console.log("Auth state in ProtectedRoute:", { token, user });
+  // console.log("Auth state in ProtectedRoute:", { token, user });
   if (!token) {
     return <Navigate to="/landingpage" replace />;
   }

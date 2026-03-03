@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@apollo/client/react";
 import { gql } from "@apollo/client";
+import {  useSelector } from "react-redux";
 
 //  GRAPHQL QUERIES
 
@@ -526,14 +527,15 @@ export default function EmployeeDashboard() {
   const [selectedDay, setSelectedDay] = useState(null); // { day, month, year }
   const [selectedProj, setSelectedProj] = useState(null); // project object
 
-  const temporaryId = "6992d115b034bbfbac83b8fb"; // placeholder until auth is implemented
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id; // current user
 
   // ── Fetch all projects ──
   const {
     data: projData,
     loading: projLoading,
     error: projError,
-  } = useQuery(GET_PROJECTS, { variables: { projectByUserId: temporaryId } });
+  } = useQuery(GET_PROJECTS, { variables: { projectByUserId: userId } });
 
   console.log("Project Data:", projData);
   console.log("Project Error:", projError);

@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Lock, User, Eye, EyeOff } from "lucide-react";
+// motion is used in JSX but ESLint occasionally flags it as unused
+/* eslint-disable no-unused-vars */
 import { motion } from "framer-motion";
+/* eslint-enable no-unused-vars */
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "@/middleware/authSlice";
@@ -43,6 +46,7 @@ export default function LoginUI() {
         },
       });
       console.log("Login response:", res);
+      // save token in redux (persistence handled by redux-persist)
       dispatch(loginSuccess(res.data.login));
       toast.success("Login successful!");
 

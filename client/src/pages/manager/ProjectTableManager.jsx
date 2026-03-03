@@ -15,9 +15,11 @@ import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import FormAddProjectModal from "../admin/FormAddProjectModal";
 import Swal from "sweetalert2";
+import { useSelector } from "react-redux";
 
 export default function ProjectTableManager() {
-  const temporaryId = "6997f38ed947212d48f71e03";//temporay id for the manager account
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id; // current user//temporay id for the manager account
   const navigate = useNavigate();
   const DELETE_PROJECT = gql`
     mutation DeleteProject($id: ID!) {
@@ -57,7 +59,7 @@ export default function ProjectTableManager() {
 
   // Get the projects data using Apollo Client
   const { loading, error, data, refetch } = useQuery(GET_PROJECTS, {
-    variables: { projectsByManagerId: temporaryId },
+    variables: { projectsByManagerId: userId },
     notifyOnNetworkStatusChange: true,
   });
 

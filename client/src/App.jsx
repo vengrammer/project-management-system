@@ -8,10 +8,11 @@ import EmployeeRoute from "./Router/EmployeeRoute";
 import ManagerRoute from "./Router/ManagerRoute";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { loginSuccess } from "./middleware/authSlice";
+import { loginSuccess, logout } from "./middleware/authSlice";
+import { persistor } from "./middleware/store";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
-
+import { useSelector } from "react-redux";
 const CURRENT_USER = gql`
   query CurrentUser {
     currentUser {
@@ -21,7 +22,10 @@ const CURRENT_USER = gql`
       username
       role
       position
-      department
+      department {
+        id
+        name
+      }
       status
     }
   }
@@ -29,29 +33,45 @@ const CURRENT_USER = gql`
 
 function App() {
   const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
   const {
     data: currentUserData,
     loading: currentUserLoading,
     error: currentUserError,
   } = useQuery(CURRENT_USER, {
-    skip: !localStorage.getItem("token"), // Only query if token exists
+    skip: !auth.token, // Only query if token exists
   });
 
+  // log results for debugging
   console.log("currentUser query", {
     currentUserData,
     currentUserLoading,
     currentUserError,
   });
 
+  // when we rehydrate or the Apollo query returns currentUser, make
+  // sure the store has consistent state.  We read token from redux state
+  // rather than localStorage since we persist the entire auth slice.
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log("App effect token", token, "userData", currentUserData);
+    const token = auth.token;
 
     // If token exists and we got user data from the API, dispatch to Redux
     if (token && currentUserData?.currentUser) {
       dispatch(loginSuccess({ token, user: currentUserData.currentUser }));
     }
-  }, [dispatch, currentUserData]);
+  }, [dispatch, auth.token, currentUserData]);
+
+  // if the query fails while a token is present, erase persisted auth
+  useEffect(() => {
+    if (currentUserError && auth.token) {
+      console.warn(
+        "currentUser error, clearing persisted auth",
+        currentUserError,
+      );
+      dispatch(logout());
+      persistor.purge();
+    }
+  }, [currentUserError, auth.token, dispatch]);
 
   return (
     <BrowserRouter>

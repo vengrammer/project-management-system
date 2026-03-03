@@ -7,15 +7,22 @@ import { ApolloProvider } from "@apollo/client/react";
 import { setContext } from "@apollo/client/link/context";
 
 import { Provider } from "react-redux";
-import { store } from "./middleware/store";
+import { PersistGate } from "redux-persist/integration/react";
+// store and persistor will be imported below for auth link
 
 const httpLink = new HttpLink({
-  uri: "http://localhost:5000/graphql",
+  uri: import.meta.env.VITE_GRAPHQL_URL,
 });
 
-// ✅ Add auth link
+// ✅ Add auth link (pull token from redux-persisted store rather than
+// reading a separate key – the persisted auth slice is stored under
+// `persist:auth`).  We import the store directly so we always have the
+// latest value when a request is made.
+import { store, persistor } from "./middleware/store";
+
 const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem("token");
+  const state = store.getState();
+  const token = state?.auth?.token;
 
   return {
     headers: {
@@ -32,8 +39,10 @@ const client = new ApolloClient({
 
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
-    <ApolloProvider client={client}>
-      <App />
-    </ApolloProvider>
+    <PersistGate loading={null} persistor={persistor}>
+      <ApolloProvider client={client}>
+        <App />
+      </ApolloProvider>
+    </PersistGate>
   </Provider>,
 );

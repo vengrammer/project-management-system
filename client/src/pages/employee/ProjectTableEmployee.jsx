@@ -5,10 +5,13 @@ import { useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 
 export default function ProjectTableEmployee() {
   const navigate = useNavigate();
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id; // current user
 
   const GET_PROJECTS = gql`
     query ProjectByUser($projectByUserId: ID!) {
@@ -35,12 +38,10 @@ export default function ProjectTableEmployee() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const temporaryId = "6992d115b034bbfbac83b8fb";
-
   // Get the projectByUser data using Apollo Client
   const { loading, error, data } = useQuery(GET_PROJECTS, {
     variables: {
-      projectByUserId: temporaryId,
+      projectByUserId: userId,
     },
   });
 
@@ -57,7 +58,7 @@ export default function ProjectTableEmployee() {
 
   // Handle error state
   if (error) {
-    toast.error(`Error: ${error.message}`);
+    toast.error(`Error: fetching data`);
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-red-600">Failed to load projectByUser</div>

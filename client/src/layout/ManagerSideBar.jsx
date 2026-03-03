@@ -16,7 +16,8 @@ import {
   Archive,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "@/middleware/authSlice";
 
 const GET_USER = gql`
   query User($userId: ID!) {
@@ -30,6 +31,7 @@ const GET_USER = gql`
 
 export default function ManagerSideBar() {
   const auth = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const userId = auth.user?.id;
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
@@ -57,10 +59,7 @@ export default function ManagerSideBar() {
     setIsOpen(!isOpen);
   };
 
-  const {
-    error: userError,
-    data: userData,
-  } = useQuery(GET_USER, {
+  const { error: userError, data: userData } = useQuery(GET_USER, {
     variables: { userId },
     skip: !userId,
   });
@@ -201,6 +200,7 @@ export default function ManagerSideBar() {
 
           <button
             onClick={() => {
+              dispatch(logout());
               navigate("/");
             }}
             className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"

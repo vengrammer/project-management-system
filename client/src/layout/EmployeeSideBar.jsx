@@ -32,24 +32,23 @@ const GET_USER = gql`
 export default function EmployeeSideBar() {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
-
-  console.log("Auth state in EmployeeSideBar:", auth.user.id);
-  const user = auth.user.id;
+  const user = auth.user?.id;
+  
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-   const getInitials = (name) => {
-     if (!name) return "";
+  const getInitials = (name) => {
+    if (!name) return "";
 
-     const words = name.trim().split(" ");
+    const words = name.trim().split(" ");
 
-     if (words.length === 1) {
-       return words[0][0].toUpperCase();
-     }
+    if (words.length === 1) {
+      return words[0][0].toUpperCase();
+    }
 
-     return (words[0][0] + words[1][0]).toUpperCase();
-   };
+    return (words[0][0] + words[1][0]).toUpperCase();
+  };
 
   // Remove async - not needed for simple path checking
   const isActive = (route) => {
@@ -61,14 +60,14 @@ export default function EmployeeSideBar() {
     setIsOpen(!isOpen);
   };
 
-  const { error: userError, data: userData} = useQuery(GET_USER, {
-      variables: {userId : user}
-    });
-  
-  
-    if(userError) {
-      toast.error("Failed to load user data");
-    }
+  const { error: userError, data: userData } = useQuery(GET_USER, {
+    variables: { userId: user },
+    skip: !user,
+  });
+
+  if (userError) {
+    toast.error("Failed to load user data");
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -190,8 +189,8 @@ export default function EmployeeSideBar() {
 
           <button
             onClick={() => {
-              dispatch(logout()); // clear redux + localStorage
-              navigate("/"); // redirect
+              dispatch(logout());
+              navigate("/");
             }}
             className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
           >

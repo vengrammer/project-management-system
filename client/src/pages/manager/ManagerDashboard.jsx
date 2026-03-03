@@ -527,17 +527,16 @@ export default function ManagerDashboard() {
   const [selectedDay, setSelectedDay] = useState(null); // { day, month, year }
   const [selectedProj, setSelectedProj] = useState(null); // project object
 
-  const user = useSelector((state) => state.auth.user);
-
-  // const temporaryId = "6997f38ed947212d48f71e03"; // placeholder until auth is implemented
-
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id; // current user
+  
   // ── Fetch all projects ──
   const {
     data: projData,
     loading: projLoading,
     error: projError,
   } = useQuery(GET_PROJECTS, {
-    variables: { projectsByManagerId: user?.id },
+    variables: { projectsByManagerId: userId },
   });
 
   console.log("Project Data:", projData);
