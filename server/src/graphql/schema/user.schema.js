@@ -31,8 +31,13 @@ export const userSchema = `#graphql
         searchUser(fullname: String, email: String, position: String, department: String, role: String): [User]!
     }
 
+    type Message {
+        message: String
+    }
+
     type Mutation {
-        login(username: String!, password: String!): AuthPayLoad 
+        login(username: String!, password: String!): AuthPayLoad
+        logout: Message
         createUser(
             fullname: String!
             email: String!
@@ -57,7 +62,6 @@ export const userSchema = `#graphql
         ): ReturnMessage!
 
         deleteUser(id: ID!): User
-
         deactivateUser(id: ID!): User
     }
 `;

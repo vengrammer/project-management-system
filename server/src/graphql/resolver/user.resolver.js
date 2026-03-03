@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 
 // Get SECRET at runtime (not at module load time) to ensure dotenv has already loaded
 const getSecret = () => process.env.JWT_SECRET;
+export const blacklist = new Set();
+
 console.log("[user.resolver] Module loaded");
 
 // data = fullname, department, role, email, username, password, timestamps
@@ -160,6 +162,13 @@ export const userResolvers = {
           updatedAt: user.updatedAt?.toISOString() || null,
         },
       };
+    },
+    logout: async (_, __, context) => {
+      const token = context.token; // get from headers
+      if (!token) throw new Error("Not authenticated");
+      // add token to blacklist
+      blacklist.add(token);
+      return { message: "Logged out successfully" };
     },
     createUser: async (_, args) => {
       try {

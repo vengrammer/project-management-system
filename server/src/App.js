@@ -6,6 +6,8 @@ import { typeDefs, resolvers } from "./graphql/index.js";
 import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { blacklist } from "./graphql/resolver/user.resolver.js";
+import User from "./model/user.model.js";
 dotenv.config();
 
 const app = express();
@@ -28,17 +30,24 @@ app.use(
   bodyParser.json(),
   expressMiddleware(server, {
     context: async ({ req }) => {
-      const token = req.headers.authorization?.split(" ")[1];
-      if (token) {
-        try {
-          const decoded = jwt.verify(token, process.env.JWT_SECRET);
-          return { user: decoded };
-        } catch (error) {
-          console.log("Invalid token");
-          return {}
-        }
+      const authHeader = req.headers.authorization;
+
+      if (!authHeader) return {};
+
+      const token = authHeader.split(" ")[1];
+
+      if (blacklist.has(token)) {
+        throw new Error("Token has been logged out / blacklisted");
       }
-      return {}
+
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+        console.log("Context user:", user);
+        return { user, token };
+      } catch (err) {
+        return {};
+      }
     },
   }),
 );
