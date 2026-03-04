@@ -18,6 +18,8 @@ import Swal from "sweetalert2";
 import { useSelector } from "react-redux";
 
 export default function ProjectTableManager() {
+
+
   const auth = useSelector((state) => state.auth);
   const userId = auth.user?.id; // current user//temporay id for the manager account
   const navigate = useNavigate();
@@ -52,6 +54,47 @@ export default function ProjectTableManager() {
       }
     }
   `;
+
+   //acrhive the project
+    const SET_ARCHIVE = gql`
+      mutation Mutation($updateProjectId: ID!, $isArchive: Boolean) {
+        updateProject(id: $updateProjectId, isArchive: $isArchive) {
+          message
+          project {
+            isArchive
+          }
+        }
+      }
+    `;
+  
+    const [updateProject] = useMutation(SET_ARCHIVE);
+  
+    const handleArchive =  async (id) => {
+      Swal.fire({
+        title: "Are you sure you want to archive this project?",
+        text: "Archive project!",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, archive it!",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const { data } = await updateProject({
+              variables: { updateProjectId: id, isArchive: true },
+            });
+            if (data.updateProject) {
+              toast.success("Project restore successfully");
+              // Refetch projects to update the list
+              await refetch();
+            }
+          } catch (error) {
+            toast.error(`Error archiving project ${error}`);
+          }
+        }
+      });
+    }
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -331,8 +374,9 @@ export default function ProjectTableManager() {
                     </button>
 
                     <button
+                      onClick={() => handleArchive(project.id)}
                       className="flex-1 cursor-pointer lg:flex-none  bg-gray-500 text-white hover:bg-gray-600  py-2 lg:py-1 lg:px-1 rounded  text-sm font-medium"
-                      title="View"
+                      title="Archive"
                     >
                       <span className="lg:hidden text-white">Archive</span>
                       <Archive

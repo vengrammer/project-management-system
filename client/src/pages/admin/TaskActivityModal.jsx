@@ -18,9 +18,10 @@ import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-const TEMP_AUTHOR_ID = "6992d115b034bbfbac83b8fb";
+// const TEMP_AUTHOR_ID = "6992d115b034bbfbac83b8fb";
 
 const UPDATE_TASK_STATUS_IN_PROGRESS = gql`
   mutation UpdateTask(
@@ -139,6 +140,7 @@ const UPDATE_TASK_STATUS_TO_COMPLETED = gql`
     }
   }
 `;
+
 const GET_PROJECT = gql`
   query Project($projectId: ID!) {
     project(id: $projectId) {
@@ -146,7 +148,6 @@ const GET_PROJECT = gql`
     }
   }
 `;
-
 
 const STATUS_OPTIONS = [
   {
@@ -209,6 +210,14 @@ function Avatar({ initials, size = "w-9 h-9", text = "text-sm" }) {
 }
 
 export default function TaskActivityModal({ id: taskId }) {
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id; // current user
+
+  const location = useLocation();
+  const isArchive = location.pathname.includes("archive");
+  const isManager = location.pathname.includes("manager");
+  const isAdmin = location.pathname.includes("admin");
+
   const [isOpen, setIsOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("in_progress");
   const [comment, setComment] = useState("");
@@ -235,7 +244,7 @@ export default function TaskActivityModal({ id: taskId }) {
     skip: !shouldFetch,
   });
 
-  const { data: projectData} = useQuery(GET_PROJECT, {
+  const { data: projectData } = useQuery(GET_PROJECT, {
     variables: { projectId: id },
   });
 
@@ -258,21 +267,44 @@ export default function TaskActivityModal({ id: taskId }) {
     awaitRefetchQueries: true,
   });
 
+  //CHECK IF THE CURRENT USER IS ASSIGNED TO THIS TASK
+  const isIncluded = taskData?.task?.users?.some((user) => user.id === userId);
+
+  //CHECK IF THE CURRENT USER IS ASSIGNED TO THIS TASK
+
   const handleMarkAsDone = (tId, currentStatus) => {
+      // if (!isIncluded && !isManager && !isAdmin) {
+      //   Swal.fire({
+      //     title: "Access Denied",
+      //     text: "You are not assigned to this task, a manager, or an admin.",
+      //     icon: "error",
+      //     confirmButtonColor: "#3085d6",
+      //   });
+      //   return;
+      // }
+
     Swal.fire({
-      title: currentStatus === "in_progress" ? "Mark this task as done?" : "Mark this task as in progress?",
+      title:
+        currentStatus === "in_progress"
+          ? "Mark this task as done?"
+          : "Mark this task as in progress?",
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#16a34a",
       cancelButtonColor: "#d33",
-      confirmButtonText: currentStatus === "in_progress" ? "Mark as done" : "Mark as in progress",
+      confirmButtonText:
+        currentStatus === "in_progress"
+          ? "Mark as done"
+          : "Mark as in progress",
     }).then((result) => {
       if (result.isConfirmed)
         updateTaskCompleted({
           variables: {
             updateTaskId: tId,
-            status: currentStatus === "in_progress" ? "completed" : "in_progress",
-            completedDate: currentStatus === "in_progress" ? String(Date.now()) : null,
+            status:
+              currentStatus === "in_progress" ? "completed" : "in_progress",
+            completedDate:
+              currentStatus === "in_progress" ? String(Date.now()) : null,
           },
         });
     });
@@ -339,16 +371,30 @@ export default function TaskActivityModal({ id: taskId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(userId);
+    console.log(taskData?.task?.users);
 
-   if (
-     projectData?.project?.startDate &&
-     new Date(projectData.project.startDate).getTime() > Date.now()
-   ) {
-     toast.error(
-       "You cannot post an update for a project that hasn't started yet.",
-     );
-     return;
-   }
+    // const isIncluded = taskData?.task?.users?.some(
+    //   (user) => user.id === userId,
+    // );
+    // if (!isIncluded) {
+    //   Swal.fire({
+    //     title: "Access Denied",
+    //     text: "You are not assigned to this task.",
+    //     icon: "error",
+    //     confirmButtonColor: "#3085d6",
+    //   });
+    //   return;
+    // }
+    if (
+      projectData?.project?.startDate &&
+      new Date(projectData.project.startDate).getTime() > Date.now()
+    ) {
+      toast.error(
+        "You cannot post an update for a project that hasn't started yet.",
+      );
+      return;
+    }
 
     if (!comment.trim()) return;
     await createTaskLog({
@@ -356,13 +402,17 @@ export default function TaskActivityModal({ id: taskId }) {
         content: comment.trim(),
         task: taskId,
         status: selectedStatus,
-        author: TEMP_AUTHOR_ID,
+        author: userId,
       },
     });
     //when user add a new log, if the task is not in progress,
     //change it to in progress. and if the task is completed before, change the completedDate to null
     await updateTask({
-      variables: { updateTaskId: taskId, status: "in_progress", completedDate: null },
+      variables: {
+        updateTaskId: taskId,
+        status: "in_progress",
+        completedDate: null,
+      },
     });
   };
 
@@ -433,8 +483,9 @@ export default function TaskActivityModal({ id: taskId }) {
               <button
                 key={s.value}
                 type="button"
+                disabled={isArchive}
                 onClick={() => setSelectedStatus(s.value)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                   active
                     ? s.value === "done"
                       ? "border-green-500 bg-green-50 text-green-700"
@@ -457,14 +508,17 @@ export default function TaskActivityModal({ id: taskId }) {
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
+          disabled={isArchive}
           placeholder="Write your daily update here…"
           rows={4}
-          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
       <button
         type="submit"
-        disabled={loadingCreate || !taskId}
+        disabled={
+          loadingCreate || !taskId || (!isIncluded && !isManager) || isArchive
+        }
         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
       >
         <Send size={15} /> Post Update
@@ -569,7 +623,7 @@ export default function TaskActivityModal({ id: taskId }) {
           filteredLogs.map((log) => {
             const st = getStatus(log.status);
             const Icon = st.icon;
-            const isMine = String(log.author?.id) === TEMP_AUTHOR_ID;
+            const isMine = String(log.author?.id) === userId;
             const isEditing = editingId === log.id;
             return (
               <div
@@ -643,9 +697,11 @@ export default function TaskActivityModal({ id: taskId }) {
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-700 mt-1 wrap-break-words">
-                          {log.content}
-                        </p>
+                        <div>
+                          <p className="text-sm text-gray-700 mt-1 break-all">
+                            {log.content}
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -660,7 +716,7 @@ export default function TaskActivityModal({ id: taskId }) {
                         {st.label}
                       </span>
                     </div>
-                    {isMine && !isEditing && (
+                    {isMine && !isEditing && !isArchive && (
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
@@ -708,7 +764,7 @@ export default function TaskActivityModal({ id: taskId }) {
           onClick={(e) => e.target === e.currentTarget && setIsOpen(false)}
         >
           {/* Modal container — full screen on mobile, constrained on desktop */}
-          <div className="bg-white w-full sm:rounded-2xl sm:max-w-4xl sm:max-h-[90vh] h-full sm:h-auto flex flex-col rounded-t-2xl max-h-[95vh]">
+          <div className="bg-white w-full sm:rounded-2xl sm:max-w-7xl sm:max-h-screen h-full sm:h-auto flex flex-col rounded-t-2xl">
             {/* ── HEADER ── */}
             <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex items-start justify-between gap-3 shrink-0">
               <div className="flex-1 min-w-0">
@@ -770,32 +826,35 @@ export default function TaskActivityModal({ id: taskId }) {
                         );
                       })}
                     </div>
-                    <button
-                      onClick={() =>
-                        handleMarkAsDone(
-                          taskData?.task?.id,
-                          taskData?.task?.status,
-                        )
-                      }
-                      className={`flex items-center gap-1 px-2.5 py-1.5 ${
-                        taskData?.task?.status === "in_progress"
-                          ? "bg-green-600 text-white rounded-lg hover:bg-green-700"
-                          : "bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-                      } transition-colors text-xs font-semibold shrink-0`}
-                    >
-                      {taskData?.task?.status === "in_progress" ? (
-                        <>
-                          <Check size={13} />
-                          <span className="text-xs">Mark as Done</span>
-                        </>
-                      ) : (
-                        <>
-                          <Loader size={13} />
-                          <span className="text-xs">Mark as In Progress</span>
-                        </>
-                      )}
-                      {/* <span className="xs:hidden">Done</span> */}
-                    </button>
+                    {!isArchive && (isIncluded || isManager || isAdmin) && (
+                      <button
+                        onClick={() =>
+                          handleMarkAsDone(
+                            taskData?.task?.id,
+                            taskData?.task?.status,
+                          )
+                        }
+                        disabled={!isIncluded && !isManager && !isAdmin}
+                        className={`flex items-center gap-1 px-2.5 py-1.5 ${
+                          taskData?.task?.status === "in_progress"
+                            ? "bg-green-600 text-white rounded-lg hover:bg-green-700"
+                            : "bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                        } transition-colors text-xs font-semibold shrink-0 disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        {taskData?.task?.status === "in_progress" ? (
+                          <>
+                            <Check size={13} />
+                            <span className="text-xs">Mark as Done</span>
+                          </>
+                        ) : (
+                          <>
+                            <Loader size={13} />
+                            <span className="text-xs">Mark as In Progress</span>
+                          </>
+                        )}
+                        {/* <span className="xs:hidden">Done</span> */}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -822,11 +881,17 @@ export default function TaskActivityModal({ id: taskId }) {
               </button>
               <button
                 onClick={() => setMobileTab("post")}
+                disabled={
+                  loadingCreate ||
+                  !taskId ||
+                  (!isIncluded && !isManager) ||
+                  isArchive
+                }
                 className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
                   mobileTab === "post"
                     ? "text-blue-600 border-b-2 border-blue-600"
                     : "text-gray-500"
-                }`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 Post Update
               </button>

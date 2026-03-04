@@ -46,6 +46,11 @@ const projectSchema = new mongoose.Schema(
       type: Number,
     },
 
+    isArchive: {
+      type: Boolean,
+      default: false,
+    },
+
     startDate: {
       type: Date,
     },

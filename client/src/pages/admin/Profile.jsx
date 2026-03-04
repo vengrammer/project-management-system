@@ -15,7 +15,8 @@ import {
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
-import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
+
 
 /* =========================== QUERIES & MUTATION =========================== */
 const GET_DEPARTMENTS = gql`
@@ -118,11 +119,13 @@ function Field({ label, htmlFor, icon: Icon, hint, children }) {
 
 /* =========================== MAIN COMPONENT =========================== */
 function Profile() {
-  const id = "6992d115b034bbfbac83b8fb";
+  // const id = "6992d115b034bbfbac83b8fb";
+  const auth = useSelector((state) => state.auth)
+  const userId = auth.user?.id
   const [showPassword, setShowPassword] = useState(false);
 
   const [isEditing, setEditing] = useState(false);
-  const isEmployee = useLocation().pathname.includes("/employee/profile");
+  
 
   const [formData, setFormData] = useState({
     id: "",
@@ -157,8 +160,8 @@ function Profile() {
 
   /* GET USER */
   const { loading: loadingUser, data: userAccount } = useQuery(GET_USER, {
-    variables: { userId: id },
-    skip: !id,
+    variables: { userId: userId },
+    skip: !userId,
     fetchPolicy: "network-only",
     onCompleted: (data) => {
       if (data?.user) populateForm(data.user);
@@ -185,6 +188,7 @@ function Profile() {
     onCompleted: () => toast.success("Account updated successfully!"),
     onError: (error) => toast.error(error.message),
     refetchQueries: [{ query: GET_USERS }],
+    
   });
 
   /* SUBMIT */
@@ -223,7 +227,7 @@ function Profile() {
         password: formData.password || undefined,
         status: formData.status,
       },
-    });
+    }, setEditing(false));
   };
   console.log(userAccount?.user.fullname);
 
@@ -319,9 +323,13 @@ function Profile() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               {/* Row 1 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Full Name" htmlFor={`${id}-fullname`} icon={User}>
+                <Field
+                  label="Full Name"
+                  htmlFor={`${userId}-fullname`}
+                  icon={User}
+                >
                   <input
-                    id={`${id}-fullname`}
+                    id={`${userId}-fullname`}
                     type="text"
                     placeholder="Enter full name"
                     value={formData.fullname}
@@ -334,11 +342,11 @@ function Profile() {
                 </Field>
                 <Field
                   label="Position"
-                  htmlFor={`${id}-position`}
+                  htmlFor={`${userId}-position`}
                   icon={Briefcase}
                 >
                   <input
-                    id={`${id}-position`}
+                    id={`${userId}-position`}
                     type="text"
                     placeholder="e.g. Network Engineer"
                     value={formData.position}
@@ -355,11 +363,11 @@ function Profile() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field
                   label="Department"
-                  htmlFor={`${id}-department`}
+                  htmlFor={`${userId}-department`}
                   icon={Building2}
                 >
                   <select
-                    id={`${id}-department`}
+                    id={`${userId}-department`}
                     value={formData.department}
                     onChange={(e) =>
                       handleInputChange("department", e.target.value)
@@ -378,9 +386,9 @@ function Profile() {
                     ))}
                   </select>
                 </Field>
-                <Field label="Role *" htmlFor={`${id}-role`} icon={Shield}>
+                <Field label="Role *" htmlFor={`${userId}-role`} icon={Shield}>
                   <select
-                    id={`${id}-role`}
+                    id={`${userId}-role`}
                     value={formData.role}
                     onChange={(e) => handleInputChange("role", e.target.value)}
                     required
@@ -401,11 +409,11 @@ function Profile() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field
                   label="Email Address"
-                  htmlFor={`${id}-email`}
+                  htmlFor={`${userId}-email`}
                   icon={Mail}
                 >
                   <input
-                    id={`${id}-email`}
+                    id={`${userId}-email`}
                     type="email"
                     placeholder="Enter email"
                     disabled={!isEditing}
@@ -416,12 +424,12 @@ function Profile() {
                 </Field>
                 <Field
                   label="Username"
-                  htmlFor={`${id}-username`}
+                  htmlFor={`${userId}-username`}
                   icon={AtSign}
                   hint="Min. 5 characters if changing"
                 >
                   <input
-                    id={`${id}-username`}
+                    id={`${userId}-username`}
                     type="text"
                     placeholder="Leave blank to keep current"
                     value={formData.username}
@@ -437,7 +445,7 @@ function Profile() {
               {/* Row 4: Password */}
               <Field
                 label="Password"
-                htmlFor={`${id}-password`}
+                htmlFor={`${userId}-password`}
                 icon={KeyRound}
                 hint="Min. 5 characters if changing"
               >
@@ -447,7 +455,7 @@ function Profile() {
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10"
                   />
                   <input
-                    id={`${id}-password`}
+                    id={`${userId}-password`}
                     type={showPassword ? "text" : "password"}
                     placeholder="Leave blank to keep current"
                     value={formData.password}

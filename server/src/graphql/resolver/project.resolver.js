@@ -1,15 +1,14 @@
 import Project from "../../model/project.model.js";
 import TaskLog from "../../model/TaskLogs.js";
 import Task from "../../model/Task.js";
-import mongoose from "mongoose";
-
+import User from "../../model/user.model.js";
 //projectData = title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
 export const projectResolvers = {
   Query: {
     //show all the projects
     projects: async () => {
       try {
-        const projects = await Project.find()
+        const projects = await Project.find({ isArchive: false })
           .populate("users")
           .populate("department")
           .populate("projectManager");
@@ -120,7 +119,7 @@ export const projectResolvers = {
       }
 
       try {
-        const project = await Project.find({ users: userId })
+        const project = await Project.find({ users: userId, isArchive: false })
           .populate("users")
           .populate("department")
           .populate("projectManager");
@@ -169,7 +168,7 @@ export const projectResolvers = {
       }
 
       try {
-        const project = await Project.find({ projectManager: userId })
+        const project = await Project.find({ projectManager: userId , isArchive: false})
           .populate("users")
           .populate("department")
           .populate("projectManager");
@@ -209,7 +208,67 @@ export const projectResolvers = {
         throw new Error(error);
       }
     },
+    projectsByArchive: async (_, __, context) => {
+      const currentUserId = context?.user?.id;
+      
+      if (!currentUserId) {
+        throw new Error("Not authenticated");
+      }
+
+      // Get user
+      const foundUser = await User.findById(currentUserId)
+        
+
+      if (!foundUser) {
+        throw new Error("Cannot find the user");
+      }
+
+      //console.log(foundUser?.role)
+
+      let filter = { isArchive: true }; // assuming archived projects use this status
+
+      if (foundUser?.role === "admin") {
+        // Admin gets ALL archived projects
+      } else if (foundUser?.role === "manager") {
+        filter.projectManager = currentUserId;
+      } else if (foundUser?.role === "user") {
+        filter.users = { $in: [currentUserId] };
+      } else {
+        throw new Error("Unauthorized role");
+      }
+
+      const projects = await Project.find(filter)
+        .populate("users")
+        .populate("department")
+        .populate("projectManager");
+
+      const formattedDate = (date) => {
+        return date?.toLocaleString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      };
+
+      return projects.map((project) => ({
+        id: project._id.toString(),
+        title: project.title,
+        description: project.description,
+        priority: project.priority,
+        status: project.status,
+        department: project.department,
+        client: project.client,
+        budget: project.budget,
+        users: project.users,
+        projectManager: project.projectManager,
+        startDate: formattedDate(project.startDate),
+        endDate: formattedDate(project.endDate),
+        createdAt: project.createdAt?.toISOString(),
+        updatedAt: project.updatedAt?.toISOString(),
+      }));
+    },
   },
+
   Mutation: {
     createProject: async (_, args) => {
       try {
@@ -255,6 +314,7 @@ export const projectResolvers = {
           "department",
           "budget",
           "projectManager",
+          "isArchive",
           "startDate",
           "endDate",
         ];

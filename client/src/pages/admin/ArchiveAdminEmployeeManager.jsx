@@ -1,5 +1,5 @@
 import {
-  Archive,
+  ArchiveRestore,
   CalendarArrowDown,
   CalendarArrowUp,
   Eye,
@@ -13,26 +13,18 @@ import { motion } from "framer-motion";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { gql } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
-import FormAddProjectModal from "./FormAddProjectModal";
+import { useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 
-export default function ProjectTable() {
+export default function ArchiveAdminEmployeeManager() {
   const navigate = useNavigate();
-  const DELETE_PROJECT = gql`
-    mutation DeleteProject($id: ID!) {
-      deleteProject(id: $id) {
-        message
-        project {
-          id
-        }
-      }
-    }
-  `;
-  const [deleteProject] = useMutation(DELETE_PROJECT);
-  const GET_PROJECTS = gql`
-    query Projects {
-      projects {
+  const location = useLocation()
+
+  const isEmployee = location.pathname.includes("employee")
+
+  const GET_PROJECTS_ARCHIVE = gql`
+    query ProjectsByArchive {
+      projectsByArchive {
         id
         title
         priority
@@ -50,53 +42,54 @@ export default function ProjectTable() {
       }
     }
   `;
+
   //acrhive the project
-  const SET_ARCHIVE = gql`
-    mutation Mutation($updateProjectId: ID!, $isArchive: Boolean) {
-      updateProject(id: $updateProjectId, isArchive: $isArchive) {
-        message
-        project {
-          isArchive
-        }
-      }
-    }
-  `;
-
-  const [updateProject] = useMutation(SET_ARCHIVE);
-
-  const handleArchive =  async (id) => {
-    Swal.fire({
-      title: "Are you sure you want to archive this project?",
-      text: "Archive project!",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, archive it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const { data } = await updateProject({
-            variables: { updateProjectId: id, isArchive: true },
-          });
-          if (data.updateProject) {
-            toast.success("Project restore successfully");
-            // Refetch projects to update the list
-            await refetch();
+    const SET_ARCHIVE = gql`
+      mutation Mutation($updateProjectId: ID!, $isArchive: Boolean) {
+        updateProject(id: $updateProjectId, isArchive: $isArchive) {
+          message
+          project {
+            isArchive
           }
-        } catch (error) {
-          toast.error(`Error archiving project ${error}`);
         }
       }
-    });
-  }
+    `;
+
+   const [updateProject] = useMutation(SET_ARCHIVE);
+  
+    const handleRestore =  async (id) => {
+      Swal.fire({
+        title: "Are you sure you want to restore this project?",
+        text: "Restore project!",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, restore it!",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const { data } = await updateProject({
+              variables: { updateProjectId: id, isArchive: false },
+            });
+            if (data.updateProject) {
+              toast.success("Project archive successfully");
+              // Refetch projects to update the list
+              await refetch();
+            }
+          } catch (error) {
+            toast.error(`Error archiving project ${error}`);
+          }
+        }
+      });
+    }
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   // Get the projects data using Apollo Client
-  const { loading, error, data, refetch } = useQuery(GET_PROJECTS, {
+  const { loading, error, data, refetch } = useQuery(GET_PROJECTS_ARCHIVE, {
     notifyOnNetworkStatusChange: true,
   });
 
@@ -108,7 +101,7 @@ export default function ProjectTable() {
           <Loader size={70} className="animate-spin text-blue-500" />
         </div>
       </div>
-    );;
+    );
   }
 
   // Handle error state
@@ -122,7 +115,7 @@ export default function ProjectTable() {
   }
 
   // Extract projects from response
-  const projects = data?.projects || [];
+  const projects = data?.projectsByArchive || [];
 
   // Search filter
   const filteredProjects = projects.filter((project) => {
@@ -143,34 +136,9 @@ export default function ProjectTable() {
 
   // Actions
   const handleView = (project) => {
-    navigate(`/admin/projectdetails/${project.id}`);
+    navigate(`projectdetails/${project.id}`);
     // console.log("View project:", project);
     // alert(`Viewing: ${project.title}`);
-  };
-
-  const handleDelete = async (id) => {
-    Swal.fire({
-      title: "Are you sure you want to delete this project?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const { data } = await deleteProject({ variables: { id } });
-          if (data.deleteProject) {
-            toast.success("Project deleted successfully");
-            // Refetch projects to update the list
-            await refetch();
-          }
-        } catch (error) {
-          toast.error(`Error deleting project: ${error.message}`);
-        }
-      }
-    });
   };
 
   // Helper functions
@@ -203,11 +171,7 @@ export default function ProjectTable() {
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-            <h1 className="text-2xl font-bold text-gray-800">Projects</h1>
-            <FormAddProjectModal refechProjects={async () => await refetch()} />
-            {/* <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto">
-              
-            </button> */}
+            <h1 className="text-2xl font-bold text-gray-800">Archive</h1>
           </div>
 
           <input
@@ -369,29 +333,17 @@ export default function ProjectTable() {
                       <Eye size={20} className="hidden lg:inline text-white" />
                     </button>
 
-                    <button
-                      className="flex-1 cursor-pointer lg:flex-none  bg-gray-500 text-white hover:bg-gray-600  py-2 lg:py-1 lg:px-1 rounded  text-sm font-medium"
-                      title="Archive"
-                      onClick={() => handleArchive(project.id)}
+                    {!isEmployee && (<button
+                      onClick={() => handleRestore(project.id)}
+                      className="flex-1 cursor-pointer lg:flex-none  bg-gray-600 text-white hover:bg-gray-700 py-2 lg:py-1 lg:px-1 rounded  text-sm font-medium"
+                      title="Restore Archive"
                     >
-                      <span className="lg:hidden text-white">Archive</span>
-                      <Archive
-                        size={20}
-                        className="hidden lg:inline text-white"
-                      />
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(project.id)}
-                      className="flex-1 cursor-pointer lg:flex-none  bg-red-600 text-white hover:bg-red-700 py-2 lg:py-1 lg:px-1 rounded  text-sm font-medium"
-                      title="Delete"
-                    >
-                      <span className="lg:hidden">Delete</span>
-                      <Trash2
+                      <span className="lg:hidden">Restore</span>
+                      <ArchiveRestore
                         size={18}
                         className="hidden lg:inline text-white"
                       />
-                    </button>
+                    </button>)}
                   </div>
                 </div>
               </div>

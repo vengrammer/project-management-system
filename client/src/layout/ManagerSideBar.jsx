@@ -3,16 +3,15 @@ import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
-
+import { persistor } from "@/middleware/store";
+import { useApolloClient } from "@apollo/client/react";
 import {
   Menu,
   X,
   FolderOpenDot,
-  UserCheck,
   LogOut,
   User,
   LayoutDashboard,
-  Building2,
   Archive,
 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -32,6 +31,7 @@ const GET_USER = gql`
 export default function ManagerSideBar() {
   const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const client = useApolloClient();
   const userId = auth.user?.id;
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
@@ -201,6 +201,8 @@ export default function ManagerSideBar() {
           <button
             onClick={() => {
               dispatch(logout());
+              persistor.purge();
+              client.resetStore();
               navigate("/");
             }}
             className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"

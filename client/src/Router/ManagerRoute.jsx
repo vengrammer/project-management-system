@@ -5,9 +5,9 @@ import ManagerSideBar from "@/layout/ManagerSideBar";
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";
 import ProjectDetailsPage from "@/pages/admin/ProjectDetailsPage";
 import Profile from "@/pages/admin/Profile";
-import Archive from "@/pages/manager/Archive";
 import ProjectTableManager from "@/pages/manager/ProjectTableManager";
 import ProtectedRoute from "./ProtectedRoute";
+import ArchiveAdminEmployeeManager from "@/pages/admin/ArchiveAdminEmployeeManager";
 
 function ManagerRoute() {
   return (
@@ -20,11 +20,15 @@ function ManagerRoute() {
           />
           <Route path="dashboard" element={<ManagerDashboard />} />
           <Route path="projects" element={<ProjectTableManager />} />
-          <Route path="archive" element={<Archive />} />
+          <Route path="archive" element={<ArchiveAdminEmployeeManager />} />
           <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
+        <Route
+          path="archive/projectdetails/:id"
+          element={<ProjectDetailsPage />}
+        />
       </Routes>
     </ProtectedRoute>
   );

@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
-import { gql } from "@apollo/client";
+import { gql} from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { logout } from "@/middleware/authSlice";
+import { persistor } from "@/middleware/store";
+import { useApolloClient } from "@apollo/client/react";
+
 import {
   Menu,
   X,
@@ -29,10 +32,10 @@ const GET_USER = gql`
   }
 `;
 
-
 export default function AdminSideBar() {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
+  const client = useApolloClient();
   const userId = auth.user?.id; // may be undefined initially
 
   const [isOpen, setIsOpen] = useState(false);
@@ -143,7 +146,7 @@ export default function AdminSideBar() {
                 onClick={() => setIsOpen(false)}
               >
                 <FolderOpenDot size={20} />
-                <span>Project</span>
+                <span>Projects</span>
               </Link>
             </li>
 
@@ -177,9 +180,9 @@ export default function AdminSideBar() {
 
             <li>
               <Link
-                to="/admin/practice"
+                to="/admin/archive"
                 className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/settings") ? "bg-blue-100 text-blue-600" : ""
+                  isActive("/admin/archive") ? "bg-blue-100 text-blue-600" : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
@@ -219,6 +222,8 @@ export default function AdminSideBar() {
           <button
             onClick={() => {
               dispatch(logout()); // clear redux state
+              persistor.purge();
+              client.resetStore();
               navigate("/"); // redirect
             }}
             className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"

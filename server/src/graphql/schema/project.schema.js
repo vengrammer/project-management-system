@@ -11,15 +11,17 @@ export const projectSchema = `#graphql
         projectManager: User
         users: [User]
         budget: Int
+        isArchive: Boolean
         startDate: String
         endDate: String
     }
+    
     type Query {
         projects: [Project]!
         project(id: ID!) : Project
         projectByUser(id: ID): [Project]
         projectsByManager(id: ID): [Project]
-        projectsByArchive(isActive: Boolean!): [Project]
+        projectsByArchive: [Project]
     }
     type Message {
         message: String
@@ -54,6 +56,7 @@ export const projectSchema = `#graphql
             users: [ID]
             addUsers: [ID]
             removeUsers: [ID]
+            isArchive: Boolean
             startDate: String
             endDate: String
         ): Message

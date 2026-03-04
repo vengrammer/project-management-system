@@ -23,6 +23,7 @@ import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import FormEditTask from "./FormEditTask";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 
 const UPDATE_PROJECT_STATUS = gql`
   mutation updateProject($updateProjectId: ID!, $status: String) {
@@ -160,15 +161,36 @@ function formatTimeAgo(value) {
 
 const ProjectDetailsPage = () => {
   const { id } = useParams();
-
+  const auth  = useSelector((auth) => )
   //I want to hide the button that employee that only must admin can see
   const location = useLocation();
   const isEmployee = location.pathname.includes("employee");
   const isManager = location.pathname.includes("manager");
-  const isAdmin = location.pathname.includes("admin");
+  const isArchive = location.pathname.includes("archive");
+
+  // #############################################################
+  // ######################## AUTHORIZATION ########################
+  // #############################################################
+  //
+  // Check whether the current user:
+  //
+  // 1. Is included in the project (for employees), OR
+  // 2. Is the assigned project manager, OR
+  // 3. Is an admin (admins can view all projects).
+  //
+  // Additionally:
+  // - Archived projects must NOT be accessible from the following routes:
+  //     • /admin/projectdetails
+  //     • /manager/projectdetails
+  //     • /employee/projectdetails
+  //
+  // Access should be controlled based on both role and project status.
+  // ############################################################# 
 
 
-  // Get status color
+
+
+  //  // Get status color
 
   const getStatusColor = (status) => {
     if (!status) return "bg-gray-100 text-gray-700 border-gray-200";
@@ -272,7 +294,11 @@ const ProjectDetailsPage = () => {
 
   const handleMarkAsDone = (status) => {
     Swal.fire({
-      title: `${status === "completed" ? "Mark this project as in progress?" : "Mark this project as completed?"}`,
+      title: `${
+        status === "completed"
+          ? "Mark this project as in progress?"
+          : "Mark this project as completed?"
+      }`,
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
@@ -381,7 +407,11 @@ const ProjectDetailsPage = () => {
         {/* Back Button */}
         <button
           onClick={() =>
-            navigate(`/${isEmployee ? "employee" : isManager ? "manager" : "admin"}/projects`)
+            navigate(
+              `/${
+                isEmployee ? "employee" : isManager ? "manager" : "admin"
+              }/projects`,
+            )
           }
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
         >
@@ -454,9 +484,9 @@ const ProjectDetailsPage = () => {
 
             {/* Buttons for edit project and add member*/}
             <div className="flex gap-3">
-              <div>{!isEmployee && <FormEditProject />}</div>
+              <div>{!isEmployee && !isArchive && <FormEditProject />}</div>
               <div>
-                {!isEmployee && (
+                {!isEmployee && !isArchive && (
                   <button
                     onClick={() => handleMarkAsDone(project.status)}
                     className={`flex items-center gap-2 px-2 py-2 ${
@@ -582,7 +612,7 @@ const ProjectDetailsPage = () => {
                       {tasks.length ? tasks.length : "0"} total tasks
                     </p>
                   </div>
-                  {!isEmployee && (
+                  {!isEmployee && !isArchive && (
                     <AddTaskForm
                       refetchProjects={async () => await refetching()}
                     />
@@ -658,13 +688,13 @@ const ProjectDetailsPage = () => {
                           </div>
 
                           {/* EYE FOR THE EDIT TASK*/}
-                          {!isEmployee && (
+                          {!isEmployee && !isArchive && (
                             <div>
                               <FormEditTask taskID={task?.id} />
                             </div>
                           )}
 
-                          {!isEmployee && (
+                          {!isEmployee && !isArchive && (
                             <div>
                               <button
                                 onClick={() => handleDeleteTask(task.id)}
@@ -693,7 +723,7 @@ const ProjectDetailsPage = () => {
                 <h2 className="text-xl font-bold text-gray-900">
                   Team Members
                 </h2>
-                {!isEmployee && <AddMembers />}
+                {!isEmployee && !isArchive && <AddMembers />}
               </div>
 
               <div className="bg-black max-w-full h-px mb-4"></div>
@@ -735,7 +765,7 @@ const ProjectDetailsPage = () => {
                             </p>
                           </div>
                           <div className="pl-3">
-                            {!isEmployee && (
+                            {!isEmployee && !isArchive && (
                               <button
                                 onClick={() =>
                                   handleRemoveMember(

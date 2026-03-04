@@ -6,7 +6,8 @@ import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { logout } from "@/middleware/authSlice";
-
+import { persistor } from "@/middleware/store";
+import { useApolloClient } from "@apollo/client/react";
 import {
   Menu,
   X,
@@ -32,8 +33,9 @@ const GET_USER = gql`
 export default function EmployeeSideBar() {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
+  const client = useApolloClient();
   const user = auth.user?.id;
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -190,6 +192,8 @@ export default function EmployeeSideBar() {
           <button
             onClick={() => {
               dispatch(logout());
+              persistor.purge();
+              client.resetStore();
               navigate("/");
             }}
             className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
