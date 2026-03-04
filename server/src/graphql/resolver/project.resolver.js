@@ -99,6 +99,7 @@ export const projectResolvers = {
           client: project.client,
           budget: project.budget,
           users: project.users,
+          isArchive: project.isArchive,
           projectManager: project.projectManager,
           startDate: formattedDate(project.startDate),
           endDate: formattedDate(project.endDate),

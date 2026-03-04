@@ -24,6 +24,7 @@ import Swal from "sweetalert2";
 import FormEditTask from "./FormEditTask";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
+import { useEffect } from "react";
 
 const UPDATE_PROJECT_STATUS = gql`
   mutation updateProject($updateProjectId: ID!, $status: String) {
@@ -44,6 +45,7 @@ const GET_PROJECTS = gql`
       status
       endDate
       id
+      isArchive
       department {
         id
         name
@@ -161,34 +163,14 @@ function formatTimeAgo(value) {
 
 const ProjectDetailsPage = () => {
   const { id } = useParams();
-  const auth  = useSelector((auth) => )
+
+  //current user
+
   //I want to hide the button that employee that only must admin can see
   const location = useLocation();
   const isEmployee = location.pathname.includes("employee");
   const isManager = location.pathname.includes("manager");
   const isArchive = location.pathname.includes("archive");
-
-  // #############################################################
-  // ######################## AUTHORIZATION ########################
-  // #############################################################
-  //
-  // Check whether the current user:
-  //
-  // 1. Is included in the project (for employees), OR
-  // 2. Is the assigned project manager, OR
-  // 3. Is an admin (admins can view all projects).
-  //
-  // Additionally:
-  // - Archived projects must NOT be accessible from the following routes:
-  //     • /admin/projectdetails
-  //     • /manager/projectdetails
-  //     • /employee/projectdetails
-  //
-  // Access should be controlled based on both role and project status.
-  // ############################################################# 
-
-
-
 
   //  // Get status color
 
@@ -232,6 +214,93 @@ const ProjectDetailsPage = () => {
     variables: { projectId: id },
     notifyOnNetworkStatusChange: true,
   });
+
+  // #############################################################
+  // ######################## AUTHORIZATION ########################
+  // #############################################################
+  //
+  // Check whether the current user:
+  //check if  the current user is not member or manager of this project....pass when admin
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id;
+  const role = auth.user?.role; // current user
+
+  const isAdmin = role === "admin";
+
+  const isIncluded = projectData?.project?.users?.some(
+    (user) => user.id === userId,
+  );
+
+  const isProjectManager = projectData?.project?.projectManager === userId;
+
+ useEffect(() => {
+   if (!userId) {
+     navigate("/", { replace: true });
+     return;
+   }
+
+   // Wait until project loads
+   if (!projectData?.project) return;
+
+   if (!isAdmin && !isIncluded && !isProjectManager) {
+     navigate("/", { replace: true });
+   }
+ }, [userId, isAdmin, isIncluded, isProjectManager, projectData, navigate]);
+  // 1. Is included in the project (for employees), OR
+  // 2. Is the assigned project manager, OR
+  // 3. Is an admin (admins can view all projects).
+  //
+  // Additionally:
+  // - Archived projects must NOT be accessible from the following routes:
+  //     • /admin/projectdetails
+  //     • /manager/projectdetails
+  //     • /employee/projectdetails
+  const validRoutesForNotArchive = [
+    "/admin/projectdetails",
+    "/manager/projectdetails",
+    "/employee/projectdetails",
+  ];
+
+  const validRoutesForArchive = [
+    "/admin/archive/projectdetails",
+    "/manager/archive/projectdetails",
+    "/employee/archive/projectdetails",
+  ];
+
+  const validRouteForNotArchive = validRoutesForNotArchive.some((route) =>
+    location.pathname.startsWith(route),
+  );
+
+  const validRouteForArchive = validRoutesForArchive.some((route) =>
+    location.pathname.startsWith(route),
+  );
+
+  // Redirect to home if:
+  // 1. The project is archived (isArchive === true)
+  //    and the user is accessing a non-archive route.
+  //
+  // 2. The project is NOT archived (isArchive === false)
+  //    and the user is accessing an archive route.
+  useEffect(() => {
+    const isArchive = projectData?.project?.isArchive;
+
+    // Only run check if project exists
+    if (isArchive === undefined) return;
+
+    // If project is NOT archived but user is in archive route
+    if (!isArchive && validRouteForArchive) {
+      navigate("/", { replace: true });
+    }
+
+    // If project IS archived but user is in non-archive route
+    if (isArchive && validRouteForNotArchive) {
+      navigate("/", { replace: true });
+    }
+  }, [projectData, validRouteForNotArchive, validRouteForArchive, navigate]);
+
+  //
+  // Access should be controlled based on both role and project status.
+  // #############################################################
 
   //GET THE TASK
   const {
@@ -410,7 +479,7 @@ const ProjectDetailsPage = () => {
             navigate(
               `/${
                 isEmployee ? "employee" : isManager ? "manager" : "admin"
-              }/projects`,
+              }/${isArchive? "archive" : "projects"}`,
             )
           }
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
