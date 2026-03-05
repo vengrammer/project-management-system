@@ -13,6 +13,7 @@ import { persistor } from "./middleware/store";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import { useSelector } from "react-redux";
+import { Loader } from "lucide-react";
 
 const CURRENT_USER = gql`
   query CurrentUser {
@@ -35,53 +36,55 @@ const CURRENT_USER = gql`
 function App() {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
+
   const {
     data: currentUserData,
     loading: currentUserLoading,
     error: currentUserError,
   } = useQuery(CURRENT_USER, {
-    skip: !auth.token, // Only query if token exists
+    skip: !auth.token, // only query if token exists
   });
 
-  // log results for debugging
-  console.log("currentUser query", {
-    currentUserData,
-    currentUserLoading,
-    currentUserError,
-  });
-
-  // when we rehydrate or the Apollo query returns currentUser, make
-  // sure the store has consistent state.  We read token from redux state
-  // rather than localStorage since we persist the entire auth slice.
+  // Handle user login when data is ready
   useEffect(() => {
-    const token = auth.token;
-
-    // If token exists and we got user data from the API, dispatch to Redux
-    if (token && currentUserData?.currentUser) {
-      dispatch(loginSuccess({ token, user: currentUserData.currentUser }));
+    if (auth.token && currentUserData?.currentUser) {
+      dispatch(
+        loginSuccess({ token: auth.token, user: currentUserData.currentUser }),
+      );
     }
   }, [dispatch, auth.token, currentUserData]);
 
-  // if the query fails while a token is present, erase persisted auth
+  // Handle token errors
   useEffect(() => {
     if (currentUserError && auth.token) {
-      console.warn(
-        "currentUser error, clearing persisted auth",
-        currentUserError,
-      );
+      console.warn("currentUser query error, clearing auth", currentUserError);
       dispatch(logout());
       persistor.purge();
     }
   }, [currentUserError, auth.token, dispatch]);
 
+  // Show loading screen while currentUser query is running
+  if (auth.token && currentUserLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <Loader size={70} className="animate-spin text-blue-500" />
+          <span className="text-blue-500 font-medium">
+            Loading user data...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/*" element={<LandingPageRoute />} />
-          <Route path="admin/*" element={<AdminRoute />} />
-          <Route path="employee/*" element={<EmployeeRoute />} />
-          <Route path="manager/*" element={<ManagerRoute />} />
-          <Route path="*" element={<NotFound />} />
+        <Route path="admin/*" element={<AdminRoute />} />
+        <Route path="employee/*" element={<EmployeeRoute />} />
+        <Route path="manager/*" element={<ManagerRoute />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
       <ToastContainer

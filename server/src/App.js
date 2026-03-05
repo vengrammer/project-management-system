@@ -32,9 +32,10 @@ app.use(
       if (token) {
         try {
           const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          // console.log( decoded )
           return { user: decoded };
         } catch (error) {
-          console.log("Invalid token");
+          // console.log("Invalid token");
           return {}
         }
       }

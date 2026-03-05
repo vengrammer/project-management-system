@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 import { useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 
 //  GRAPHQL QUERIES
 
@@ -377,6 +378,17 @@ function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
 
 // ─── DayDetail: right panel ──────────────────────────────────
 function DayDetail({ selectedDate, logs, loading, project, accent }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isEmployee = location.pathname.includes("employee");
+  const isManager = location.pathname.includes("manager");
+
+  const basePath = isEmployee ? "employee" : isManager ? "manager" : "admin";
+
+  const shortCutNavigate = () => {
+    navigate(`/${basePath}/projectdetails/${project.id}`);
+  };
+  
   if (!selectedDate) {
     return (
       <div className="flex flex-col items-center justify-center h-full py-16 text-slate-400 text-center px-6">
@@ -450,6 +462,7 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
 
             return (
               <div
+                onClick={() => shortCutNavigate()}
                 key={log.id}
                 className={[
                   "bg-white rounded-xl border border-slate-100 p-3 shadow-sm",

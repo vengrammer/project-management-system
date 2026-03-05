@@ -231,7 +231,7 @@ const ProjectDetailsPage = () => {
     (user) => user.id === userId,
   );
 
-  const isProjectManager = projectData?.project?.projectManager === userId;
+  const isProjectManager = projectData?.project?.projectManager?.id === userId;
 
  useEffect(() => {
    if (!userId) {

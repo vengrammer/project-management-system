@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 import { useSelector } from "react-redux";
-
+import { useLocation, useNavigate } from "react-router-dom";
 //  GRAPHQL QUERIES
 
 const GET_PROJECTS = gql`
@@ -267,7 +267,7 @@ function ProjectItem({ project, accent, isSelected, onClick }) {
             (() => {
               const today = new Date();
               const dueDate = new Date(project.endDate);
-              
+
               // Remove time component for accurate day comparison
               today.setHours(0, 0, 0, 0);
               dueDate.setHours(0, 0, 0, 0);
@@ -375,6 +375,18 @@ function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
 
 // ─── DayDetail: right panel ──────────────────────────────────
 function DayDetail({ selectedDate, logs, loading, project, accent }) {
+  const navigate = useNavigate();
+  const location = useLocation()
+  const isEmployee = location.pathname.includes("employee");
+  const isManager = location.pathname.includes("manager");
+
+
+  const basePath = isEmployee ? "employee" : isManager ? "manager" : "admin";
+
+  const shortCutNavigate = () => {
+    navigate(`/${basePath}/projectdetails/${project.id}`);
+  }
+  
   if (!selectedDate) {
     return (
       <div className="flex flex-col items-center justify-center h-full py-16 text-slate-400 text-center px-6">
@@ -421,7 +433,7 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
         </p>
       </div>
 
-      {/* Scrollable log list */}
+      {/* Scrollable log list LOG LIST */}
       <div className="w-full h-full overflow-y-auto px-4 pb-5 flex flex-col gap-2.5">
         {/* Loading */}
         {loading &&
@@ -448,9 +460,12 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
 
             return (
               <div
+                onClick={() => 
+                  shortCutNavigate()
+                }
                 key={log.id}
                 className={[
-                  "bg-white rounded-xl border border-slate-100 p-3 shadow-sm",
+                  "bg-white rounded-xl border border-slate-100 p-3 shadow-sm cursor-pointer hover:bg-gray-200",
                   "border-l-4",
                   PRIORITY_BORDER[log.task?.priority] ?? "border-l-slate-300",
                 ].join(" ")}
@@ -517,7 +532,6 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
-
   //get the current user from redux store
   const user = useSelector((state) => state.auth.user);
   // const token = useSelector((state) => state.auth.token);
