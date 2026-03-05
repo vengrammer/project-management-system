@@ -608,7 +608,7 @@ export default function FormEditProject() {
                                     }}
                                     className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
                                   >
-                                    {manager?.fullname}
+                                    {manager?.fullname} <span className="text-gray-600 lowercase">({manager?.position})</span>
                                   </div>
                                 ))
                               ) : (

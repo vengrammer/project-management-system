@@ -13,6 +13,7 @@ import { persistor } from "./middleware/store";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import { useSelector } from "react-redux";
+
 const CURRENT_USER = gql`
   query CurrentUser {
     currentUser {
@@ -77,12 +78,12 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/*" element={<LandingPageRoute />} />
-        <Route path="admin/*" element={<AdminRoute />} />
-        <Route path="employee/*" element={<EmployeeRoute />} />
-        <Route path="manager/*" element={<ManagerRoute />} />
-
-        <Route path="*" element={<NotFound />} />
+          <Route path="admin/*" element={<AdminRoute />} />
+          <Route path="employee/*" element={<EmployeeRoute />} />
+          <Route path="manager/*" element={<ManagerRoute />} />
+          <Route path="*" element={<NotFound />} />
       </Routes>
+
       <ToastContainer
         position="bottom-right"
         autoClose={4000}

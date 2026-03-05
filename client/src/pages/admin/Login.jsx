@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Lock, User, Eye, EyeOff } from "lucide-react";
 // motion is used in JSX but ESLint occasionally flags it as unused
 /* eslint-disable no-unused-vars */
@@ -70,6 +70,15 @@ export default function LoginUI() {
     }
   };
 
+  const usernameRef = useRef(null)
+  const passwordRef = useRef(null);
+
+  useEffect(() => {
+    usernameRef.current?.focus();
+  }, []); 
+
+
+  //active the cursor
   return (
     <motion.div
       initial={{ y: 100, opacity: 0 }} // start below
@@ -113,8 +122,15 @@ export default function LoginUI() {
                 <input
                   id="username"
                   type="text"
+                  ref={usernameRef}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      passwordRef.current?.focus();
+                    }
+                  }}
                   placeholder="Enter your username"
                   required
                   className="w-full pl-12 pr-4 py-3.5 bg-white/95 hover:bg-white rounded-xl text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all duration-300 shadow-sm"
@@ -138,6 +154,7 @@ export default function LoginUI() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
+                  ref={passwordRef}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required

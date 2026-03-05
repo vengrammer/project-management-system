@@ -6,25 +6,6 @@ import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 
-// //to refresh the table of projects
-// const GET_PROJECTS = gql`
-//   query Projects {
-//     projects {
-//       id
-//       title
-//       description
-//       priority
-//       status
-//       department {
-//         name
-//       }
-//       budget
-//       startDate
-//       endDate
-//     }
-//   }
-// `;
-
 //query to get the departments
 const GET_DEPARTMENTS = gql`
   query Departments {
@@ -35,10 +16,12 @@ const GET_DEPARTMENTS = gql`
         id
         fullname
         position
+        role
       }
     }
   }
 `;
+
 //query to get the user manager
 const GET_USER_MANAGER = gql`
   query UserRoleManager {
@@ -78,19 +61,6 @@ const CREATE_PROJECT = gql`
       endDate: $endDate
     ) {
       message
-    }
-  }
-`;
-
-//query to DELETE the project
-const DELETE_PROJECT = gql`
-  mutation DeleteProject($projectId: ID!) {
-    deleteProject(projectId: $projectId) {
-      message
-      project {
-        id
-        title
-      }
     }
   }
 `;
@@ -313,7 +283,8 @@ export default function FormAddProjectModal({refechProjects}) {
   const selectedDept = (dataDepartments?.departments || []).find(
     (d) => d.id === formData.department || d.name === formData.department,
   );
-  const teamUsers = selectedDept?.users || [];
+  
+  const teamUsers = selectedDept?.users?.filter((u) => u.role === "user") || [];
   const filteredTeamMembers = teamUsers.filter((emp) =>
     emp.fullname
       ?.toLowerCase()
@@ -613,7 +584,8 @@ export default function FormAddProjectModal({refechProjects}) {
                                     }}
                                     className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
                                   >
-                                    {manager?.fullname}
+                                    {manager?.fullname}{" "}
+                                    <span className="text-gray-600 lowercase">({manager?.position})</span>
                                   </div>
                                 ))
                               ) : (

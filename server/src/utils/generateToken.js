@@ -11,7 +11,7 @@ const generateToken = (id) => {
   const secondsUntilMidnight = Math.floor((midnight - now) / 1000);
 
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: secondsUntilMidnight,//expire the token every
+    expiresIn: secondsUntilMidnight,
   });
 };
 

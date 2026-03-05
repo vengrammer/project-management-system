@@ -15,6 +15,7 @@ const GET_DEPARTMENTS = gql`
         id
         fullname
         position
+        role
       }
     }
   }
@@ -55,6 +56,7 @@ const GET_PROJECT = gql`
       id
       users {
         id
+        role
       }
     }
   }
@@ -109,7 +111,7 @@ function AddMembers() {
   });
 
   const selectedDept = dataDepartments?.departments?.find(
-    (d) => d.id === formData.department || d.name === formData.department,
+    (d) => d.id === formData.department || d.name === formData.department ,
   );
 
   const teamUsers = selectedDept?.users || [];
@@ -156,15 +158,17 @@ function AddMembers() {
   const existingUserIds = new Set(
     projectData?.project?.users?.map((user) => user.id) || [],
   );
-
-  // Filter team members: exclude existing users and match search
+console.log(teamUsers);
   const filteredTeamMembers = teamUsers.filter(
     (emp) =>
-      !existingUserIds.has(emp.id) &&
+       emp.role === "user" && // show only users
+      !existingUserIds.has(emp.id) && // exclude already added
       (emp.fullname || "")
         .toLowerCase()
         .includes((teamMemberSearch || "").toLowerCase()),
   );
+
+  
 
   const toggleEmployee = (id) => {
     setSelectedEmployees((prev) =>
