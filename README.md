@@ -1,5 +1,37 @@
 # 📌 Project Management System Documentation
 
+# Manual
+  # EMPLOYEE -USER
+          🔐 Login
+              the user/employee must login with their account
+          📃Dashboard
+              User can see the dashboard of project that assigned to them as employee
+          📂Project
+              The User can post an update everyday to their task..they  can't manage the task that not assigned to them
+          # Archive
+              The User can view of all the project that connected to Them no cation followed
+
+  # MANAGER
+          🔐 Login
+            the manager must login with their account
+          📃Dashboard
+              manager can see the dashboard of project that assigned to them as manager
+          📂Project
+              The manager can create a new project,edit,archive and assign user to them
+              
+          
+          
+
+  
+  
+
+
+# To run the project
+// to run client - frontend
+        npm run dev
+// to run server - backend
+        npm run dev
+
 ## 🛠️ Technology Stack
 
 * ⚛️ **Frontend:** React.js
@@ -16,14 +48,6 @@
 The **Project Management System** is a web-based application designed to organize, manage, and track all project-related records in one centralized platform.
 
 It enables administrators and managers to create projects, define tasks, and assign responsibilities to employees. Employees can view their assigned tasks and provide progress updates.
-
-The system improves:
-
-* ✅ Workflow efficiency
-* ✅ Transparency
-* ✅ Accountability
-* ✅ Team collaboration
-* ✅ Project tracking and reporting
 
 Each project displays essential details such as:
 
@@ -180,7 +204,7 @@ The system provides visibility into:
 
 ## 🗄️ Database (MongoDB)
 
-Collections may include:
+Collections:
 
 * Users
 * Projects
@@ -195,15 +219,3 @@ Relationships:
 * One Employee → Many Tasks -> Many Projects
 * One Task → Many TaskLogs -> Many Users
 * One Department -> Many Users
-
----
-
-# 📌 Future Enhancements (Optional Improvements)
-
-* 📅 Calendar view for deadlines
-* 📎 File attachment support
-* 🔔 Real-time notifications
-* 📊 Dashboard analytics charts
-* 💬 Task comments section
-* 📱 Mobile responsive optimization
-* 🧾 Export reports (PDF/Excel)

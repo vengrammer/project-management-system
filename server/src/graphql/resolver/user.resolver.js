@@ -140,6 +140,10 @@ export const userResolvers = {
       const user = await User.findOne({ username }).select("+password");
       if (!user) throw new Error("Wrong username or password");
 
+      if (user?.status === false)
+        throw new Error(
+          "This account is inactive. Please reach out to your admin to reactivate it.",
+        );
       const valid = await bcrypt.compare(password, user.password);
       if (!valid) throw new Error("Wrong username or password");
 

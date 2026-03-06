@@ -469,6 +469,19 @@ const ProjectDetailsPage = () => {
   const project = projectData?.project;
   const tasks = taskData?.taskByProject ?? [];
 
+   const overdue = (project) => {
+     console.log(project);
+
+     const today = new Date();
+     const dueDate = new Date(project?.endDate);
+
+     if (project?.status !== "completed") {
+       return dueDate < today;
+     } else {
+       return false;
+     }
+   };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Trigger Button */}
@@ -477,9 +490,9 @@ const ProjectDetailsPage = () => {
         <button
           onClick={() =>
             navigate(
-              `/${
-                isEmployee ? "employee" : isManager ? "manager" : "admin"
-              }/${isArchive? "archive" : "projects"}`,
+              `/${isEmployee ? "employee" : isManager ? "manager" : "admin"}/${
+                isArchive ? "archive" : "projects"
+              }`,
             )
           }
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
@@ -492,7 +505,11 @@ const ProjectDetailsPage = () => {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-2"
+          className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-2 ${
+            overdue(project)
+              ? "border-red-500 border-2"
+              : "border-gray-200"
+          }`}
         >
           <div className="flex flex-col w-full h-full lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
             <div className="flex-1">

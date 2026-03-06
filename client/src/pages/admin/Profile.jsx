@@ -185,7 +185,16 @@ function Profile() {
 
   /* UPDATE MUTATION */
   const [updateUser, { loading: loadingUpdate }] = useMutation(UPDATE_USER, {
-    onCompleted: () => toast.success("Account updated successfully!"),
+    onCompleted: () => 
+    {
+      toast.success("Account updated successfully!"),
+        setFormData({
+          username: "",
+          password: "",
+        });
+        setEditing(false)
+    },
+
     onError: (error) => toast.error(error.message),
     refetchQueries: [{ query: GET_USERS }],
     
@@ -227,10 +236,9 @@ function Profile() {
         password: formData.password || undefined,
         status: formData.status,
       },
-    }, setEditing(false));
+    })
+    ;
   };
-  console.log(userAccount?.user.fullname);
-
   const initials = formData.fullname
     ? formData.fullname
         .split(" ")

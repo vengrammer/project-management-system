@@ -465,7 +465,7 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
                 onClick={() => shortCutNavigate()}
                 key={log.id}
                 className={[
-                  "bg-white rounded-xl border border-slate-100 p-3 shadow-sm",
+                  "bg-white rounded-xl border border-slate-100 p-3 shadow-sm cursor-pointer hover:bg-gray-200",
                   "border-l-4",
                   PRIORITY_BORDER[log.task?.priority] ?? "border-l-slate-300",
                 ].join(" ")}

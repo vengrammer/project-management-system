@@ -251,7 +251,7 @@ export default function UsersTable() {
                   {/* Actions*/}
                   <div className="flex gap-2 pt-2 border-t border-gray-100 md:border-t-0 md:pt-0 md:gap-3">
                     <FormEditUser userId={user?.id} />
-                    <button
+                    {user.role != "admin" && <button
                       onClick={() =>
                         handleUpdateStatus(user?.id, !user?.status)
                       }
@@ -262,12 +262,12 @@ export default function UsersTable() {
                       }  text-white  px-3 py-3 rounded-md text-sm font-medium`}
                       title="Ban User"
                     >
-                      {user.status ? (
+                       {user.status ? (
                         <PowerOff size={20} />
                       ) : (
                         <Power size={20} />
                       )}
-                    </button>
+                    </button>}
                   </div>
                 </div>
               </div>

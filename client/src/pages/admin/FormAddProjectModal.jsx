@@ -5,6 +5,8 @@ import logo from "@/assets/logo.png";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
+import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 //query to get the departments
 const GET_DEPARTMENTS = gql`
@@ -66,6 +68,12 @@ const CREATE_PROJECT = gql`
 `;
 
 export default function FormAddProjectModal({refechProjects}) {
+  const location = useLocation();
+  const isManager = location.pathname.includes("manager");
+  const auth = useSelector((state) => state.auth);
+
+  const managerId = auth.user?.id;
+
   // console.log("refechProjects in modal:", refechProjects);
   const [selectedEmployees, setSelectedEmployees] = useState([]);
   const managerRef = useRef(null);
@@ -78,7 +86,7 @@ export default function FormAddProjectModal({refechProjects}) {
     department: "",
     status: "not started",
     priority: "",
-    projectManager: "",
+    projectManager:  "",
     budget: "",
     startDate: "",
     endDate: "",
@@ -96,12 +104,6 @@ export default function FormAddProjectModal({refechProjects}) {
   const handleClose = () => {
     setIsOpen(false);
   };
-
-  // const handleBackdropClick = (e) => {
-  //   if (e.target === e.currentTarget) {
-  //     handleClose();
-  //   }
-  // };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -151,6 +153,8 @@ export default function FormAddProjectModal({refechProjects}) {
     };
     refetching();
   }, []);
+
+
 
   // CREATE PROJECT
   const [createProject, { loading: loadingCreateProject }] = useMutation(
@@ -220,7 +224,7 @@ export default function FormAddProjectModal({refechProjects}) {
         department: formData.department,
         status: formData.status,
         priority: formData.priority,
-        projectManager: projectManager,
+        projectManager: isManager ? managerId :  projectManager ,
         budget: parseInt(formData.budget, 10) || 0,
         users: selectedEmployees,
         startDate: formData.startDate,
@@ -267,7 +271,7 @@ export default function FormAddProjectModal({refechProjects}) {
     );
   };
 
-  const filteredManagers = (dataUserManager?.userRoleManager || []).filter(
+  const filteredManagers = (dataUserManager?.userRoleManager  ||  []).filter(
     (manager) =>
       manager.fullname
         ?.toLowerCase()
@@ -283,7 +287,7 @@ export default function FormAddProjectModal({refechProjects}) {
   const selectedDept = (dataDepartments?.departments || []).find(
     (d) => d.id === formData.department || d.name === formData.department,
   );
-  
+
   const teamUsers = selectedDept?.users?.filter((u) => u.role === "user") || [];
   const filteredTeamMembers = teamUsers.filter((emp) =>
     emp.fullname
@@ -552,12 +556,13 @@ export default function FormAddProjectModal({refechProjects}) {
                         </select>
                       </div>
                       {/* project manager dropdown */}
-                      <div className="space-y-2 relative" ref={managerRef}>
+                      {!isManager && <div className="space-y-2 relative" ref={managerRef}>
                         <label className="block text-sm font-medium text-gray-700">
                           Project Manager
                         </label>
                         <div className="relative">
                           <input
+                            disabled={isManager}
                             type="text"
                             placeholder="Search project manager..."
                             value={managerSearch}
@@ -585,7 +590,9 @@ export default function FormAddProjectModal({refechProjects}) {
                                     className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
                                   >
                                     {manager?.fullname}{" "}
-                                    <span className="text-gray-600 lowercase">({manager?.position})</span>
+                                    <span className="text-gray-600 lowercase">
+                                      ({manager?.position})
+                                    </span>
                                   </div>
                                 ))
                               ) : (
@@ -596,7 +603,7 @@ export default function FormAddProjectModal({refechProjects}) {
                             </div>
                           )}
                         </div>
-                      </div>
+                      </div>}
                     </div>
                   </div>
                   {/* Timeline Section */}

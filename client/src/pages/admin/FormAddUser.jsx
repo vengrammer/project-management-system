@@ -1,5 +1,5 @@
 import { useId, useState } from "react";
-import { Eye, EyeOff, Plus, Variable } from "lucide-react";
+import { Eye, EyeOff, Plus, Variable, X } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
@@ -86,10 +86,9 @@ export default function FormAddUser() {
   const [createUser, { loading: loadingCreateUser }] = useMutation(
     INSERT_USER,
     {
-      onCompleted: () => {
+      onCompleted: async () => {
         toast.success("Successfully created account!");
-        setOpen(false);
-        // Reset form
+
         setFormData({
           fullname: "",
           department: "",
@@ -100,6 +99,8 @@ export default function FormAddUser() {
           password: "",
           status: true,
         });
+
+        setOpen(false);
       },
       onError: (error) => {
         toast.error(`Error in creating account: ${error.message}`);
@@ -107,6 +108,8 @@ export default function FormAddUser() {
       refetchQueries: [{ query: GET_USERS }],
     },
   );
+
+  
 
   const handleAddUser = (e) => {
     e.preventDefault();
@@ -128,6 +131,7 @@ export default function FormAddUser() {
       return;
     }
 
+
     if (loadingDepartment || loadingCreateUser) {
       return (
         <div className="flex justify-center items-center min-h-screen">
@@ -146,7 +150,7 @@ export default function FormAddUser() {
         .map(
           (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
         )
-        .join(" "); 
+        .join(" ");
     };
     const formattedFullname = formatFullname(formData.fullname);
 
@@ -178,12 +182,14 @@ export default function FormAddUser() {
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4"
-          onClick={(e) => e.target === e.currentTarget && setOpen(false)}
         >
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
             {/* Header */}
-            <div className="flex justify-center mb-4">
+            <div className="relative flex justify-center mb-4 ">
               <img src={logo} alt="logo" className="h-10 w-auto" />
+              <button onClick={() => setOpen(false)} className="absolute p-2 right-0 hover:bg-gray-200 rounded-4xl cursor-pointer">
+                <X />
+              </button>
             </div>
             <h2 className="text-xl font-bold text-center text-gray-800">
               Add New User

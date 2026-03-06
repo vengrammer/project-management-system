@@ -64,7 +64,7 @@ export default function ProjectTable() {
 
   const [updateProject] = useMutation(SET_ARCHIVE);
 
-  const handleArchive =  async (id) => {
+  const handleArchive = async (id) => {
     Swal.fire({
       title: "Are you sure you want to archive this project?",
       text: "Archive project!",
@@ -89,7 +89,7 @@ export default function ProjectTable() {
         }
       }
     });
-  }
+  };
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -108,7 +108,7 @@ export default function ProjectTable() {
           <Loader size={70} className="animate-spin text-blue-500" />
         </div>
       </div>
-    );;
+    );
   }
 
   // Handle error state
@@ -192,6 +192,19 @@ export default function ProjectTable() {
     return colors[status?.toLowerCase()] || "bg-gray-100 text-gray-800";
   };
 
+  const overdue = (project) => {
+    console.log(project);
+
+    const today = new Date();
+    const dueDate = new Date(project?.endDate);
+
+    if (project?.status !== "completed") {
+      return dueDate < today;
+    } else {
+      return false;
+    }
+  };
+
   return (
     <motion.div
       initial={{ y: 100, opacity: 0 }}
@@ -249,7 +262,9 @@ export default function ProjectTable() {
             currentProjects.map((project) => (
               <div
                 key={project.id}
-                className="hover:bg-gray-50 transition-colors p-4 lg:px-6 border lg:py-4"
+                className={`hover:bg-gray-50 transition-colors p-4 lg:px-6 border lg:py-4 ${
+                  overdue(project) ? "border-red-500 border-2" : ""
+                }`}
               >
                 {/* Unified Responsive Layout */}
                 <div className="lg:grid lg:grid-cols-9 lg:gap-4 lg:items-center space-y-3 lg:space-y-0">
