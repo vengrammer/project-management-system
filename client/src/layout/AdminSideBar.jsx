@@ -19,6 +19,7 @@ import {
   LayoutDashboard,
   Building2,
   Archive,
+  Bell,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -117,7 +118,7 @@ export default function AdminSideBar() {
         {/* Navigation Links */}
         <nav className="flex-1 p-4 overflow-y-auto">
           <div className="px-4 py-2 mb-4 rounded-2xl border shadow-blue-800 shadow-2xs">
-            <h1 className=" font-semibold text-gray-800">
+            <h1 className="relative flex flex-row font-semibold text-gray-800">
               Welcome, <span className="text-blue-600">Admin</span>
             </h1>
           </div>
@@ -191,6 +192,21 @@ export default function AdminSideBar() {
               </Link>
             </li>
           </ul>
+
+          <li>
+            <Link
+              to="/admin/notification"
+              className={`flex relative items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
+                isActive("/admin/notification")
+                  ? "bg-blue-100 text-blue-600"
+                  : ""
+              }`}
+              onClick={() => setIsOpen(false)}
+            >
+              <Bell size={20} />
+              <span>Notifications</span> <span className=" absolute right-0 bg-red-600 bold text-white px-2  rounded-4xl">12</span>
+            </Link>
+          </li>
         </nav>
         {/* Account Section at Bottom */}
         <div className="p-4 border-t">

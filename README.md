@@ -18,14 +18,7 @@
               manager can see the dashboard of project that assigned to them as manager
           📂Project
               The manager can create a new project,edit,archive and assign user to them
-              
-          
-          
-
-  
-  
-
-
+            
 # To run the project
 // to run client - frontend
         npm run dev

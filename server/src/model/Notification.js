@@ -2,19 +2,28 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
-const notificationSchema = new Schema(
-  {
-    recipient: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+//recipients sender role type title message entity isRead, createdAt, updatedAt
 
+const notificationSchema = new mongoose.Schema(
+  {
+    recipients: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
     sender: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-
+    role: {
+      type: String,
+      enum: ["admin", "manager", "user"],
+      required: true,
+      default: "user",
+      index: true,
+    },
     type: {
       type: String,
       enum: [
@@ -27,23 +36,20 @@ const notificationSchema = new Schema(
       ],
       required: true,
     },
-
     title: {
       type: String,
       trim: true,
       maxlength: 150,
     },
-
     message: {
       type: String,
       trim: true,
       maxlength: 500,
     },
-
     entity: {
       type: {
         type: String,
-        enum: ["Task", "Project", "Comment"],
+        enum: ["Task", "Project", "TaskLogs"],
         required: true,
       },
       id: {
@@ -51,16 +57,11 @@ const notificationSchema = new Schema(
         required: true,
       },
     },
-
     isRead: {
       type: Boolean,
       default: false,
       index: true,
-    },
-
-    readAt: {
-      type: Date,
-    },
+    }
   },
   {
     timestamps: true,
@@ -68,8 +69,10 @@ const notificationSchema = new Schema(
   },
 );
 
-// Optional but useful indexes
-notificationSchema.index({ recipient: 1, isRead: 1 });
-notificationSchema.index({ recipient: 1, createdAt: -1 });
+// Indexes for faster queries
+notificationSchema.index({ recipients: 1, isRead: 1 });
+notificationSchema.index({ recipients: 1, createdAt: -1 });
+notificationSchema.index({ role: 1, createdAt: -1 });
 
-export default mongoose.model("Notification", notificationSchema);
+const Notification =  mongoose.model("Notification", notificationSchema);
+export default Notification

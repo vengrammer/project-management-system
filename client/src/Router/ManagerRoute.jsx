@@ -8,6 +8,7 @@ import Profile from "@/pages/admin/Profile";
 import ProjectTableManager from "@/pages/manager/ProjectTableManager";
 import ProtectedRoute from "./ProtectedRoute";
 import ArchiveAdminEmployeeManager from "@/pages/admin/ArchiveAdminEmployeeManager";
+import Notification from "@/pages/admin/Notification";
 
 function ManagerRoute() {
   return (
@@ -21,6 +22,7 @@ function ManagerRoute() {
           <Route path="dashboard" element={<ManagerDashboard />} />
           <Route path="projects" element={<ProjectTableManager />} />
           <Route path="archive" element={<ArchiveAdminEmployeeManager />} />
+          <Route path="notification" element={<Notification />} />
           <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="*" element={<NotFound />} />

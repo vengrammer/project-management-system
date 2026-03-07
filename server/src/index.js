@@ -17,13 +17,14 @@ if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET not found in .env file");
 }
 
-import app from "./App.js";
+import httpServer from "./App.js";
 import connectDB from "./config/db.js";
 
 const PORT = process.env.PORT || 5000;
 
 connectDB();
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`graphql running at http://localhost:${PORT}/graphql`);
+  console.log(`🚀 Subscriptions ready at ws://localhost:${PORT}/graphql`);
 });

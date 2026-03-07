@@ -8,12 +8,22 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
+//for websocket
+import { WebSocketServer } from "ws";
+import { useServer } from "graphql-ws/use/ws";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import http from "http"
 const app = express();
 
 //use the typedefs and resolver fromm graphql/index.js
-const server = new ApolloServer({
+const schema = makeExecutableSchema({
   typeDefs,
   resolvers,
+});
+
+// create apollo server
+const server = new ApolloServer({
+  schema,
 });
 
 await server.start();
@@ -36,11 +46,46 @@ app.use(
           return { user: decoded };
         } catch (error) {
           // console.log("Invalid token");
-          return {}
+          return {};
         }
       }
-      return {}
+      return {};
     },
   }),
 );
-export default app;
+
+//web scoket
+const httpServer = http.createServer(app);
+
+// create websocket server
+const wsServer = new WebSocketServer({
+  server: httpServer,
+  path: "/graphql",
+});
+
+// attach graphql websocket
+useServer(
+  {
+    schema,
+    context: async (ctx) => {
+      const token = ctx.connectionParams?.authorization?.split(" ")[1];
+
+      if (token) {
+        try {
+          const decoded = jwt.verify(
+            token.replace("Bearer ", ""),
+            process.env.JWT_SECRET,
+          );
+          return { user: decoded };
+        } catch {
+          return {};
+        }
+      }
+
+      return {};
+    },
+  },
+  wsServer,
+);
+
+export default httpServer;

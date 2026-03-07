@@ -13,6 +13,7 @@ import {
   User,
   LayoutDashboard,
   Archive,
+  Bell,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
@@ -139,7 +140,6 @@ export default function ManagerSideBar() {
                 <span>Dashboard</span>
               </Link>
             </li>
-
             <li>
               <Link
                 to="/manager/projects"
@@ -154,7 +154,6 @@ export default function ManagerSideBar() {
                 <span>Project</span>
               </Link>
             </li>
-
             <li>
               <Link
                 to="/manager/archive"
@@ -167,6 +166,24 @@ export default function ManagerSideBar() {
               >
                 <Archive size={20} />
                 <span>Archive</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                to="/manager/notification"
+                className={`flex relative items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
+                  isActive("/manager/notification")
+                    ? "bg-blue-100 text-blue-600"
+                    : ""
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <Bell size={20} />
+                <span>Notifications</span>{" "}
+                <span className=" absolute right-0 bg-red-600 bold text-white px-2  rounded-4xl">
+                  12
+                </span>
               </Link>
             </li>
           </ul>

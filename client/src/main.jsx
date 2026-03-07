@@ -10,14 +10,17 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 // store and persistor will be imported below for auth link
 
+
+//import for the websocket
+import { split } from "@apollo/client";
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+import { createClient } from "graphql-ws";
+import { getMainDefinition } from "@apollo/client/utilities";
+
 const httpLink = new HttpLink({
   uri: import.meta.env.VITE_GRAPHQL_URL,
 });
 
-// ✅ Add auth link (pull token from redux-persisted store rather than
-// reading a separate key – the persisted auth slice is stored under
-// `persist:auth`).  We import the store directly so we always have the
-// latest value when a request is made.
 import { store, persistor } from "./middleware/store";
 
 const authLink = setContext((_, { headers }) => {
@@ -32,8 +35,36 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+//websocket
+const wsLink = new GraphQLWsLink(
+  createClient({
+    url: import.meta.env.VITE_GRAPHQL_WS, // ws://localhost:5000/graphql
+    connectionParams: () => {
+      const state = store.getState();
+      const token = state?.auth?.token;
+
+      return {
+        authorization: token ? `Bearer ${token}` : "",
+      };
+    },
+  }),
+);
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+
+    return (
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
+    );
+  },
+  wsLink, // subscriptions → websocket
+  authLink.concat(httpLink), // queries & mutations → http
+);
+
 const client = new ApolloClient({
-  link: authLink.concat(httpLink), // ✅ attach token automatically
+  link: splitLink,
   cache: new InMemoryCache(),
 });
 

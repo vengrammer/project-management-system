@@ -6,6 +6,7 @@ import ArchiveAdminEmployeeManager from "@/pages/admin/ArchiveAdminEmployeeManag
 import EmployeeDashboard from "@/pages/employee/EmployeeDashboard";
 import Profile from "@/pages/admin/Profile";
 import ProtectedRoute from "./ProtectedRoute";
+import Notification from "@/pages/admin/Notification";
 function EmployeeRoute() {
   return (
     <ProtectedRoute requiredRole="user">
@@ -18,6 +19,7 @@ function EmployeeRoute() {
           <Route path="projects" element={<ProjectTableEmployee />} />
           <Route path="archive" element={<ArchiveAdminEmployeeManager />} />
           <Route path="dashboard" element={<EmployeeDashboard />} />
+          <Route path="notification" element={<Notification />} />
           <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
