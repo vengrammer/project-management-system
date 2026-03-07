@@ -12,8 +12,8 @@ type EntityOutput {
 
 type Notification {
   id: ID!
-  recipients: [ID!]!
-  sender: ID
+  recipients: [User!]!
+  sender: User
   type: String
   title: String
   message: String
@@ -44,5 +44,6 @@ type Mutation {
 
 type Subscription {
   notificationAdded(userId: ID!): Notification!
+  notificationMarkAsRead(userId: ID!): Notification!
 }
 `;

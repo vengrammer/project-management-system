@@ -133,6 +133,14 @@ export const userResolvers = {
         throw new Error("Failed to search users");
       }
     },
+    usersWithID: async (_, { id }) => {
+      try {
+        const users = await User.find({ _id: { $in: id } });
+        return users;
+      } catch (error) {
+        throw new Error("Error fetching users: " + error.message);
+      }
+    },
   },
   Mutation: {
     //login user and return user data

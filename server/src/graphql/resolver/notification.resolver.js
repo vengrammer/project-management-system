@@ -10,7 +10,10 @@ export const notificationResolvers = {
 
       const notifications = await Notification.find({
         recipients: context.user.id,
-      }).sort({ createdAt: -1 });
+      })
+        .sort({ createdAt: -1 })
+        .populate("sender")
+        .populate("recipients");
 
       return notifications.map(formatNotification);
     },
@@ -18,7 +21,9 @@ export const notificationResolvers = {
     notification: async (_, { id }, { user }) => {
       if (!user) throw new Error("Unauthorized");
 
-      const notif = await Notification.findById(id);
+      const notif = await Notification.findById(id)
+        .populate("recipients")
+        .populate("sender");
       if (!notif) throw new Error("Notification not found");
 
       return formatNotification(notif);
@@ -39,6 +44,10 @@ export const notificationResolvers = {
         isRead: input.isRead ?? false,
       });
 
+      // Populate sender and recipients before formatting
+      await notification.populate("sender");
+      await notification.populate("recipients");
+
       const formatted = formatNotification(notification);
 
       // send notification to each recipient
@@ -58,9 +67,21 @@ export const notificationResolvers = {
         id,
         { isRead: true },
         { new: true },
-      );
+      )
+        .populate("sender")
+        .populate("recipients");
 
-      return formatNotification(notif);
+        if (!notif) throw new Error("Notification not found");
+
+      const formatted = formatNotification(notif);
+
+      notif.recipients.forEach((recipient) => {
+        pubsub.publish(`NOTIFICATION_${recipient._id}`, {
+          notificationMarkAsRead: formatted,
+        });
+      });
+
+      return formatted;
     },
   },
 
@@ -69,15 +90,36 @@ export const notificationResolvers = {
       subscribe: (_, { userId }) =>
         pubsub.asyncIterator(`NOTIFICATION_${userId}`),
     },
+    notificationMarkAsRead: {
+      subscribe: (_, { userId }) =>
+        pubsub.asyncIterator(`NOTIFICATION_${userId}`),
+    },
   },
 };
 
 // helper formatter
 function formatNotification(notif) {
+  // Helper to format a user object
+  const formatUser = (user) => {
+    if (!user) return null;
+    return {
+      id: user._id?.toString() || user.id?.toString(),
+      fullname: user.fullname,
+      department: user.department,
+      role: user.role,
+      position: user.position,
+      email: user.email,
+      username: user.username,
+      status: user.status,
+      createdAt: user.createdAt?.toISOString(),
+      updatedAt: user.updatedAt?.toISOString(),
+    };
+  };
+
   return {
     id: notif._id.toString(),
-    recipients: notif.recipients.map((r) => r.toString()),
-    sender: notif.sender?.toString() || null,
+    recipients: notif.recipients.map((r) => formatUser(r)),
+    sender: formatUser(notif.sender),
     type: notif.type,
     title: notif.title,
     message: notif.message,

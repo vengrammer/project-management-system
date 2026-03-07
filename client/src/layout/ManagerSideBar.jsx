@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { gql } from "@apollo/client";
-import { useQuery } from "@apollo/client/react";
+import { useQuery, useSubscription } from "@apollo/client/react";
 import { persistor } from "@/middleware/store";
 import { useApolloClient } from "@apollo/client/react";
 import {
@@ -29,6 +29,33 @@ const GET_USER = gql`
   }
 `;
 
+const COUNT_UNREAD_NOTIFICATIOS = gql`
+  query Notifications {
+    notifications {
+      id
+      isRead
+    }
+  }
+`;
+
+const NOTIFICATION_SUB = gql`
+  subscription Subscription($userId: ID!) {
+    notificationAdded(userId: $userId) {
+      id
+      isRead
+    }
+  }
+`;
+
+const NOTIFICATION_MARK_AS_READ_SUB = gql`
+  subscription NotificationMarkAsRead($userId: ID!) {
+    notificationMarkAsRead(userId: $userId) {
+      id
+      isRead
+    }
+  }
+`;
+
 export default function ManagerSideBar() {
   const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -37,6 +64,7 @@ export default function ManagerSideBar() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [notifications, setNotifications] = useState([]);
 
   const getInitials = (name) => {
     if (!name) return "";
@@ -63,6 +91,56 @@ export default function ManagerSideBar() {
   const { error: userError, data: userData } = useQuery(GET_USER, {
     variables: { userId },
     skip: !userId,
+  });
+
+  //get the noticatios count
+  const { data } = useQuery(COUNT_UNREAD_NOTIFICATIOS);
+  const { data: subData } = useSubscription(NOTIFICATION_SUB, {
+    variables: { userId },
+  });
+
+  const { data: markAsReadSubData } = useSubscription(
+    NOTIFICATION_MARK_AS_READ_SUB,
+    {
+      variables: { userId },
+    },
+  );
+
+  //get the updated count of the notif
+  useEffect(() => {
+    function isNotfification() {
+      if (data?.notifications) setNotifications(data.notifications);
+    }
+
+    isNotfification();
+  }, [data]);
+
+  useEffect(() => {
+    function isAddNotification() {
+      if (subData?.notificationAdded)
+        setNotifications((prev) => [subData.notificationAdded, ...prev]);
+    }
+    isAddNotification();
+  }, [subData]);
+
+  useEffect(() => {
+    function isMarkAsReadNotification() {
+      if (markAsReadSubData?.notificationMarkAsRead) {
+        const updatedNotification = markAsReadSubData.notificationMarkAsRead;
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.id === updatedNotification.id ? updatedNotification : n,
+          ),
+        );
+      }
+    }
+    isMarkAsReadNotification();
+  }, [markAsReadSubData]);
+
+  console.log(notifications);
+
+  const filterUnReadCount = notifications.filter((n) => {
+    return n.isRead === false;
   });
 
   // if (loadingUser) {
@@ -181,9 +259,11 @@ export default function ManagerSideBar() {
               >
                 <Bell size={20} />
                 <span>Notifications</span>{" "}
-                <span className=" absolute right-0 bg-red-600 bold text-white px-2  rounded-4xl">
-                  12
-                </span>
+                {filterUnReadCount.length > 0 && (
+                  <span className=" absolute right-0 bg-red-600 bold text-white px-2  rounded-4xl">
+                    {filterUnReadCount.length}
+                  </span>
+                )}
               </Link>
             </li>
           </ul>
