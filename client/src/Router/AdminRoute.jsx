@@ -16,7 +16,7 @@ import Notification from "@/pages/admin/Notification";
 
 function HomeRoute() {
   return (
-    <ProtectedRoute requiredRole="admin">
+      <ProtectedRoute requiredRole="admin">
       <Routes>
         <Route element={<AdminSidebar />}>
           <Route
@@ -38,7 +38,7 @@ function HomeRoute() {
           element={<ProjectDetailsPage />}
         />
       </Routes>
-    </ProtectedRoute>
+      </ProtectedRoute> 
   );
 }
 export default HomeRoute;

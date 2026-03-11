@@ -26,14 +26,6 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: [
-        "task_assigned",
-        "task_updated",
-        "task_completed",
-        "comment_added",
-        "mentioned",
-        "project_update",
-      ],
       required: true,
     },
     title: {

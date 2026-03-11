@@ -8,7 +8,8 @@ import { useDispatch } from "react-redux";
 import { logout } from "@/middleware/authSlice";
 import { persistor } from "@/middleware/store";
 import { useApolloClient } from "@apollo/client/react";
-
+import notificationSound from "../assets/notification.wav";
+import { useRef } from "react";
 import {
   Menu,
   X,
@@ -70,6 +71,7 @@ export default function AdminSideBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [notifications, setNotifications] = useState([]);
+  const audioRef = useRef(null);
 
   const getInitials = (name) => {
     if (!name) return "";
@@ -121,8 +123,15 @@ export default function AdminSideBar() {
 
   useEffect(() => {
     function isAddNotification() {
-      if (subData?.notificationAdded)
+      if (subData?.notificationAdded) {
         setNotifications((prev) => [subData.notificationAdded, ...prev]);
+        // Play notification sound
+        if (audioRef.current) {
+          audioRef.current
+            .play()
+            .catch((err) => console.log("Audio play error:", err));
+        }
+      }
     }
     isAddNotification();
   }, [subData]);
@@ -159,6 +168,7 @@ export default function AdminSideBar() {
 
   return (
     <div className="flex h-screen bg-gray-100">
+      <audio ref={audioRef} src={notificationSound} preload="auto" />
       {/* Mobile Menu Button */}
       <button
         onClick={toggleSidebar}
@@ -283,7 +293,7 @@ export default function AdminSideBar() {
               <Bell size={20} />
               <span>Notifications</span>{" "}
               {filterUnReadCount.length > 0 && (
-                <span className=" absolute right-0 bg-red-600 bold text-white px-2  rounded-4xl">
+                <span className="absolute right-0 bg-red-600 bold text-white px-2  rounded-4xl">
                   {filterUnReadCount.length}
                 </span>
               )}

@@ -143,7 +143,9 @@ function formatTimeAgo(value) {
 
 export default function Notification() {
   const userId = useSelector((state) => state?.auth?.user?.id);
-  const { data, loading, error } = useQuery(NOTIFICATIONS);
+  const { data, loading, error } = useQuery(NOTIFICATIONS, {
+    fetchPolicy: "network-only",
+  });
   const { data: subData } = useSubscription(NOTIFICATION_SUB, {
     variables: { userId },
   });

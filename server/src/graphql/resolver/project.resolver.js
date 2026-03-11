@@ -169,7 +169,10 @@ export const projectResolvers = {
       }
 
       try {
-        const project = await Project.find({ projectManager: userId , isArchive: false})
+        const project = await Project.find({
+          projectManager: userId,
+          isArchive: false,
+        })
           .populate("users")
           .populate("department")
           .populate("projectManager");
@@ -211,14 +214,13 @@ export const projectResolvers = {
     },
     projectsByArchive: async (_, __, context) => {
       const currentUserId = context?.user?.id;
-      
+
       if (!currentUserId) {
         throw new Error("Not authenticated");
       }
 
       // Get user
-      const foundUser = await User.findById(currentUserId)
-        
+      const foundUser = await User.findById(currentUserId);
 
       if (!foundUser) {
         throw new Error("Cannot find the user");
@@ -286,7 +288,17 @@ export const projectResolvers = {
           startDate: args.startDate,
           endDate: args.endDate,
         });
-        return { message: "Project created successfully", project: newProject };
+
+       
+        const newProjectData = await Project.findById(newProject._id)
+          .populate("users")
+          .populate("department")
+          .populate("projectManager");
+
+        return {
+          message: "Project created successfully",
+          project: newProjectData,
+        };
       } catch (error) {
         console.error("Create project error:", error);
         throw new Error(error.message || "Failed to create project");

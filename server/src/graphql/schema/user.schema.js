@@ -26,6 +26,7 @@ export const userSchema = `#graphql
     type Query {
         users: [User]!
         userRoleManager: [User]
+        userRoleAdmin: [User]
         user(id: ID!): User
         currentUser: User # fetch the logged-in user (based on context)
         usersWithID(id: [String]) : [User]

@@ -63,16 +63,45 @@ const CREATE_PROJECT = gql`
       endDate: $endDate
     ) {
       message
+      project {
+        id
+        title
+        projectManager {
+          id
+        }
+        users {
+          id
+        }
+      }
+    }
+  }
+`;
+const CREATE_NOTIF_FOR_ADMIN = gql`
+  mutation CreateNotif($input: AddNotifInput!) {
+    createNotif(input: $input) {
+      id
+      isRead
+      title
     }
   }
 `;
 
-export default function FormAddProjectModal({refechProjects}) {
+const GET_ALL_ADMIN = gql`
+  query UserRoleAdmin {
+    userRoleAdmin {
+      id
+    }
+  }
+`;
+
+export default function FormAddProjectModal({ refechProjects }) {
   const location = useLocation();
   const isManager = location.pathname.includes("manager");
+
   const auth = useSelector((state) => state.auth);
 
   const managerId = auth.user?.id;
+  const userId = auth.user?.id;
 
   // console.log("refechProjects in modal:", refechProjects);
   const [selectedEmployees, setSelectedEmployees] = useState([]);
@@ -86,7 +115,7 @@ export default function FormAddProjectModal({refechProjects}) {
     department: "",
     status: "not started",
     priority: "",
-    projectManager:  "",
+    projectManager: "",
     budget: "",
     startDate: "",
     endDate: "",
@@ -130,6 +159,19 @@ export default function FormAddProjectModal({refechProjects}) {
 
   //HERE IS THE ALL QUERRY------------#######################################
 
+  //CREATE A NOTIFICATION
+  const [createNotif] = useMutation(CREATE_NOTIF_FOR_ADMIN, {
+    onCompleted: () => {
+      console.log("complete");
+    },
+    onError: (error) => {
+      console.log("error in creating notif: ", error);
+    },
+  });
+
+  //const get all the admin
+  const { data: AdminData } = useQuery(GET_ALL_ADMIN);
+
   //GET THE DEPARTMENT AND THERE USERS
   const {
     loading: loadindDepartments,
@@ -154,15 +196,14 @@ export default function FormAddProjectModal({refechProjects}) {
     refetching();
   }, []);
 
-
-
   // CREATE PROJECT
   const [createProject, { loading: loadingCreateProject }] = useMutation(
     CREATE_PROJECT,
     {
-      onCompleted: async () => {
+      onCompleted: async (data) => {
         toast.success("Project created successfully");
         // reset form and selection
+
         setFormData({
           projectName: "",
           description: "",
@@ -180,6 +221,73 @@ export default function FormAddProjectModal({refechProjects}) {
         setManagerSearch("");
         setDepartmentSearch("");
         setIsOpen(false);
+
+  
+        //Create notification after project is successfully created for the admin.
+        console.log("data of new project",data)
+        const projectId = data?.createProject?.project?.id;
+        if (projectId && AdminData?.userRoleAdmin) {
+          createNotif({
+            variables: {
+              input: {
+                entity: {
+                  id: projectId,
+                  type: "Project",
+                },
+                isRead: false,
+                message: `A new project "${data?.createProject?.project?.title}" has been created.`,
+                recipients: AdminData.userRoleAdmin.map((admin) => admin.id),
+                sender: userId,
+                title: "New Project Created",
+                type: "New Project",
+              },
+            },
+          });
+        }
+
+        //Create notification after project is successfully created for the manager that assigned.
+         const managerAssigned = data.createProject?.project.projectManager.id
+         if(managerAssigned){
+          createNotif({
+            variables: {
+              input: {
+                entity: {
+                  id: projectId,
+                  type: "Project",
+                },
+                isRead: false,
+                message: `You have been assigned as the project manager for "${data?.createProject?.project?.title}".`,
+                recipients: managerAssigned,
+                sender: userId,
+                title: "You’ve Been Assigned to a Project as Manager",
+                type: "Project Assigned",
+              },
+            },
+          });
+         }
+         //create notifications for all the employee that assigned to the project
+         const allEmployee = data.createProject?.project.users.map((user) => user.id);
+         if(allEmployee){
+          createNotif({
+            variables: {
+              input: {
+                entity: {
+                  id: projectId,
+                  type: "Project",
+                },
+                isRead: false,
+                message: `You have been assigned to the project "${data?.createProject?.project?.title}" as a team member.`,
+                recipients: allEmployee,
+                sender: userId,
+                title: "You’ve Been Assigned to a Project as Member",
+                type: "Project Assigned",
+              },
+            },
+          });
+         }
+
+
+        
       },
       onError: () => {
         toast.error("Failed to create project");
@@ -224,7 +332,7 @@ export default function FormAddProjectModal({refechProjects}) {
         department: formData.department,
         status: formData.status,
         priority: formData.priority,
-        projectManager: isManager ? managerId :  projectManager ,
+        projectManager: isManager ? managerId : projectManager,
         budget: parseInt(formData.budget, 10) || 0,
         users: selectedEmployees,
         startDate: formData.startDate,
@@ -271,7 +379,7 @@ export default function FormAddProjectModal({refechProjects}) {
     );
   };
 
-  const filteredManagers = (dataUserManager?.userRoleManager  ||  []).filter(
+  const filteredManagers = (dataUserManager?.userRoleManager || []).filter(
     (manager) =>
       manager.fullname
         ?.toLowerCase()
@@ -556,54 +664,56 @@ export default function FormAddProjectModal({refechProjects}) {
                         </select>
                       </div>
                       {/* project manager dropdown */}
-                      {!isManager && <div className="space-y-2 relative" ref={managerRef}>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Project Manager
-                        </label>
-                        <div className="relative">
-                          <input
-                            disabled={isManager}
-                            type="text"
-                            placeholder="Search project manager..."
-                            value={managerSearch}
-                            onChange={(e) => {
-                              setManagerSearch(e.target.value);
-                              setShowManagerDropdown(true);
-                            }}
-                            onFocus={() => setShowManagerDropdown(true)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                          {showManagerDropdown && (
-                            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-auto">
-                              {filteredManagers.length > 0 ? (
-                                filteredManagers.map((manager) => (
-                                  <div
-                                    key={manager.id}
-                                    onClick={() => {
-                                      handleInputChange(
-                                        "projectManager",
-                                        manager?.id,
-                                      );
-                                      setManagerSearch(manager?.fullname);
-                                      setShowManagerDropdown(false);
-                                    }}
-                                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
-                                  >
-                                    {manager?.fullname}{" "}
-                                    <span className="text-gray-600 lowercase">
-                                      ({manager?.position})
-                                    </span>
+                      {!isManager && (
+                        <div className="space-y-2 relative" ref={managerRef}>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Project Manager
+                          </label>
+                          <div className="relative">
+                            <input
+                              disabled={isManager}
+                              type="text"
+                              placeholder="Search project manager..."
+                              value={managerSearch}
+                              onChange={(e) => {
+                                setManagerSearch(e.target.value);
+                                setShowManagerDropdown(true);
+                              }}
+                              onFocus={() => setShowManagerDropdown(true)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            {showManagerDropdown && (
+                              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-auto">
+                                {filteredManagers.length > 0 ? (
+                                  filteredManagers.map((manager) => (
+                                    <div
+                                      key={manager.id}
+                                      onClick={() => {
+                                        handleInputChange(
+                                          "projectManager",
+                                          manager?.id,
+                                        );
+                                        setManagerSearch(manager?.fullname);
+                                        setShowManagerDropdown(false);
+                                      }}
+                                      className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                                    >
+                                      {manager?.fullname}{" "}
+                                      <span className="text-gray-600 lowercase">
+                                        ({manager?.position})
+                                      </span>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="px-3 py-2 text-sm text-gray-500">
+                                    No managers found
                                   </div>
-                                ))
-                              ) : (
-                                <div className="px-3 py-2 text-sm text-gray-500">
-                                  No managers found
-                                </div>
-                              )}
-                            </div>
-                          )}
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>}
+                      )}
                     </div>
                   </div>
                   {/* Timeline Section */}
@@ -667,8 +777,6 @@ export default function FormAddProjectModal({refechProjects}) {
                 {loadingCreateProject ? "Creating..." : "Create Project"}
               </button>
             </div>
-
-            {/* Modal Footer */}
           </form>
         </div>
       )}
