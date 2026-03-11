@@ -285,9 +285,6 @@ export default function FormAddProjectModal({ refechProjects }) {
             },
           });
          }
-
-
-        
       },
       onError: () => {
         toast.error("Failed to create project");
