@@ -6,7 +6,7 @@ import logo from "@/assets/logo.png";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 // get the current project by id
 const GET_PROJECT = gql`
@@ -117,7 +117,10 @@ const CREATE_NOTIF = gql`
 
 export default function FormEditProject() {
   const auth = useSelector((state) => state.auth);
-  const userId = auth.user?.id;
+  const userId = auth.user?.id; 
+  const location = useLocation();
+
+  const isManager = location.pathname.includes("manager");
 
   const { id } = useParams();
   const managerRef = useRef(null);
@@ -212,14 +215,7 @@ export default function FormEditProject() {
     data: dataUserManager,
   } = useQuery(GET_USER_MANAGER);
 
-  const [createNotif] = useMutation(CREATE_NOTIF, {
-    onCompleted: () => {
-      console.log("complete");
-    },
-    onError: (error) => {
-      console.log("error in creating notif: ", error);
-    },
-  });
+  const [createNotif] = useMutation(CREATE_NOTIF);
 
   // UPDATE PROJECT
   const [updateProject, { loading: loadingUpdateProject }] = useMutation(
@@ -648,7 +644,7 @@ export default function FormEditProject() {
                         </select>
                       </div>
                       {/* project manager dropdown */}
-                      <div className="space-y-2 relative" ref={managerRef}>
+                      {!isManager && <div className="space-y-2 relative" ref={managerRef}>
                         <label className="block text-sm font-medium text-gray-700">
                           Project Manager{" "}
                         </label>
@@ -696,7 +692,7 @@ export default function FormEditProject() {
                             </div>
                           )}
                         </div>
-                      </div>
+                      </div>}
                     </div>
                   </div>
                   {/* Timeline Section */}

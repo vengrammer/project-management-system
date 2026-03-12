@@ -141,23 +141,12 @@ export default function ManagerSideBar() {
     return n.isRead === false;
   });
 
-  // if (loadingUser) {
-  //   return (
-  //     <div className="w-full h-full flex items-center justify-center bg-slate-50">
-  //       <div className="flex flex-col items-center gap-3">
-  //         <Loader size={70} className="animate-spin text-blue-500" />
-  //       </div>
-  //     </div>
-  //   );
-  // }
   if (userError) {
     toast.error("Failed to load user data");
   }
 
   const fullnameMgr = userData?.user.fullname || "";
   const emailMgr = userData?.user.email || "";
-
-  // console.log("Current User Data:", userData.user.fullname);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -318,9 +307,6 @@ export default function ManagerSideBar() {
       {/* Main Content Area */}
       <main
         className="flex-1 flex overflow-hidden p-2"
-        // style={{
-        //   minHeight: "calc(100vh - 1px)",
-        // }}
       >
         <Outlet />
       </main>

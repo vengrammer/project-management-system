@@ -15,7 +15,26 @@ export const notificationResolvers = {
         .populate("sender")
         .populate("recipients");
 
-      return notifications.map(formatNotification);
+      // when 1 week and read delete
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      const validNotifications = [];
+
+      for (const notif of notifications) {
+        const createdAtDate = new Date(notif.createdAt);
+        const isOlderThanOneWeek = createdAtDate < oneWeekAgo;
+        const isRead = notif.isRead === true;
+
+        if (isOlderThanOneWeek && isRead) {
+          // Delete the notification
+          await Notification.findByIdAndDelete(notif._id);
+        } else {
+          validNotifications.push(notif);
+        }
+      }
+
+      return validNotifications.map(formatNotification);
     },
 
     notification: async (_, { id }, { user }) => {
@@ -71,7 +90,7 @@ export const notificationResolvers = {
         .populate("sender")
         .populate("recipients");
 
-        if (!notif) throw new Error("Notification not found");
+      if (!notif) throw new Error("Notification not found");
 
       const formatted = formatNotification(notif);
 

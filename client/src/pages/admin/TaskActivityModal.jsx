@@ -21,8 +21,6 @@ import Swal from "sweetalert2";
 import { useParams, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-// const TEMP_AUTHOR_ID = "6992d115b034bbfbac83b8fb";
-
 const UPDATE_TASK_STATUS_IN_PROGRESS = gql`
   mutation UpdateTask(
     $updateTaskId: ID!
@@ -90,6 +88,7 @@ const CREATE_TASKLOG = gql`
       author: $author
     ) {
       id
+      content
     }
   }
 `;
@@ -144,7 +143,21 @@ const UPDATE_TASK_STATUS_TO_COMPLETED = gql`
 const GET_PROJECT = gql`
   query Project($projectId: ID!) {
     project(id: $projectId) {
+      id
       startDate
+      projectManager {
+        id
+      }
+    }
+  }
+`;
+
+const CREATE_NOTIF = gql`
+  mutation CreateNotif($input: AddNotifInput!) {
+    createNotif(input: $input) {
+      id
+      isRead
+      title
     }
   }
 `;
@@ -235,6 +248,9 @@ export default function TaskActivityModal({ id: taskId }) {
   const { id } = useParams();
   const shouldFetch = isOpen && Boolean(taskId);
 
+  //CREATE NOTIFICATION
+  const [createNotif] = useMutation(CREATE_NOTIF);
+
   const {
     data: taskData,
     loading: loadingTask,
@@ -273,16 +289,6 @@ export default function TaskActivityModal({ id: taskId }) {
   //CHECK IF THE CURRENT USER IS ASSIGNED TO THIS TASK
 
   const handleMarkAsDone = (tId, currentStatus) => {
-      // if (!isIncluded && !isManager && !isAdmin) {
-      //   Swal.fire({
-      //     title: "Access Denied",
-      //     text: "You are not assigned to this task, a manager, or an admin.",
-      //     icon: "error",
-      //     confirmButtonColor: "#3085d6",
-      //   });
-      //   return;
-      // }
-
     Swal.fire({
       title:
         currentStatus === "in_progress"
@@ -307,18 +313,61 @@ export default function TaskActivityModal({ id: taskId }) {
               currentStatus === "in_progress" ? String(Date.now()) : null,
           },
         });
+      //when a task status has been updated notify all the user assigned to this task icluding manager
+      createNotif({
+        variables: {
+          input: {
+            entity: {
+              id: projectData.project.id,
+              type: "Task",
+            },
+            isRead: false,
+            message: `The task "${
+              taskData.task.title || "Unknown Task"
+            }" has been marked as ${
+              currentStatus === "in_progress" ? "completed" : "in progress"
+            }.`,
+            recipients: [
+              ...(taskData?.task?.users?.map((u) => u.id) || []),
+              projectData?.project?.projectManager?.id,
+            ],
+            sender: userId,
+            title: "Task updated",
+            type: "info",
+          },
+        },
+      });
     });
   };
 
   const [createTaskLog, { loading: loadingCreate }] = useMutation(
     CREATE_TASKLOG,
     {
-      onCompleted: async () => {
+      onCompleted: async (data) => {
         setComment("");
         await refetchTaskLogs();
         toast.success("Update posted");
         // setPostFormOpen(false);
         setMobileTab("timeline");
+
+
+        //create notification for the manager
+        createNotif({
+          variables: {
+            input: {
+              entity: {
+                id: projectData.project.id,
+                type: "Task",
+              },
+              isRead: false,
+              message: `Update on "${taskData.task.title}" : "${data?.createTaskLog?.content}"`,
+              recipients: projectData.project.projectManager.id,
+              sender: userId,
+              title: "New Task Update",
+              type: "Task Updated",
+            },
+          },
+        });
       },
       onError: () => toast.error("Failed to post update"),
     },
@@ -373,19 +422,6 @@ export default function TaskActivityModal({ id: taskId }) {
     e.preventDefault();
     console.log(userId);
     console.log(taskData?.task?.users);
-
-    // const isIncluded = taskData?.task?.users?.some(
-    //   (user) => user.id === userId,
-    // );
-    // if (!isIncluded) {
-    //   Swal.fire({
-    //     title: "Access Denied",
-    //     text: "You are not assigned to this task.",
-    //     icon: "error",
-    //     confirmButtonColor: "#3085d6",
-    //   });
-    //   return;
-    // }
     if (
       projectData?.project?.startDate &&
       new Date(projectData.project.startDate).getTime() > Date.now()
@@ -405,6 +441,10 @@ export default function TaskActivityModal({ id: taskId }) {
         author: userId,
       },
     });
+    //creat a notification for the manager
+
+    
+
     //when user add a new log, if the task is not in progress,
     //change it to in progress. and if the task is completed before, change the completedDate to null
     await updateTask({

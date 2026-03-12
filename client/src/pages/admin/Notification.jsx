@@ -255,7 +255,7 @@ export default function Notification() {
                       {getInitials(n.sender?.fullname)}
                     </div>
                     <span className="text-xs text-gray-600 font-medium">
-                      {n.sender?.fullname}
+                      {n.sender?.id === userId ? "Me" :    n.sender?.fullname}
                     </span>
                   </div>
 
