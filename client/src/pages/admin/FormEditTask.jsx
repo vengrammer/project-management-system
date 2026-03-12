@@ -1,9 +1,10 @@
 import { Pencil, Plus, XCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 const GET_MEMBERS = gql`
   query Project($projectId: ID!) {
@@ -72,6 +73,19 @@ const UPDATE_TASK = gql`
     ) {
       id
       title
+      users {
+        id
+      }
+    }
+  }
+`;
+
+const CREATE_NOTIF = gql`
+  mutation CreateNotif($input: AddNotifInput!) {
+    createNotif(input: $input) {
+      id
+      isRead
+      title
     }
   }
 `;
@@ -95,6 +109,20 @@ function FormEditTask({ taskID }) {
     status: "todo",
   });
 
+  // Track old members
+  const [oldMember, setOldMember] = useState([]);
+  const oldMemberRef = useRef([]);
+  const initializedRef = useRef(false); 
+
+  // Keep oldMember
+  useEffect(() => {
+    oldMemberRef.current = oldMember;
+  }, [oldMember]);
+
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id;
+
+
   const { id } = useParams();
   //get the member
   const {
@@ -117,29 +145,145 @@ function FormEditTask({ taskID }) {
     variables: { taskId: taskID },
     // Don't fetch task for every row; only when modal is open
     skip: !isAddTaskOpen || !taskID,
-    // If the task is already in Apollo cache, `onCompleted` may not run.
-    // Use `data` + effect below to ensure the form always gets hydrated.
     fetchPolicy: "cache-and-network",
     onError: () => toast.error("Failed to load task"),
   });
 
   useEffect(() => {
-    if (!isAddTaskOpen) return;
-    const t = taskData?.task;
-    if (!t) return;
-    setNewTask({
-      title: t.title ?? "",
-      description: t.description ?? "",
-      priority: t.priority ?? "medium",
-      assignedTo: t.users?.map((u) => u.id) ?? [],
-      dueDate: toInputDate(t.dueDate),
-      status: t.status ?? "todo",
-    });
+    function callMe() {
+      if (!isAddTaskOpen) {
+        initializedRef.current = false; // Reset when modal closes
+        return;
+      }
+
+      // Only initialize once per modal open session
+      if (initializedRef.current) {
+        return;
+      }
+
+      const t = taskData?.task;
+      if (!t) {
+        return;
+      }
+
+      initializedRef.current = true;
+
+      const oldUsers = t.users?.map((u) => u.id) ?? [];
+      setOldMember(oldUsers);
+      oldMemberRef.current = oldUsers;
+      setNewTask({
+        title: t.title ?? "",
+        description: t.description ?? "",
+        priority: t.priority ?? "medium",
+        assignedTo: oldUsers,
+        dueDate: toInputDate(t.dueDate),
+        status: t.status ?? "todo",
+      });
+    }
+    callMe();
   }, [isAddTaskOpen, taskData]);
 
+  // CREATE NOTIFICATION
+  const [createNotif] = useMutation(CREATE_NOTIF, {
+    onCompleted: (data) => {
+      console.log("Notification created successfully:", data);
+    },
+    onError: (error) => {
+      console.log("error in creating notif: ", error);
+    },
+  });
+
   const [updateTask, { loading: updatingTask }] = useMutation(UPDATE_TASK, {
-    onCompleted: () => {
+    onCompleted: (data) => {
+      console.log("=== TASK UPDATE COMPLETED ===");
+      console.log("Task data:", data);
+      console.log("oldMember (ref):", oldMemberRef.current);
+      console.log("newTask.assignedTo:", newTask.assignedTo);
+      console.log("userId:", userId);
+
       toast.success("Task updated successfully");
+
+      // Find removed and added members
+      const oldMembers = oldMemberRef.current || [];
+      const newMembers = newTask.assignedTo || [];
+
+      console.log("Comparing:");
+      console.log("  oldMembers:", oldMembers);
+      console.log("  newMembers:", newMembers);
+
+      // If no changes, don't send notifications
+      const hasChanges =
+        JSON.stringify(oldMembers.sort()) !== JSON.stringify(newMembers.sort());
+      console.log("Has changes:", hasChanges);
+
+      if (!hasChanges) {
+        console.log("No member changes detected, skipping notifications");
+        setIsAddTaskOpen(false);
+        return;
+      }
+
+      const removedMembers = oldMembers.filter(
+        (id) => !newMembers.includes(id),
+      );
+      const addedMembers = newMembers.filter((id) => !oldMembers.includes(id));
+
+      console.log("removedMembers:", removedMembers);
+      console.log("addedMembers:", addedMembers);
+
+      // Notify removed members
+      if (removedMembers && removedMembers.length > 0) {
+        console.log("=== CREATING NOTIFICATION FOR REMOVED MEMBERS ===");
+        createNotif({
+          variables: {
+            input: {
+              entity: {
+                id: taskID,
+                type: "Task",
+              },
+              isRead: false,
+              message: `You have been removed from the task "${data?.updateTask?.title}".`,
+              recipients: removedMembers,
+              sender: userId,
+              title: "Removed from Task",
+              type: "Task Removed",
+            },
+          },
+        })
+          .then(() => {
+            console.log("Removed notification sent!");
+          })
+          .catch((err) => {
+            console.error("Failed to send removed notification:", err);
+          });
+      }
+
+      // Notify added members
+      if (addedMembers && addedMembers.length > 0) {
+        console.log("=== CREATING NOTIFICATION FOR ADDED MEMBERS ===");
+        createNotif({
+          variables: {
+            input: {
+              entity: {
+                id: taskID,
+                type: "Task",
+              },
+              isRead: false,
+              message: `You have been assigned to the task "${data?.updateTask?.title}".`,
+              recipients: addedMembers,
+              sender: userId,
+              title: "Assigned to Task",
+              type: "Task Assigned",
+            },
+          },
+        })
+          .then(() => {
+            console.log("Added notification sent!");
+          })
+          .catch((err) => {
+            console.error("Failed to send added notification:", err);
+          });
+      }
+
       setIsAddTaskOpen(false);
     },
     onError: () => {
@@ -151,6 +295,7 @@ function FormEditTask({ taskID }) {
 
   const handleUpdateTask = (e) => {
     e.preventDefault();
+
     updateTask({
       variables: {
         id: taskID,
@@ -178,6 +323,8 @@ function FormEditTask({ taskID }) {
             dueDate: "",
             status: "todo",
           });
+          setOldMember([]);
+          oldMemberRef.current = []; // Reset the ref when opening modal
           setIsAddTaskOpen(true);
         }}
         className="p-2 text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors cursor-pointer"
@@ -302,20 +449,44 @@ function FormEditTask({ taskID }) {
                                 type="checkbox"
                                 checked={newTask.assignedTo.includes(member.id)}
                                 onChange={(e) => {
+                                  console.log(
+                                    "Checkbox clicked:",
+                                    member.id,
+                                    e.target.checked,
+                                  );
+                                  console.log(
+                                    "Current assignedTo before change:",
+                                    newTask.assignedTo,
+                                  );
                                   if (e.target.checked) {
-                                    setNewTask({
-                                      ...newTask,
-                                      assignedTo: [
-                                        ...newTask.assignedTo,
+                                    setNewTask((prev) => {
+                                      const newAssigned = [
+                                        ...prev.assignedTo,
                                         member.id,
-                                      ],
+                                      ];
+                                      console.log(
+                                        "New assignedTo after check:",
+                                        newAssigned,
+                                      );
+                                      return {
+                                        ...prev,
+                                        assignedTo: newAssigned,
+                                      };
                                     });
                                   } else {
-                                    setNewTask({
-                                      ...newTask,
-                                      assignedTo: newTask.assignedTo.filter(
-                                        (id) => id !== member.id,
-                                      ),
+                                    setNewTask((prev) => {
+                                      const newAssigned =
+                                        prev.assignedTo.filter(
+                                          (id) => id !== member.id,
+                                        );
+                                      console.log(
+                                        "New assignedTo after uncheck:",
+                                        newAssigned,
+                                      );
+                                      return {
+                                        ...prev,
+                                        assignedTo: newAssigned,
+                                      };
                                     });
                                   }
                                 }}
