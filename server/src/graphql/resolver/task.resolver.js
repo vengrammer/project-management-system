@@ -55,7 +55,11 @@ const taskResolver = {
           status: args.status,
           //dueDate: args.dueDate,
         });
-        return newTask;
+
+       const newTaskData = await Task.findById(newTask._id).populate(
+         "users",
+       );
+        return newTaskData;
       } catch (error) {
         console.error("Create task error:", error);
         throw new Error(error.message || "Failed to create task");

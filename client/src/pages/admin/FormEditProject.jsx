@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 import { X, Plus, Pen } from "lucide-react";
 import logo from "@/assets/logo.png";
 
@@ -104,7 +105,20 @@ const UPDATE_PROJECT = gql`
   }
 `;
 
+const CREATE_NOTIF = gql`
+  mutation CreateNotif($input: AddNotifInput!) {
+    createNotif(input: $input) {
+      id
+      isRead
+      title
+    }
+  }
+`;
+
 export default function FormEditProject() {
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id;
+
   const { id } = useParams();
   const managerRef = useRef(null);
   const departmentRef = useRef(null);
@@ -124,6 +138,7 @@ export default function FormEditProject() {
   // Dropdown states
   const [showManagerDropdown, setShowManagerDropdown] = useState(false);
   const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false);
+  const [originalManagerId, setOriginalManagerId] = useState("");
 
   // Search states
   const [managerSearch, setManagerSearch] = useState("");
@@ -197,13 +212,68 @@ export default function FormEditProject() {
     data: dataUserManager,
   } = useQuery(GET_USER_MANAGER);
 
+  const [createNotif] = useMutation(CREATE_NOTIF, {
+    onCompleted: () => {
+      console.log("complete");
+    },
+    onError: (error) => {
+      console.log("error in creating notif: ", error);
+    },
+  });
+
   // UPDATE PROJECT
   const [updateProject, { loading: loadingUpdateProject }] = useMutation(
     UPDATE_PROJECT,
     {
-      onCompleted: () => {
+      onCompleted: (data) => {
         toast.success("Project updated successfully");
         setIsOpen(false);
+
+        const newManagerId = data?.updateProject?.project?.projectManager?.id;
+        const projectTitle = data?.updateProject?.project?.title;
+
+        // console.log("original manager:", originalManagerId);
+        // console.log("new manager:", newManagerId);
+
+        if (originalManagerId && newManagerId && originalManagerId !== newManagerId) {
+          // Notify the new manager
+          createNotif({
+            variables: {
+              input: {
+                entity: {
+                  id: id,
+                  type: "Project",
+                },
+                isRead: false,
+                message: `You have been assigned as the project manager for "${projectTitle}".`,
+                recipients: [newManagerId],
+                sender: userId,
+                title: "Assigned as Project Manager",
+                type: "info",
+              },
+            },
+          });
+
+          // Notify the old manager
+          createNotif({
+            variables: {
+              input: {
+                entity: {
+                  id: id,
+                  type: "Project",
+                },
+                isRead: false,
+                message: `You have been removed as the project manager for "${projectTitle}".`,
+                recipients: [originalManagerId],
+                sender: userId,
+                title: "Removed as Project Manager",
+                type: "info",
+              },
+            },
+          });
+        } else {
+          console.log("No manager change detected");
+        }
       },
       onError: () => {
         toast.error("Failed to update project");
@@ -252,7 +322,11 @@ export default function FormEditProject() {
 
   const handleOpen = () => {
     const p = dataProject?.project;
-    if (p) prefillFromProject(p);
+    if (p) {
+      prefillFromProject(p);
+      // Store the original manager ID when modal opens
+      setOriginalManagerId(p?.projectManager?.id ?? "");
+    }
     setIsOpen(true);
   };
 
@@ -608,7 +682,10 @@ export default function FormEditProject() {
                                     }}
                                     className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
                                   >
-                                    {manager?.fullname} <span className="text-gray-600 lowercase">({manager?.position})</span>
+                                    {manager?.fullname}{" "}
+                                    <span className="text-gray-600 lowercase">
+                                      ({manager?.position})
+                                    </span>
                                   </div>
                                 ))
                               ) : (

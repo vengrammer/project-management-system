@@ -4,6 +4,7 @@ import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 const GET_MEMBERS = gql`
   query Project($projectId: ID!) {
@@ -55,7 +56,7 @@ const INSERT_TASK = gql`
     $description: String
     $priority: String
     $status: String
-   # $dueDate: String
+    # $dueDate: String
     $users: [ID]
   ) {
     createTask(
@@ -69,40 +70,29 @@ const INSERT_TASK = gql`
     ) {
       id
       title
+      users {
+        id
+      }
     }
   }
 `;
 
-// const GET_PROJECTS = gql`
-//   query Project($projectId: ID!) {
-//     project(id: $projectId) {
-//       title
-//       client
-//       budget
-//       description
-//       priority
-//       startDate
-//       status
-//       endDate
-//       id
-//       department {
-//         id
-//         name
-//       }
-//       projectManager {
-//         id
-//         fullname
-//       }
-//       users {
-//         id
-//         fullname
-//         position
-//       }
-//     }
-//   }
-// `;
+const CREATE_NOTIF = gql`
+  mutation CreateNotif($input: AddNotifInput!) {
+    createNotif(input: $input) {
+      id
+      isRead
+      title
+    }
+  }
+`;
+
 
 function AddTaskForm({refetchProjects}) {
+
+   const auth = useSelector((state) => state.auth);
+   const userId = auth.user?.id;
+
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
@@ -135,11 +125,18 @@ function AddTaskForm({refetchProjects}) {
     data: memberData,
   } = useQuery(GET_MEMBERS, { variables: { projectId: id } });
 
+   const [createNotif] = useMutation(CREATE_NOTIF, {
+      onCompleted: () => {
+        console.log("complete");
+      },
+      onError: (error) => {
+        console.log("error in creating notif: ", error);
+      },
+    });
  
-
   //insert the task
   const [createTask] = useMutation(INSERT_TASK, {
-    onCompleted: () => {
+    onCompleted: (data) => {
       toast.success("Task created successfully");
       // reset form and selection (restore defaults)
       setNewTask({
@@ -150,15 +147,33 @@ function AddTaskForm({refetchProjects}) {
         dueDate: "",
         status: "todo",
       });
+
       refetchProjects();
       setIsAddTaskOpen(false);
+
+      //create a notif for the user that assigned to the task
+      if (data.createTask.users.length > 0) {
+        createNotif({
+          variables: {
+            input: {
+              entity: {
+                id: data.createTask.id,
+                type: "Task",
+              },
+              isRead: false,
+              message: `You have been assigned a new task "${data?.createTask?.title}"`,
+              recipients: data.createTask.users.map((user) => user.id),
+              sender: userId,
+              title: "New Task Assigned",
+              type: "Task Assignment",
+            },
+          },
+        });
+      }
     },
     onError: () => {
       toast.error("Failed to create task");
     },
-    // refetch task list
-    // refetchQueries: [{ query: GET_TASKS, variables: { taskByProjectId: id } }],
-    // awaitRefetchQueries: true,
   });
 
   const handleAddTask = (e) => {

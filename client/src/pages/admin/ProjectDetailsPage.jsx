@@ -470,7 +470,6 @@ const ProjectDetailsPage = () => {
   const tasks = taskData?.taskByProject ?? [];
 
    const overdue = (project) => {
-     console.log(project);
 
      const today = new Date();
      const dueDate = new Date(project?.endDate);
