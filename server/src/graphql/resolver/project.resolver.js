@@ -2,110 +2,106 @@ import Project from "../../model/project.model.js";
 import TaskLog from "../../model/TaskLogs.js";
 import Task from "../../model/Task.js";
 import User from "../../model/user.model.js";
+import mongoose from "mongoose";
 //projectData = title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
 export const projectResolvers = {
   Query: {
     //show all the projects
     projects: async () => {
       try {
-        const projects = await Project.find({ isArchive: false })
-          .populate("users")
-          .populate("department")
-          .populate("projectManager");
+        const projects = await Project.aggregate([
+          {
+            $match: { isArchive: false },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "users",
+              foreignField: "_id",
+              as: "users",
+            },
+          },
+          {
+            $lookup: {
+              from: "departments",
+              localField: "department",
+              foreignField: "_id",
+              as: "department",
+            },
+          },
+          {
+            $unwind: {
+              path: "$department",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "projectManager",
+              foreignField: "_id",
+              as: "projectManager",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectManager",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ]);
 
-        const formattedDate = (date) => {
-          return date?.toLocaleString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          });
-        };
-
-        return projects.map((project) => ({
-          id: project._id.toString(),
-          title: project.title,
-          description: project.description,
-          priority: project.priority,
-          status: project.status,
-          department: project.department,
-          client: project.client,
-          budget: project.budget || "0",
-          users: project.users,
-          projectManager: project.projectManager,
-          startDate: formattedDate(project.startDate),
-          endDate: formattedDate(project.endDate),
-          createdAt: project.createdAt?.toISOString(),
-          updatedAt: project.updatedAt?.toISOString(),
-        }));
+        return reusableReturnmap(projects);
       } catch (error) {
         console.error("Return projects error:", error);
         throw new Error("Failed to fetch projects");
       }
     },
+
     project: async (_, { id }) => {
       try {
-        const project = await Project.findById(id)
-          .populate("users")
-          .populate("department")
-          .populate("projectManager");
+        const project = await Project.aggregate([
+          { $match: { _id: new mongoose.Types.ObjectId(id) } },
+          {
+            $lookup: {
+              from: "users",
+              localField: "users",
+              foreignField: "_id",
+              as: "users",
+            },
+          },
+          {
+            $lookup: {
+              from: "departments",
+              localField: "department",
+              foreignField: "_id",
+              as: "department",
+            },
+          },
+          {
+            $unwind: {
+              path: "$department",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "projectManager",
+              foreignField: "_id",
+              as: "projectManager",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectManager",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ]);
 
-        // const project2 = await Project.aggregate([
-        //   {
-        //     $match: {
-        //       _id: new mongoose.Types.ObjectId(id),
-        //     },
-        //     $lookup: {
-        //       from: "Users",
-        //       localField: "users",
-        //       foreignField: "_id",
-        //       as: "user",
-        //     },
-        //     $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
-        //     $lookup: {
-        //       from: "Department",
-        //       localField: "department",
-        //       foreignField: "_id",
-        //       as: "dept",
-        //     },
-        //     $unwind: { path: "$dept", preserveNullAndEmptyArrays: true },
-        //     $lookup: {
-        //       from: "Users",
-        //       localField: "projectManager",
-        //       foreignField: "_id",
-        //       as: "pm",
-        //     },
-        //      $unwind: { path: "$pm", preserveNullAndEmptyArrays: true },
-        //   },
-        // ]);
-
-        // console.log(project2);
-        const formattedDate = (date) => {
-          return date?.toLocaleString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          });
-        };
-
-        if (!project) return null;
-
-        return {
-          id: project._id.toString(),
-          title: project.title,
-          description: project.description,
-          priority: project.priority,
-          status: project.status,
-          department: project.department,
-          client: project.client,
-          budget: project.budget,
-          users: project.users,
-          isArchive: project.isArchive,
-          projectManager: project.projectManager,
-          startDate: formattedDate(project.startDate),
-          endDate: formattedDate(project.endDate),
-          createdAt: project.createdAt?.toISOString(),
-          updatedAt: project.updatedAt?.toISOString(),
-        };
+        if (!project.length) return null;
+        return reusableReturnmap(project)[0];
       } catch (error) {
         console.error("Return project error:", error);
         throw new Error("Failed to fetch project");
@@ -120,41 +116,52 @@ export const projectResolvers = {
       }
 
       try {
-        const project = await Project.find({ users: userId, isArchive: false })
-          .populate("users")
-          .populate("department")
-          .populate("projectManager");
+        const project = await Project.aggregate([
+          { $match: { users: new mongoose.Types.ObjectId(userId) } },
+          { $match: { isArchive: false } },
+          {
+            $lookup: {
+              from: "users",
+              localField: "users",
+              foreignField: "_id",
+              as: "users",
+            },
+          },
+          {
+            $lookup: {
+              from: "departments",
+              localField: "department",
+              foreignField: "_id",
+              as: "department",
+            },
+          },
+          {
+            $unwind: {
+              path: "$department",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "projectManager",
+              foreignField: "_id",
+              as: "projectManager",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectManager",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ]);
 
         if (project.length === 0) {
-          console.log("No project");
-          // return empty array rather than throwing so UI can handle gracefully
           return [];
         }
 
-        const formattedDate = (date) => {
-          return date?.toLocaleString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          });
-        };
-
-        return project.map((project) => ({
-          id: project._id.toString(),
-          title: project.title,
-          description: project.description,
-          priority: project.priority,
-          status: project.status,
-          department: project.department,
-          client: project.client,
-          budget: project.budget,
-          users: project.users,
-          projectManager: project.projectManager,
-          startDate: formattedDate(project.startDate),
-          endDate: formattedDate(project.endDate),
-          createdAt: project.createdAt?.toISOString(),
-          updatedAt: project.updatedAt?.toISOString(),
-        }));
+        return reusableReturnmap(project);
       } catch (error) {
         console.log(error);
         throw new Error(error);
@@ -169,44 +176,52 @@ export const projectResolvers = {
       }
 
       try {
-        const project = await Project.find({
-          projectManager: userId,
-          isArchive: false,
-        })
-          .populate("users")
-          .populate("department")
-          .populate("projectManager");
+        const project = await Project.aggregate([
+          { $match: { projectManager: new mongoose.Types.ObjectId(userId) } },
+          { $match: { isArchive: false } },
+          {
+            $lookup: {
+              from: "users",
+              localField: "users",
+              foreignField: "_id",
+              as: "users",
+            },
+          },
+          {
+            $lookup: {
+              from: "departments",
+              localField: "department",
+              foreignField: "_id",
+              as: "department",
+            },
+          },
+          {
+            $unwind: {
+              path: "$department",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "projectManager",
+              foreignField: "_id",
+              as: "projectManager",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectManager",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ]);
 
         if (project.length === 0) {
-          console.log("No project");
-          // return empty array rather than throwing so UI can handle gracefully
           return [];
         }
 
-        const formattedDate = (date) => {
-          return date?.toLocaleString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          });
-        };
-
-        return project.map((project) => ({
-          id: project._id.toString(),
-          title: project.title,
-          description: project.description,
-          priority: project.priority,
-          status: project.status,
-          department: project.department,
-          client: project.client,
-          budget: project.budget,
-          users: project.users,
-          projectManager: project.projectManager,
-          startDate: formattedDate(project.startDate),
-          endDate: formattedDate(project.endDate),
-          createdAt: project.createdAt?.toISOString(),
-          updatedAt: project.updatedAt?.toISOString(),
-        }));
+        return reusableReturnmap(project);
       } catch (error) {
         console.log(error);
         throw new Error(error);
@@ -233,42 +248,58 @@ export const projectResolvers = {
       if (foundUser?.role === "admin") {
         // Admin gets ALL archived projects
       } else if (foundUser?.role === "manager") {
-        filter.projectManager = currentUserId;
+        filter.projectManager = new mongoose.Types.ObjectId(currentUserId);
       } else if (foundUser?.role === "user") {
-        filter.users = { $in: [currentUserId] };
+        filter.users = { $in: [new mongoose.Types.ObjectId(currentUserId)] };
       } else {
         throw new Error("Unauthorized role");
       }
 
-      const projects = await Project.find(filter)
-        .populate("users")
-        .populate("department")
-        .populate("projectManager");
+      const projects = await Project.aggregate([
+        { $match: filter },
+        {
+          $lookup: {
+            from: "users",
+            localField: "users",
+            foreignField: "_id",
+            as: "users",
+          },
+        },
+        {
+          $lookup: {
+            from: "departments",
+            localField: "department",
+            foreignField: "_id",
+            as: "department",
+          },
+        },
+        {
+          $unwind: {
+            path: "$department",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "projectManager",
+            foreignField: "_id",
+            as: "projectManager",
+          },
+        },
+        {
+          $unwind: {
+            path: "$projectManager",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+      ]);
 
-      const formattedDate = (date) => {
-        return date?.toLocaleString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-      };
+      if (projects.length === 0) {
+        return [];
+      }
 
-      return projects.map((project) => ({
-        id: project._id.toString(),
-        title: project.title,
-        description: project.description,
-        priority: project.priority,
-        status: project.status,
-        department: project.department,
-        client: project.client,
-        budget: project.budget,
-        users: project.users,
-        projectManager: project.projectManager,
-        startDate: formattedDate(project.startDate),
-        endDate: formattedDate(project.endDate),
-        createdAt: project.createdAt?.toISOString(),
-        updatedAt: project.updatedAt?.toISOString(),
-      }));
+      return reusableReturnmap(projects);
     },
   },
 
@@ -289,15 +320,49 @@ export const projectResolvers = {
           endDate: args.endDate,
         });
 
-       
-        const newProjectData = await Project.findById(newProject._id)
-          .populate("users")
-          .populate("department")
-          .populate("projectManager");
+        const project = await Project.aggregate([
+          { $match: { _id: newProject._id } },
+          {
+            $lookup: {
+              from: "users",
+              localField: "users",
+              foreignField: "_id",
+              as: "users",
+            },
+          },
+          {
+            $lookup: {
+              from: "departments",
+              localField: "department",
+              foreignField: "_id",
+              as: "department",
+            },
+          },
+          {
+            $unwind: {
+              path: "$department",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "projectManager",
+              foreignField: "_id",
+              as: "projectManager",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectManager",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ]);
 
         return {
           message: "Project created successfully",
-          project: newProjectData,
+          project: reusableReturnmap(project)[0],
         };
       } catch (error) {
         console.error("Create project error:", error);
@@ -353,12 +418,50 @@ export const projectResolvers = {
 
         await project.save();
 
-        const populated = await Project.findById(project._id)
-          .populate("users")
-          .populate("department")
-          .populate("projectManager");
+        const populated = await Project.aggregate([
+          { $match: { _id: project._id } },
+          {
+            $lookup: {
+              from: "users",
+              localField: "users",
+              foreignField: "_id",
+              as: "users",
+            },
+          },
+          {
+            $lookup: {
+              from: "departments",
+              localField: "department",
+              foreignField: "_id",
+              as: "department",
+            },
+          },
+          {
+            $unwind: {
+              path: "$department",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "projectManager",
+              foreignField: "_id",
+              as: "projectManager",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectManager",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ]);
 
-        return { message: "Project updated successfully", project: populated };
+        return {
+          message: "Project updated successfully",
+          project: reusableReturnmap(populated)[0],
+        };
       } catch (error) {
         console.error("Update project error:", error);
         throw new Error(error.message || "Failed to update project");
@@ -366,6 +469,47 @@ export const projectResolvers = {
     },
     deleteProject: async (_, { id }) => {
       try {
+        // First get the project data before deleting
+        const projectToDelete = await Project.aggregate([
+          { $match: { _id: new mongoose.Types.ObjectId(id) } },
+          {
+            $lookup: {
+              from: "users",
+              localField: "users",
+              foreignField: "_id",
+              as: "users",
+            },
+          },
+          {
+            $lookup: {
+              from: "departments",
+              localField: "department",
+              foreignField: "_id",
+              as: "department",
+            },
+          },
+          {
+            $unwind: {
+              path: "$department",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "projectManager",
+              foreignField: "_id",
+              as: "projectManager",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectManager",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ]);
+
         const tasks = await Task.find({ project: id });
 
         const taskIds = tasks.map((task) => task._id);
@@ -374,15 +518,59 @@ export const projectResolvers = {
 
         await Task.deleteMany({ project: id });
 
-        const deletedProject = await Project.findByIdAndDelete(id);
+        await Project.findByIdAndDelete(id);
 
         return {
           message: "Successfully deleted project and all related data",
-          project: deletedProject,
+          project:
+            projectToDelete.length > 0
+              ? reusableReturnmap(projectToDelete)[0]
+              : null,
         };
       } catch (error) {
         throw new Error("Error in deleting the project.");
       }
     },
   },
+};
+
+const reusableReturnmap = (projects) => {
+  const formattedDate = (date) => {
+    return date?.toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  return projects.map((project) => ({
+    id: project._id.toString(),
+    title: project.title,
+    description: project.description,
+    priority: project.priority,
+    status: project.status,
+    client: project.client,
+    budget: project.budget || "0",
+    isArchive: project.isArchive,
+    startDate: formattedDate(project.startDate),
+    endDate: formattedDate(project.endDate),
+    createdAt: project.createdAt?.toISOString(),
+    updatedAt: project.updatedAt?.toISOString(),
+
+    // Add id for department
+    department: project.department
+      ? { ...project.department, id: project.department._id.toString() }
+      : null,
+
+    // Add id for projectManager
+    projectManager: project.projectManager
+      ? {
+          ...project.projectManager,
+          id: project.projectManager._id.toString(),
+        }
+      : null,
+
+    // Add id for users array
+    users: project.users?.map((u) => ({ ...u, id: u._id.toString() })) || [],
+  }));
 };
