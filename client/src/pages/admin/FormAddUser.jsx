@@ -169,7 +169,7 @@ export default function FormAddUser() {
   };
   return (
     <>
-      {/* Trigger Button */}
+      
       <button
         onClick={() => setOpen(true)}
         className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
@@ -177,14 +177,13 @@ export default function FormAddUser() {
         <Plus size={16} />
         Add New User
       </button>
-
-      {/* Modal Overlay */}
+    
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4"
         >
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
-            {/* Header */}
+
             <div className="relative flex justify-center mb-4 ">
               <img src={logo} alt="logo" className="h-10 w-auto" />
               <button onClick={() => setOpen(false)} className="absolute p-2 right-0 hover:bg-gray-200 rounded-4xl cursor-pointer">
@@ -200,7 +199,7 @@ export default function FormAddUser() {
             </p>
 
             <form onSubmit={handleAddUser} className="flex flex-col gap-4">
-              {/* Row 1: Fullname + Category */}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label
@@ -241,7 +240,6 @@ export default function FormAddUser() {
                 </div>
               </div>
 
-              {/* Row 2: Department + Role */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label
@@ -363,7 +361,6 @@ export default function FormAddUser() {
                 </div>
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 className="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 mt-2"

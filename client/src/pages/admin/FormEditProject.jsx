@@ -524,7 +524,6 @@ export default function FormEditProject() {
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-gray-700">
                         Project Description{" "}
-                        <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         placeholder="Enter project description"
@@ -533,7 +532,6 @@ export default function FormEditProject() {
                           handleInputChange("description", e.target.value)
                         }
                         rows={3}
-                        required
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                       />
                     </div>

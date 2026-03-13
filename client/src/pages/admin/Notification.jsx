@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useQuery, useSubscription, useMutation } from "@apollo/client/react";
 import { gql } from "@apollo/client";
-import { Search, Bell, CheckCheck, BellOff } from "lucide-react";
+import { Search, Bell, CheckCheck, BellOff, ArrowLeft, ArrowRight } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const NOTIFICATIONS = gql`
   query Notifications {
@@ -143,6 +145,11 @@ function formatTimeAgo(value) {
 
 export default function Notification() {
   const userId = useSelector((state) => state?.auth?.user?.id);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isAdmin = location.pathname.includes("admin");
+  const isManager = location.pathname.includes("manager");
   const { data, loading, error } = useQuery(NOTIFICATIONS, {
     fetchPolicy: "network-only",
   });
@@ -205,6 +212,10 @@ export default function Notification() {
   if (error)
     return <p className="p-4 text-red-400">Error loading notifications.</p>;
 
+  const handleNotifView = (projectId) => {
+    navigate(`/${isAdmin? "admin" : isManager ? "manager" : "employee"}/projectdetails/${projectId}`)
+  }
+
   return (
     <div className="flex flex-col w-full h-full bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
       {/* Header */}
@@ -213,7 +224,7 @@ export default function Notification() {
           <Bell size={20} className="text-indigo-500" />
           <h1 className="text-lg font-bold text-gray-800">Notifications</h1>
         </div>
-        <div className="relative">
+        {/* <div className="relative">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -223,7 +234,7 @@ export default function Notification() {
             placeholder="Search…"
             className="w-full pl-8 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-indigo-400 transition-colors"
           />
-        </div>
+        </div> */}
       </div>
 
       {/* List */}
@@ -232,8 +243,12 @@ export default function Notification() {
           notifications.map((n) => {
             const typeColor = TYPE_COLORS[n.type?.toLowerCase()] ?? "#6366f1";
             return (
-              <div
+              <motion.div
                 key={n.id}
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+   
                 className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col gap-2"
                 style={{ borderLeft: `4px solid ${typeColor}` }}
               >
@@ -255,7 +270,7 @@ export default function Notification() {
                       {getInitials(n.sender?.fullname)}
                     </div>
                     <span className="text-xs text-gray-600 font-medium">
-                      {n.sender?.id === userId ? "Me" :    n.sender?.fullname}
+                      {n.sender?.id === userId ? "Me" : n.sender?.fullname}
                     </span>
                   </div>
 
@@ -271,6 +286,7 @@ export default function Notification() {
                       {n.entity.type}
                     </span>
                   )}
+
                   <span
                     className={`ml-auto text-xs font-medium px-2 py-0.5 rounded-full ${
                       n.isRead
@@ -283,14 +299,22 @@ export default function Notification() {
                   {!n.isRead && (
                     <button
                       onClick={() => handleMarkAsRead(n.id)}
-                      className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors flex items-center gap-1"
+                      className="text-xs font-medium px-2 py-1 cursor-pointer rounded-full bg-green-300 text-black hover:bg-green-500 hover:text-white transition-colors flex items-center gap-1"
                     >
                       <CheckCheck size={12} />
                       Mark as read
                     </button>
                   )}
+
+                  <button
+                    onClick={() => handleNotifView(n.entity.id || "")}
+                    className="text-xs font-medium px-2 py-1 cursor-pointer rounded-full bg-blue-300 text-black hover:bg-blue-500 hover:text-white transition-colors flex items-center gap-1"
+                  >
+                    View
+                    <ArrowRight size={12} />
+                  </button>
                 </div>
-              </div>
+              </motion.div>
             );
           })
         ) : (

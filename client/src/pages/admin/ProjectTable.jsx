@@ -144,8 +144,6 @@ export default function ProjectTable() {
   // Actions
   const handleView = (project) => {
     navigate(`/admin/projectdetails/${project.id}`);
-    // console.log("View project:", project);
-    // alert(`Viewing: ${project.title}`);
   };
 
   const handleDelete = async (id) => {
@@ -159,15 +157,12 @@ export default function ProjectTable() {
       confirmButtonText: "Yes, delete it!",
     }).then(async (result) => {
       if (result.isConfirmed) {
-        try {
-          const { data } = await deleteProject({ variables: { id } });
-          if (data.deleteProject) {
-            toast.success("Project deleted successfully");
-            // Refetch projects to update the list
-            await refetch();
-          }
-        } catch (error) {
-          toast.error(`Error deleting project: ${error.message}`);
+        const { data } = await deleteProject({ variables: { id } });
+        if (data.deleteProject) {
+          toast.success("Project deleted successfully");
+          await refetch();
+        } else {
+          toast.error(`Error deleting project`);
         }
       }
     });

@@ -84,10 +84,10 @@ export default function LoginUI() {
       initial={{ y: 100, opacity: 0 }} // start below
       animate={{ y: 0, opacity: 1 }} // move to normal position
       transition={{ duration: 0.8, ease: "easeInOut" }}
-      className="min-h-screen w-full flex items-center justify-center p-6"
+      className=" w-full flex items-center justify-center p-6 overflow-hidden"
     >
       {/* Login Container */}
-      <div className="w-full max-w-md relative z-10 animate-fade-in">
+      <div className="w-full max-w-md relative z-10 animate-fade-in overflow-hidden">
         <div className="bg-linear-to-br from-blue-600 to-blue-700 backdrop-blur-2xl rounded-3xl p-10 sm:p-12 shadow-2xl shadow-blue-900/50 relative overflow-hidden border border-white/10">
           {/* Decorative top line */}
           <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent" />

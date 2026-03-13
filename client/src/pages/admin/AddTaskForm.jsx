@@ -73,6 +73,9 @@ const INSERT_TASK = gql`
       users {
         id
       }
+      project {
+        id
+      }
     }
   }
 `;
@@ -152,16 +155,17 @@ function AddTaskForm({refetchProjects}) {
       setIsAddTaskOpen(false);
 
       //create a notif for the user that assigned to the task
+      // console.log("fgfdgfdg", data)
       if (data.createTask.users.length > 0) {
         createNotif({
           variables: {
             input: {
               entity: {
-                id: data.createTask.id,
+                id: data.createTask.project.id,
                 type: "Task",
               },
               isRead: false,
-              message: `You have been assigned a new task "${data?.createTask?.title}"`,
+              message: `You have been assigned to the task "${data?.createTask?.title}"`,
               recipients: data.createTask.users.map((user) => user.id),
               sender: userId,
               title: "New Task Assigned",

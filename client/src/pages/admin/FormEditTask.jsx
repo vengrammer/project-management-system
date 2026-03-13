@@ -195,11 +195,11 @@ function FormEditTask({ taskID }) {
 
   const [updateTask, { loading: updatingTask }] = useMutation(UPDATE_TASK, {
     onCompleted: (data) => {
-      console.log("=== TASK UPDATE COMPLETED ===");
-      console.log("Task data:", data);
-      console.log("oldMember (ref):", oldMemberRef.current);
-      console.log("newTask.assignedTo:", newTask.assignedTo);
-      console.log("userId:", userId);
+      // console.log("=== TASK UPDATE COMPLETED ===");
+      // console.log("Task data:", data);
+      // console.log("oldMember (ref):", oldMemberRef.current);
+      // console.log("newTask.assignedTo:", newTask.assignedTo);
+      // console.log("userId:", userId);
 
       toast.success("Task updated successfully");
 
@@ -207,9 +207,9 @@ function FormEditTask({ taskID }) {
       const oldMembers = oldMemberRef.current || [];
       const newMembers = newTask.assignedTo || [];
 
-      console.log("Comparing:");
-      console.log("  oldMembers:", oldMembers);
-      console.log("  newMembers:", newMembers);
+      // console.log("Comparing:");
+      // console.log("  oldMembers:", oldMembers);
+      // console.log("  newMembers:", newMembers);
 
       // If no changes, don't send notifications
       const hasChanges =
@@ -217,7 +217,7 @@ function FormEditTask({ taskID }) {
       console.log("Has changes:", hasChanges);
 
       if (!hasChanges) {
-        console.log("No member changes detected, skipping notifications");
+        // console.log("No member changes detected, skipping notifications");
         setIsAddTaskOpen(false);
         return;
       }

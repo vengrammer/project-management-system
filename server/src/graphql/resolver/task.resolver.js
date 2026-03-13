@@ -56,9 +56,9 @@ const taskResolver = {
           //dueDate: args.dueDate,
         });
 
-       const newTaskData = await Task.findById(newTask._id).populate(
-         "users",
-       );
+        const newTaskData = await Task.findById(newTask._id)
+          .populate("users")
+          .populate("project");
         return newTaskData;
       } catch (error) {
         console.error("Create task error:", error);

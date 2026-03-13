@@ -7,12 +7,19 @@ function LandingPageLayout() {
   return (
     <>
       <div>
-        <div className="w-full bg-cover bg-center min-h-screen" style={{ backgroundImage: `url(${background})` }}>
+        <div
+          className="w-full bg-cover bg-center min-h-screen overflow-hidden"
+          style={{
+            backgroundImage: `url(${background})`,
+            maxWidth: "100%",
+            height: "auto",
+          }}
+        >
           <Outlet />
         </div>
       </div>
     </>
-  )
+  );
 }
 
 export default LandingPageLayout;
