@@ -226,6 +226,7 @@ export default function FormAddProjectModal({ refechProjects }) {
         //Create notification after project is successfully created for the admin.
         console.log("data of new project",data)
         const projectId = data?.createProject?.project?.id;
+        console.log("new project id", projectId)
         if (projectId && AdminData?.userRoleAdmin) {
           createNotif({
             variables: {

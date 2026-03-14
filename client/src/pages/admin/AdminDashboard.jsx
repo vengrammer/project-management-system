@@ -242,7 +242,7 @@ function ProjectItem({ project, accent, isSelected, onClick }) {
     <button
       onClick={onClick}
       className={[
-        "w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-150 flex items-center gap-3",
+        "w-full text-left px-3 py-2.5 rounded-xl  border transition-all duration-150 flex items-center gap-3",
         isSelected
           ? `bg-white shadow-sm ring-2 ${accent.ring} ${accent.border}`
           : "border-transparent hover:bg-white hover:border-slate-200",

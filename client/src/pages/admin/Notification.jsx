@@ -212,9 +212,14 @@ export default function Notification() {
   if (error)
     return <p className="p-4 text-red-400">Error loading notifications.</p>;
 
-  const handleNotifView = (projectId) => {
-    navigate(`/${isAdmin? "admin" : isManager ? "manager" : "employee"}/projectdetails/${projectId}`)
-  }
+  const handleNotifView = (projectId, notificationId) => {
+    handleMarkAsRead(notificationId);
+    navigate(
+      `/${
+        isAdmin ? "admin" : isManager ? "manager" : "employee"
+      }/projectdetails/${projectId}`,
+    );
+  };
 
   return (
     <div className="flex flex-col w-full h-full bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
@@ -257,6 +262,7 @@ export default function Notification() {
                   <span className="text-sm font-semibold text-gray-800">
                     {n.title}
                   </span>
+                  
                   <span className="text-xs text-gray-400 whitespace-nowrap">
                     {formatTimeAgo(n.createdAt)}
                   </span>
@@ -280,7 +286,7 @@ export default function Notification() {
                   >
                     {n.type}
                   </span>
-
+                  
                   {n.entity && (
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
                       {n.entity.type}
@@ -290,7 +296,7 @@ export default function Notification() {
                   <span
                     className={`ml-auto text-xs font-medium px-2 py-0.5 rounded-full ${
                       n.isRead
-                        ? "bg-green-50 text-green-600"
+                        ? "bg-green-50 text-green-500"
                         : "bg-orange-50 text-orange-500"
                     }`}
                   >
@@ -307,7 +313,7 @@ export default function Notification() {
                   )}
 
                   <button
-                    onClick={() => handleNotifView(n.entity.id || "")}
+                    onClick={() => handleNotifView(n.entity.id || "", n.id)}
                     className="text-xs font-medium px-2 py-1 cursor-pointer rounded-full bg-blue-300 text-black hover:bg-blue-500 hover:text-white transition-colors flex items-center gap-1"
                   >
                     View

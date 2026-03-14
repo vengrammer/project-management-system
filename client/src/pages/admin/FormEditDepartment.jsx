@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 
-
 const GET_DEPARTMENT = gql`
   query Departments {
     departments {
@@ -19,7 +18,6 @@ const GET_DEPARTMENT = gql`
     }
   }
 `;
-
 
 const GET_THE_DEPARTMENT = gql`
   query Department($departmentId: ID) {
@@ -52,36 +50,52 @@ function FormEditDepartment({ departmentId }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
-  // Only fetch when modal is open
-  const { data: dataDepartment } = useQuery(GET_THE_DEPARTMENT, {
+  // Query for fetching department data
+  const { refetch } = useQuery(GET_THE_DEPARTMENT, {
     variables: { departmentId },
     skip: !isOpen,
+    fetchPolicy: "network-only",
   });
 
-  const [updateDepartment] = useMutation(UPDATE_DEPARTMENT,
-    {
-      onCompleted: () => {
-        toast.success("Department updated successfully!");
-        setIsOpen(false);
-        setTitle("");
-        setDescription("");
-      },
-      onError: () => {
-        toast.error("Failed to update department. Please try again.");
-      },
-      refetchQueries: [{ query: GET_DEPARTMENT }],
+  // Function to populate form with fetched data
+  const populateForm = (department) => {
+    setTitle(department.name || "");
+    setDescription(department.description || "");
+  };
+
+  // Handle opening the modal - refetch data each time
+  const handleOpen = async () => {
+    setIsOpen(true);
+    try {
+      const { data } = await refetch({ departmentId });
+      if (data?.department) {
+        populateForm(data.department);
+      }
+    } catch {
+      toast.error("Failed to load department data");
     }
-  );
+  };
+
+  const [updateDepartment] = useMutation(UPDATE_DEPARTMENT, {
+    onCompleted: () => {
+      toast.success("Department updated successfully!");
+      setIsOpen(false);
+      setTitle("");
+      setDescription("");
+    },
+    onError: () => {
+      toast.error("Failed to update department. Please try again.");
+    },
+    refetchQueries: [{ query: GET_DEPARTMENT }],
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const updatedTitle = title || dataDepartment?.department?.name;
-    const updatedDescription = description || dataDepartment?.department?.description;
     updateDepartment({
       variables: {
         updateDepartmentId: departmentId,
-        name: updatedTitle,
-        description: updatedDescription,
+        name: title,
+        description: description,
       },
     });
     setIsOpen(false);
@@ -91,7 +105,7 @@ function FormEditDepartment({ departmentId }) {
     <>
       {/* Trigger Button */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpen}
         className="flex-1 lg:flex-none px-2 py-2 rounded cursor-pointer  bg-green-600 text-white hover:bg-green-700  text-sm font-medium lg:font-normal"
         title="Edit"
       >
@@ -131,9 +145,9 @@ function FormEditDepartment({ departmentId }) {
                   </label>
                   <input
                     type="text"
-                    value={title || dataDepartment?.department?.name || ""}
+                    value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. Engineering, Marketing, Finance…"
+                    placeholder="e.g. I.T, Shopee, Gcash…"
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -145,11 +159,7 @@ function FormEditDepartment({ departmentId }) {
                     Description
                   </label>
                   <textarea
-                    value={
-                      description ||
-                      dataDepartment?.department?.description ||
-                      ""
-                    }
+                    value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Briefly describe this department's role and responsibilities…"
                     rows={4}

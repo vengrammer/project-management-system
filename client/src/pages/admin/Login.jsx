@@ -87,7 +87,7 @@ export default function LoginUI() {
       className=" w-full flex items-center justify-center p-6 overflow-hidden"
     >
       {/* Login Container */}
-      <div className="w-full max-w-md relative z-10 animate-fade-in overflow-hidden">
+      <div className="w-full max-w-md relative border-none z-10 animate-fade-in overflow-hidden">
         <div className="bg-linear-to-br from-blue-600 to-blue-700 backdrop-blur-2xl rounded-3xl p-10 sm:p-12 shadow-2xl shadow-blue-900/50 relative overflow-hidden border border-white/10">
           {/* Decorative top line */}
           <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent" />
