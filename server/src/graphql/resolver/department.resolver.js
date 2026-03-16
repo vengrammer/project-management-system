@@ -52,7 +52,7 @@ export const departmentResolver = {
     },
     deleteDepartment: async (_, { id }) => {
       try {
-        // 1️⃣ Check if department is used
+        // 1 Check if department is used
         const departmentUsedInUser = await User.find({ department: id });
         const departmentUsedInProject = await Project.find({ department: id });
 
@@ -65,7 +65,7 @@ export const departmentResolver = {
           });
         }
 
-        // 2️⃣ Now safe to delete
+        // safe to delete
         const deletedDepartment = await Department.findByIdAndDelete(id);
 
         if (!deletedDepartment) {

@@ -123,12 +123,6 @@ export default function DepartmentTable() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentDepartments = filteredDepartments.slice(startIndex, endIndex);
-
-  // const handleEdit = (department) => {
-  //   console.log("Edit department:", department);
-  //   alert(`Editing: ${department.name}`);
-  // };
-
   const getStatusColor = (isActive) => {
     return isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
   };
@@ -160,7 +154,6 @@ export default function DepartmentTable() {
           />
         </div>
 
-        {/* Grid Header*/}
         <div className="hidden lg:grid lg:grid-cols-5 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase">
           <div>Department</div>
           <div>Description</div>
@@ -169,7 +162,6 @@ export default function DepartmentTable() {
           <div>Actions</div>
         </div>
 
-        {/* Grid Body */}
         <div className="divide-y divide-gray-200 max-h-150 overflow-auto">
           {currentDepartments.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">

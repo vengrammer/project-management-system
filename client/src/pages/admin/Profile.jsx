@@ -18,7 +18,7 @@ import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
 
-/* =========================== QUERIES & MUTATION =========================== */
+/*QUERIES & MUTATION */
 const GET_DEPARTMENTS = gql`
   query GetDepartments {
     departments {
@@ -89,11 +89,11 @@ const UPDATE_USER = gql`
   }
 `;
 
-/* =========================== SHARED STYLES =========================== */
+
 const inputCls =
   "w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all";
 
-/* =========================== FIELD WRAPPER =========================== */
+
 function Field({ label, htmlFor, icon: Icon, hint, children }) {
   return (
     <div className="flex flex-col gap-1">
@@ -117,15 +117,15 @@ function Field({ label, htmlFor, icon: Icon, hint, children }) {
   );
 }
 
-/* =========================== MAIN COMPONENT =========================== */
+
 function Profile() {
-  // const id = "6992d115b034bbfbac83b8fb";
+
   const auth = useSelector((state) => state.auth)
   const userId = auth.user?.id
   const [showPassword, setShowPassword] = useState(false);
 
   const [isEditing, setEditing] = useState(false);
-  
+
 
   const [formData, setFormData] = useState({
     id: "",
@@ -169,15 +169,13 @@ function Profile() {
     onError: () => toast.error("Failed to load user data"),
   });
 
-  /* GET DEPARTMENTS */
 
-  // when query result changes, populate form (guarded to avoid loops)
+
   useEffect(() => {
     if (
       userAccount?.user &&
-      formData.id !== userAccount.user.id // only update if not already set
+      formData.id !== userAccount.user.id
     ) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       populateForm(userAccount.user);
     }
   }, [formData.id, userAccount]);
@@ -185,19 +183,18 @@ function Profile() {
 
   /* UPDATE MUTATION */
   const [updateUser, { loading: loadingUpdate }] = useMutation(UPDATE_USER, {
-    onCompleted: () => 
-    {
+    onCompleted: () => {
       toast.success("Account updated successfully!"),
         setFormData({
           username: "",
           password: "",
         });
-        setEditing(false)
+      setEditing(false)
     },
 
     onError: (error) => toast.error(error.message),
     refetchQueries: [{ query: GET_USERS }],
-    
+
   });
 
   /* SUBMIT */
@@ -237,15 +234,15 @@ function Profile() {
         status: formData.status,
       },
     })
-    ;
+      ;
   };
   const initials = formData.fullname
     ? formData.fullname
-        .split(" ")
-        .map((n) => n[0])
-        .slice(0, 2)
-        .join("")
-        .toUpperCase()
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase()
     : "?";
 
   /* LOADING */
@@ -260,9 +257,9 @@ function Profile() {
   }
 
   return (
-    /* Full viewport fill — flex column */
+
     <div className="w-full h-full flex flex-col bg-slate-50">
-      {/* ── Top Bar ── */}
+
       <div className="w-full bg-blue-600 px-6 py-4 flex items-center gap-3 shadow-sm shrink-0">
         <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
           <User size={16} className="text-white" />
@@ -272,18 +269,18 @@ function Profile() {
         </h1>
       </div>
 
-      {/* ── Scrollable content, centered ── */}
+
       <div className="flex-1 overflow-y-auto flex justify-center py-8 px-4">
         <div className="w-full max-w-2xl flex flex-col gap-4">
-          {/* ── Avatar / Identity Card ── */}
+
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-5 flex items-center gap-5">
-            {/* Avatar */}
+
             <div className="shrink-0 w-16 h-16 rounded-2xl bg-linear-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-200">
               <span className="text-xl font-bold text-white tracking-tight">
                 {initials}
               </span>
             </div>
-            {/* Info */}
+
             <div className="min-w-0 flex-1">
               <p className="text-base font-bold text-slate-800 truncate leading-tight">
                 {userAccount?.user?.fullname || "—"}
@@ -298,11 +295,10 @@ function Profile() {
                   </span>
                 )}
                 <span
-                  className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
-                    formData.status
-                      ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                      : "bg-slate-100 text-slate-400 border-slate-200"
-                  }`}
+                  className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${formData.status
+                    ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                    : "bg-slate-100 text-slate-400 border-slate-200"
+                    }`}
                 >
                   {formData.status ? "Active" : "Inactive"}
                 </span>
@@ -311,25 +307,24 @@ function Profile() {
             <div>
               <button
                 onClick={handleEditClick}
-                className={`${
-                  isEditing
-                    ? "bg-red-500 hover:bg-red-600"
-                    : "bg-blue-500 hover:bg-blue-600"
-                } py-2 px-7 rounded-2xl cursor-pointer text-white font-medium`}
+                className={`${isEditing
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-blue-500 hover:bg-blue-600"
+                  } py-2 px-7 rounded-2xl cursor-pointer text-white font-medium`}
               >
                 {isEditing ? "Cancel" : "Edit"}
               </button>
             </div>
           </div>
 
-          {/* ── Form Card ── */}
+
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-6">
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-5">
               Edit Information
             </p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {/* Row 1 */}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field
                   label="Full Name"
@@ -367,7 +362,7 @@ function Profile() {
                 </Field>
               </div>
 
-              {/* Row 2 */}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field
                   label="Department"
@@ -413,7 +408,7 @@ function Profile() {
                 </Field>
               </div>
 
-              {/* Row 3 */}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field
                   label="Email Address"
@@ -450,7 +445,7 @@ function Profile() {
                 </Field>
               </div>
 
-              {/* Row 4: Password */}
+
               <Field
                 label="Password"
                 htmlFor={`${userId}-password`}
@@ -485,7 +480,7 @@ function Profile() {
 
               <div className="border-t border-slate-100" />
 
-              {/* Submit */}
+
               <button
                 type="submit"
                 disabled={loadingUpdate || !isEditing}

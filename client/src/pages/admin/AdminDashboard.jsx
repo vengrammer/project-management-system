@@ -203,22 +203,22 @@ function parseCreatedAt(createdAt) {
   return new Date(createdAt);
 }
 
-// Build lookup key from a date object: "YYYY-M-D"
+
 function dateKey(d) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-// ISO string for first ms of a month — used as startDate param
+
 function monthStart(year, month) {
   return new Date(year, month, 1, 0, 0, 0, 0).toISOString();
 }
 
-// ISO string for last ms of a month — used as endDate param
+
 function monthEnd(year, month) {
   return new Date(year, month + 1, 0, 23, 59, 59, 999).toISOString();
 }
 
-// Parse a date string that might be "January 10, 2025" (locale) or ISO
+
 function parseProjectDate(str) {
   if (!str) return null;
   const d = new Date(str);
@@ -227,9 +227,7 @@ function parseProjectDate(str) {
   return null;
 }
 
-// ─────────────────────────────────────────────────────────────
 //  SUB-COMPONENTS
-// ─────────────────────────────────────────────────────────────
 
 function Skeleton({ className = "" }) {
   return (
@@ -268,7 +266,6 @@ function ProjectItem({ project, accent, isSelected, onClick }) {
               const today = new Date();
               const dueDate = new Date(project.endDate);
 
-              // Remove time component for accurate day comparison
               today.setHours(0, 0, 0, 0);
               dueDate.setHours(0, 0, 0, 0);
 
@@ -282,9 +279,8 @@ function ProjectItem({ project, accent, isSelected, onClick }) {
   );
 }
 
-// ─── DayCell: responsive ─────────────────────────────────────
-// Large screen (md+): shows task name chips inside the cell
-// Small screen:       shows colored dot + tinted background only
+DayCell
+
 function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
   const [hov, setHov] = useState(false);
   const hasLogs = logs.length > 0;
@@ -296,19 +292,16 @@ function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
       onMouseLeave={() => setHov(false)}
       className={[
         "border-b border-r border-slate-100 transition-all duration-150 relative select-none",
-        // Height: taller on md+ to fit chips, compact on small
         "min-h-13 md:min-h-22.5",
         "p-1 md:p-2",
         !cell.isCurrentMonth
           ? "cursor-default bg-slate-50/50"
           : "cursor-pointer",
-        // Selected: blue ring
         isSelected && cell.isCurrentMonth
           ? "ring-2 ring-inset ring-blue-500 bg-blue-50/40 z-10"
           : "",
         // Hover
         hov && cell.isCurrentMonth && !isSelected ? "bg-slate-50" : "",
-        // Has logs + not selected: tinted bg with project color (both screen sizes)
         hasLogs && !isSelected && cell.isCurrentMonth ? accent.light : "",
       ].join(" ")}
     >
@@ -321,7 +314,7 @@ function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
             : isSelected && cell.isCurrentMonth
             ? "bg-blue-500 text-white"
             : hasLogs && cell.isCurrentMonth
-            ? `${accent.chip} text-white` // project-colored circle = has logs
+            ? `${accent.chip} text-white`
             : cell.isCurrentMonth
             ? "text-slate-700"
             : "text-slate-300",
@@ -330,7 +323,6 @@ function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
         {cell.day}
       </div>
 
-      {/* ── LARGE SCREEN ONLY: task name chips ── */}
       {hasLogs && (
         <div className="hidden md:flex flex-col gap-0.5">
           {logs.slice(0, 2).map((log) => (
@@ -344,7 +336,6 @@ function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
                 accent.text,
               ].join(" ")}
             >
-              {/* Show task title if available, fallback to log content */}
               {log.task?.title ?? log.content}
             </div>
           ))}
@@ -355,15 +346,12 @@ function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
           )}
         </div>
       )}
-
-      {/* ── SMALL SCREEN ONLY: activity dot indicator ── */}
       {hasLogs && (
         <span
           className={`md:hidden absolute bottom-1 right-1 w-2 h-2 rounded-full ${accent.chip} shadow-sm`}
         />
       )}
 
-      {/* ── LARGE SCREEN: subtle dot even when chips shown ── */}
       {hasLogs && (
         <span
           className={`hidden md:block absolute bottom-1.5 right-1.5 w-1.5 h-1.5 rounded-full ${accent.chip} opacity-60`}
@@ -373,7 +361,6 @@ function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
   );
 }
 
-// ─── DayDetail: right panel ──────────────────────────────────
 function DayDetail({ selectedDate, logs, loading, project, accent }) {
   const navigate = useNavigate();
   const location = useLocation()
@@ -406,7 +393,6 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Heading */}
       <div className="px-4 pt-4 pb-3 border-b border-slate-100 shrink-0">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
           {dayOfWeek}
@@ -424,7 +410,7 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
         )}
       </div>
 
-      {/* Log count bar */}
+
       <div className="px-4 pt-3 pb-1 shrink-0">
         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
           {loading
@@ -433,13 +419,9 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
         </p>
       </div>
 
-      {/* Scrollable log list LOG LIST */}
       <div className="w-full h-full overflow-y-auto px-4 pb-5 flex flex-col gap-2.5">
-        {/* Loading */}
         {loading &&
           [1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full" />)}
-
-        {/* Empty */}
         {!loading && logs.length === 0 && (
           <div className="text-center py-12 text-slate-400">
             <div className="text-3xl mb-2">📭</div>
@@ -450,7 +432,6 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
           </div>
         )}
 
-        {/* Log cards */}
         {!loading &&
           logs.map((log) => {
             const s = LOG_STATUS[log.status] ?? LOG_STATUS.in_progress;
@@ -470,7 +451,6 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
                   PRIORITY_BORDER[log.task?.priority] ?? "border-l-slate-300",
                 ].join(" ")}
               >
-                {/* Task title + status */}
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <span
@@ -487,12 +467,10 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
                   </span>
                 </div>
 
-                {/* Log content */}
                 <p className="text-xs text-slate-600 leading-relaxed pl-4 mb-2">
                   {log.content}
                 </p>
 
-                {/* Task priority badge */}
                 <div className="pl-4 flex items-center gap-2 flex-wrap">
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${p.bg} ${p.text}`}
@@ -500,8 +478,6 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
                     {p.label} priority
                   </span>
                 </div>
-
-                {/* Footer: author + time */}
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-50">
                   <div className="flex items-center gap-1.5">
                     <div
@@ -528,9 +504,8 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
 //  MAIN COMPONENT
-// ─────────────────────────────────────────────────────────────
+
 export default function AdminDashboard() {
   //get the current user from redux store
   const user = useSelector((state) => state.auth.user);
@@ -543,7 +518,7 @@ export default function AdminDashboard() {
   const [selectedDay, setSelectedDay] = useState(null); // { day, month, year }
   const [selectedProj, setSelectedProj] = useState(null); // project object
 
-  // ── Fetch all projects ──
+  //Fetch all projects
   const {
     data: projData,
     loading: projLoading,
@@ -560,8 +535,6 @@ export default function AdminDashboard() {
     return map;
   }, [projects]);
 
-  // ── Fetch logs for selected project + visible month ──
-  // skip=true means this query won't fire until a project is selected
   const { data: logData, loading: logLoading } = useQuery(GET_LOGS_BY_PROJECT, {
     skip: !selectedProj,
     variables: {
@@ -574,7 +547,6 @@ export default function AdminDashboard() {
 
   const allLogs = logData?.taskLogsByProject ?? [];
 
-  // Build "YYYY-M-D" → [logs] map using the fixed parseCreatedAt helper
   const logsByDay = useMemo(() => {
     const map = {};
     allLogs.forEach((log) => {
@@ -592,7 +564,7 @@ export default function AdminDashboard() {
     return logsByDay[key] ?? [];
   }, [selectedDay, logsByDay]);
 
-  // ── Navigation ──
+  //Navigation 
   function navMonth(dir) {
     let m = curMonth + dir,
       y = curYear;
@@ -626,7 +598,6 @@ export default function AdminDashboard() {
     }
     setSelectedProj(project);
     setSelectedDay(null);
-    // Jump to project start date
     const start = parseProjectDate(project.startDate);
     if (start) {
       setCurYear(start.year);
@@ -669,7 +640,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Year dropdown: loops 2020 → currentYear+5 */}
+          {/* Year dropdown*/}
           <select
             value={curYear}
             onChange={handleYearChange}
@@ -683,7 +654,7 @@ export default function AdminDashboard() {
             ))}
           </select>
 
-          {/* Month dropdown: loops all 12 months */}
+          {/* Month dropdown*/}
           <select
             value={curMonth}
             onChange={handleMonthChange}
@@ -726,12 +697,10 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      {/* ── Body: 3 columns ── */}
       <div
         className="flex flex-col lg:flex-row"
         style={{ height: "calc(100vh - 57px)" }}
       >
-        {/* ════ LEFT: Projects ════ */}
         <aside
           className="w-full lg:w-64 xl:w-72 bg-white border-b lg:border-b-0 lg:border-r
           border-slate-200 flex flex-col shrink-0 overflow-hidden"
@@ -772,7 +741,6 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          {/* Active project info card */}
           {selectedProj && (
             <div
               className={`mx-3 mb-3 p-3 rounded-xl border ${activeAccent.light} ${activeAccent.border} shrink-0`}
@@ -813,7 +781,7 @@ export default function AdminDashboard() {
           )}
         </aside>
 
-        {/* ════ CENTER: Calendar ════ */}
+        {/* CENTER: Calendar*/}
         <main className="flex-1 bg-white flex flex-col min-w-0 overflow-hidden">
           {/* Month header bar */}
           <div className="px-4 md:px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0">
@@ -883,8 +851,6 @@ export default function AdminDashboard() {
             })}
           </div>
         </main>
-
-        {/* ════ RIGHT: Day detail ════ */}
         <aside
           className="w-full lg:w-72 xl:w-80 bg-white border-t lg:border-t-0 lg:border-l
           border-slate-200 flex flex-col shrink-0 overflow-hidden"

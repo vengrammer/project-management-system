@@ -83,10 +83,8 @@ function FormAddDepartment() {
               </button>
             </div>
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="p-6">
               <div className="space-y-4">
-                {/* Title */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Department Title *
@@ -100,8 +98,6 @@ function FormAddDepartment() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-
-                {/* Description */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Description
@@ -115,8 +111,6 @@ function FormAddDepartment() {
                   />
                 </div>
               </div>
-
-              {/* Footer */}
               <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
                 <button
                   type="button"

@@ -137,8 +137,6 @@ export default function ArchiveAdminEmployeeManager() {
   // Actions
   const handleView = (project) => {
     navigate(`projectdetails/${project.id}`);
-    // console.log("View project:", project);
-    // alert(`Viewing: ${project.title}`);
   };
 
   // Helper functions
@@ -168,7 +166,6 @@ export default function ArchiveAdminEmployeeManager() {
       className="w-full md:p-2 max-w-8xl mx-auto"
     >
       <div className="bg-white rounded-lg shadow w-full h-full flex flex-col">
-        {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
             <h1 className="text-2xl font-bold text-gray-800">Archive</h1>
@@ -186,7 +183,6 @@ export default function ArchiveAdminEmployeeManager() {
           />
         </div>
 
-        {/* Grid Header - Hidden on mobile */}
         <div className="hidden lg:grid lg:grid-cols-9 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase">
           <div>Title</div>
           <div>Department</div>
@@ -199,7 +195,6 @@ export default function ArchiveAdminEmployeeManager() {
           <div>Actions</div>
         </div>
 
-        {/* Grid Body - Unified responsive layout */}
         <div className="divide-y divide-gray-200 max-h-full overflow-auto">
           {projects.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
@@ -215,7 +210,7 @@ export default function ArchiveAdminEmployeeManager() {
                 key={project.id}
                 className="hover:bg-gray-50 transition-colors p-4 lg:px-6 border lg:py-4"
               >
-                {/* Unified Responsive Layout */}
+
                 <div className="lg:grid lg:grid-cols-9 lg:gap-4 lg:items-center space-y-3 lg:space-y-0">
                   {/* Title & Description */}
                   <div className="flex flex-row items-start justify-between lg:justify-start lg:block">
@@ -226,7 +221,7 @@ export default function ArchiveAdminEmployeeManager() {
                     </div>
                   </div>
 
-                  {/* Department */}
+
                   <div className="text-sm text-gray-700 lg:block">
                     <span className="text-gray-500 lg:hidden">
                       Department:{" "}
@@ -238,7 +233,6 @@ export default function ArchiveAdminEmployeeManager() {
                     </span>
                   </div>
 
-                  {/* Status - Hidden on mobile (shown in badges section) */}
                   <div className="hidden lg:block">
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(
@@ -249,7 +243,6 @@ export default function ArchiveAdminEmployeeManager() {
                     </span>
                   </div>
 
-                  {/* Priority - Hidden on mobile (shown in badges section) */}
                   <div className="hidden lg:block">
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
@@ -260,7 +253,6 @@ export default function ArchiveAdminEmployeeManager() {
                     </span>
                   </div>
 
-                  {/* Status & Priority badges - Mobile only */}
                   <div className="flex gap-2 lg:hidden">
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
@@ -278,7 +270,7 @@ export default function ArchiveAdminEmployeeManager() {
                     </span>
                   </div>
 
-                  {/* Budget */}
+   
                   <div className="text-sm text-gray-700">
                     <span className="text-gray-500 lg:hidden">PM: </span>
                     <span className="font-medium lg:font-normal">
@@ -288,7 +280,6 @@ export default function ArchiveAdminEmployeeManager() {
                     </span>
                   </div>
 
-                  {/* Budget */}
                   <div className="text-sm text-gray-700">
                     <span className="text-gray-500 lg:hidden">Budget: </span>
                     <span className="font-medium lg:font-normal">
@@ -296,7 +287,6 @@ export default function ArchiveAdminEmployeeManager() {
                     </span>
                   </div>
 
-                  {/* Dates - Mobile format */}
                   <div className="flex gap-4 text-sm lg:hidden">
                     <div className="flex items-center gap-1">
                       <CalendarArrowUp size={15} className="text-gray-500" />
@@ -379,14 +369,6 @@ export default function ArchiveAdminEmployeeManager() {
             </div>
           </div>
         )}
-        {/* Total count footer
-        <div className="px-4 md:px-6 py-4 border-t border-gray-200">
-          <div className="text-sm text-gray-600">
-            Total: {filteredProjects.length}{" "}
-            {filteredProjects.length === 1 ? "project" : "projects"}
-            {searchTerm && ` (filtered from ${projects.length} total)`}
-          </div>
-        </div> */}
       </div>
     </motion.div>
   );

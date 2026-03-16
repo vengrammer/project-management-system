@@ -115,8 +115,6 @@ function AddMembers() {
   );
 
   const teamUsers = selectedDept?.users || [];
-
-  /////
   const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [departmentSearch, setDepartmentSearch] = useState("");
   const departmentRef = useRef(null);
@@ -131,7 +129,6 @@ function AddMembers() {
   };
 
   //query
-
   const filteredDepartments = (dataDepartments?.departments || []).filter(
     (dept) =>
       (dept.name || "")
@@ -158,7 +155,7 @@ function AddMembers() {
   const existingUserIds = new Set(
     projectData?.project?.users?.map((user) => user.id) || [],
   );
-// console.log(teamUsers);
+
   const filteredTeamMembers = teamUsers.filter(
     (emp) =>
        emp.role === "user" && // show only users
@@ -254,7 +251,7 @@ function AddMembers() {
                               <div
                                 key={dept.id}
                                 onClick={() => {
-                                  // store department id for form submission, but keep name visible in the input
+                                  // store department id for form submission, but keep name visible in the input  
                                   handleInputChange("department", dept.id);
                                   setDepartmentSearch(dept.name);
                                   setShowDepartmentDropdown(false);

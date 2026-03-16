@@ -103,7 +103,7 @@ export default function FormAddProjectModal({ refechProjects }) {
   const managerId = auth.user?.id;
   const userId = auth.user?.id;
 
-  // console.log("refechProjects in modal:", refechProjects);
+  
   const [selectedEmployees, setSelectedEmployees] = useState([]);
   const managerRef = useRef(null);
   const departmentRef = useRef(null);
@@ -157,17 +157,10 @@ export default function FormAddProjectModal({ refechProjects }) {
     };
   }, [isOpen]);
 
-  //HERE IS THE ALL QUERRY------------#######################################
+  //HERE IS THE ALL QUERRY
 
   //CREATE A NOTIFICATION
-  const [createNotif] = useMutation(CREATE_NOTIF_FOR_ADMIN, {
-    onCompleted: () => {
-      console.log("complete");
-    },
-    onError: (error) => {
-      console.log("error in creating notif: ", error);
-    },
-  });
+  const [createNotif] = useMutation(CREATE_NOTIF_FOR_ADMIN);
 
   //const get all the admin
   const { data: AdminData } = useQuery(GET_ALL_ADMIN);
@@ -224,9 +217,9 @@ export default function FormAddProjectModal({ refechProjects }) {
 
   
         //Create notification after project is successfully created for the admin.
-        console.log("data of new project",data)
+        // console.log("data of new project",data)
         const projectId = data?.createProject?.project?.id;
-        console.log("new project id", projectId)
+        // console.log("new project id", projectId)
         if (projectId && AdminData?.userRoleAdmin) {
           createNotif({
             variables: {
@@ -300,7 +293,7 @@ export default function FormAddProjectModal({ refechProjects }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // ✅ If projectManager is provided, validate it
+
     if (
       formData.projectManager &&
       formData.projectManager.trim() !== "" &&
@@ -310,7 +303,6 @@ export default function FormAddProjectModal({ refechProjects }) {
       return;
     }
 
-    // ✅ If projectManager is empty string, set it to null
     const projectManager =
       formData.projectManager && formData.projectManager.trim() !== ""
         ? formData.projectManager
@@ -320,8 +312,6 @@ export default function FormAddProjectModal({ refechProjects }) {
       toast.error("Budget must be a number.");
       return;
     }
-
-    // ensure numeric budget and send correct values
     createProject({
       variables: {
         title: formData.projectName,
@@ -418,20 +408,18 @@ export default function FormAddProjectModal({ refechProjects }) {
         Add New Project
       </button>
 
-      {/* Modal Backdrop & Content */}
       {isOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4"
-          // onClick={handleBackdropClick}
         >
-          {/* Modal Container */}
+
           <form
             onSubmit={handleSubmit}
             className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
           >
-            {/* Modal Header */}
+
             <div className="flex flex-col items-center p-4 border-b border-gray-200">
-              {/* Top row: Close button */}
+      
               <div className="w-full flex justify-end">
                 <button
                   onClick={handleClose}
@@ -442,7 +430,6 @@ export default function FormAddProjectModal({ refechProjects }) {
                 </button>
               </div>
 
-              {/* Logo + Title row */}
               <div className="flex items-center gap-3 mt-2">
                 <div className="w-12 h-12 flex items-center justify-center rounded-full border border-gray-200 overflow-hidden">
                   <img
@@ -456,13 +443,12 @@ export default function FormAddProjectModal({ refechProjects }) {
                 </h2>
               </div>
 
-              {/* Subtitle */}
               <p className="text-center text-sm text-gray-500 mt-1">
                 Please fill in the information below to create a new project.
               </p>
             </div>
 
-            {/* Modal Body */}
+   
             <div className="flex flex-col overflow-auto">
               <div className="flex flex-col ">
                 <div className=" overflow-auto ">
@@ -471,7 +457,7 @@ export default function FormAddProjectModal({ refechProjects }) {
                       Basic Information
                     </h3>
 
-                    {/* Project Name */}
+         
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-gray-700">
                         Project Name <span className="text-red-500">*</span>

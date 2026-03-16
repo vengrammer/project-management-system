@@ -201,7 +201,6 @@ const ProjectDetailsPage = () => {
     return "bg-blue-100 text-blue-700 border-blue-200";
   };
 
-  // Task statistics are computed from `taskData.taskByProject` inline where needed.
   const navigate = useNavigate();
 
   //GET THE PROJECT
@@ -313,10 +312,6 @@ const ProjectDetailsPage = () => {
     notifyOnNetworkStatusChange: true,
   });
 
-  // note: no need to manually refetch on mount, queries already run automatically and
-  // mutations have refetchQueries. Removing this effect prevents double fetching
-  // which caused a blink/flashing UI during initial mount.
-
   //this will trigger the add refetch
   const refetching = async () => {
     await refetchProject();
@@ -415,7 +410,7 @@ const ProjectDetailsPage = () => {
   };
 
   const handleDeleteTask = (taskID) => {
-    // console.log(taskID);
+
     Swal.fire({
       title: "Are you sure you want to delete this task?",
       text: "You won't be able to revert this!",
@@ -483,9 +478,9 @@ const ProjectDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Trigger Button */}
+ 
       <div className="w-full  p-2 sm:p-6 lg:py-8">
-        {/* Back Button */}
+   
         <button
           onClick={() =>
             navigate(
@@ -499,7 +494,7 @@ const ProjectDetailsPage = () => {
           <ArrowLeft size={20} />
           <span>Back to Projects</span>
         </button>
-        {/* Project Header */}
+  
         <motion.div
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -567,7 +562,7 @@ const ProjectDetailsPage = () => {
             </div>
             {/**/}
 
-            {/* Buttons for edit project and add member*/}
+     
             <div className="flex gap-3">
               <div>{!isEmployee && !isArchive && <FormEditProject />}</div>
               <div>
@@ -594,7 +589,7 @@ const ProjectDetailsPage = () => {
             </div>
           </div>
 
-          {/* Progress Bar */}
+  
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700">
@@ -621,9 +616,9 @@ const ProjectDetailsPage = () => {
             </div>
           </div>
 
-          {/* Stats Grid */}
+
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-            {/* total task*/}
+    
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
               <div className="flex items-center justify-between mb-2">
                 <Target className="text-blue-600" size={20} />
@@ -633,7 +628,7 @@ const ProjectDetailsPage = () => {
               </p>
               <p className="text-xs text-gray-600">Total Tasks</p>
             </div>
-            {/*not started*/}
+      
             <div className="bg-orange-50 rounded-lg p-4 border border-orange-100">
               <div className="flex items-center justify-between mb-2">
                 <Clock className="text-orange-600" size={20} />
@@ -643,7 +638,7 @@ const ProjectDetailsPage = () => {
               </p>
               <p className="text-xs text-gray-600">Not Started</p>
             </div>
-            {/* Inprogress*/}
+    
             <div className="bg-orange-50 rounded-lg p-4 border border-orange-100">
               <div className="flex items-center justify-between mb-2">
                 <TrendingUp className="text-orange-600" size={20} />
@@ -654,7 +649,7 @@ const ProjectDetailsPage = () => {
               </p>
               <p className="text-xs text-gray-600">In Progress</p>
             </div>
-            {/* completed*/}
+        
             <div className="bg-green-50 rounded-lg p-4 border border-green-100">
               <div className="flex items-center justify-between mb-2">
                 <CheckCircle2 className="text-green-600" size={20} />
@@ -666,7 +661,7 @@ const ProjectDetailsPage = () => {
               <p className="text-xs text-gray-600">Completed</p>
             </div>
 
-            {/* budget*/}
+      
             <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
               <div className="flex items-center justify-between mb-2">
                 <DollarSign className="text-purple-600" size={20} />
@@ -679,14 +674,14 @@ const ProjectDetailsPage = () => {
           </div>
         </motion.div>
 
-        {/* Main Content Grid */}
+   
         <motion.div
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
           className="grid grid-cols-1 lg:grid-cols-3 gap-6"
         >
-          {/* Tasks Section (2 columns) */}
+      
           <div className="lg:col-span-2 flex h-full w-full  flex-col gap-4">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-3 border-b border-gray-200">
@@ -704,7 +699,7 @@ const ProjectDetailsPage = () => {
                   )}
                 </div>
               </div>
-              {/*all task value*/}
+      
               {tasks.length > 0 ? (
                 <div className="divide-y divide-gray-200 max-h-105 overflow-auto">
                   {tasks.map((task) => (
@@ -766,8 +761,7 @@ const ProjectDetailsPage = () => {
                           </div>
                         </div>
                         <div className="flex flex-row gap-1">
-                          {/*task action */}
-                          {/* for the taskactivity */}
+                      
                           <div>
                             <TaskActivityModal id={task.id} />
                           </div>

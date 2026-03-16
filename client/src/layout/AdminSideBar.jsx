@@ -129,7 +129,7 @@ export default function AdminSideBar() {
         if (audioRef.current) {
           audioRef.current
             .play()
-            .catch((err) => console.log("Audio play error:", err));
+            .catch((err) => toast.error("Audio play error:", err));
         }
       }
     }
@@ -150,7 +150,7 @@ export default function AdminSideBar() {
     isMarkAsReadNotification();
   }, [markAsReadSubData]);
 
-  console.log(notifications);
+
 
   const filterUnReadCount = notifications.filter((n) => {
     return n.isRead === false;
@@ -164,7 +164,7 @@ export default function AdminSideBar() {
   const fullname = userData?.user.fullname || "";
   const email = userData?.user.email || "";
 
-  // console.log("Current User Data:", userData.user.fullname);
+
 
   return (
     <div className="flex h-screen bg-gray-100">

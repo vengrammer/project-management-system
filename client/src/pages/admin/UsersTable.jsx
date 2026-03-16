@@ -135,11 +135,10 @@ export default function UsersTable() {
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeInOut" }}
-      // className="w-full md:p-2 max-w-8xl mx-auto border-8"
       className="overflow-hidden w-full h-full flex"
     >
       <div className="bg-white rounded-lg shadow w-full h-full flex flex-col">
-        {/* Header with Search */}
+      
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
             <h1 className="text-2xl font-bold text-gray-800">Users</h1>
@@ -160,7 +159,6 @@ export default function UsersTable() {
           />
         </div>
 
-        {/* Grid Header - Hidden on mobile */}
         <div className="hidden md:grid md:grid-cols-6 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase">
           <div>Name</div>
           <div>Position</div>
@@ -170,7 +168,6 @@ export default function UsersTable() {
           <div>Actions</div>
         </div>
 
-        {/* Grid Body*/}
         <div className="divide-y divide-gray-200  h-full overflow-auto">
           {users.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
@@ -197,7 +194,7 @@ export default function UsersTable() {
                       </div>
                     </div>
 
-                    {/* Role & Status badges*/}
+                   
                     <div className="flex gap-2 md:hidden">
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
@@ -216,17 +213,17 @@ export default function UsersTable() {
                     </div>
                   </div>
 
-                  {/* Position */}
+                 
                   <div className="text-sm text-gray-700 md:text-gray-700">
                     {user.position}
                   </div>
 
-                  {/* Email */}
+            
                   <div className="text-sm text-gray-600 md:text-gray-700 truncate">
                     {user.email}
                   </div>
 
-                  {/* Role  */}
+                 
                   <div className="hidden md:block">
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(
@@ -237,7 +234,6 @@ export default function UsersTable() {
                     </span>
                   </div>
 
-                  {/* Status */}
                   <div className="hidden md:block">
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
@@ -248,7 +244,7 @@ export default function UsersTable() {
                     </span>
                   </div>
 
-                  {/* Actions*/}
+             
                   <div className="flex gap-2 pt-2 border-t border-gray-100 md:border-t-0 md:pt-0 md:gap-3">
                     <FormEditUser userId={user?.id} />
                     {user.role != "admin" && <button
@@ -275,7 +271,7 @@ export default function UsersTable() {
           )}
         </div>
 
-        {/* Pagination*/}
+      
         {totalPages > 1 && (
           <div className="px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-gray-600">
@@ -304,7 +300,6 @@ export default function UsersTable() {
           </div>
         )}
 
-        {/* Total count footer */}
         <div className="px-4 md:px-6 py-4 border-t border-gray-200">
           <div className="text-sm text-gray-600">
             Total: {filteredUsers.length}{" "}

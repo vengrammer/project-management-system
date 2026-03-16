@@ -223,26 +223,15 @@ export default function Notification() {
 
   return (
     <div className="flex flex-col w-full h-full bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
-      {/* Header */}
+
       <div className="bg-white px-4 pt-4 pb-3 border-b border-gray-100">
         <div className="flex items-center gap-2 mb-3">
           <Bell size={20} className="text-indigo-500" />
           <h1 className="text-lg font-bold text-gray-800">Notifications</h1>
         </div>
-        {/* <div className="relative">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Search…"
-            className="w-full pl-8 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-indigo-400 transition-colors"
-          />
-        </div> */}
       </div>
 
-      {/* List */}
+
       <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
         {notifications.length > 0 ? (
           notifications.map((n) => {
@@ -257,7 +246,7 @@ export default function Notification() {
                 className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col gap-2"
                 style={{ borderLeft: `4px solid ${typeColor}` }}
               >
-                {/* Title + time */}
+      
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-sm font-semibold text-gray-800">
                     {n.title}

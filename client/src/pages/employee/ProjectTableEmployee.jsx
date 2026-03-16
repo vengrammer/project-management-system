@@ -89,8 +89,6 @@ export default function ProjectTableEmployee() {
   // Actions
   const handleView = (project) => {
     navigate(`/employee/projectdetails/${project.id}`);
-    // console.log("View project:", project);
-    // alert(`Viewing: ${project.title}`);
   };
 
   // Helper functions

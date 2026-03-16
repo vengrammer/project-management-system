@@ -142,7 +142,6 @@ export default function EmployeeSideBar() {
     isMarkAsReadNotification();
   }, [markAsReadSubData]);
 
-  console.log(notifications);
 
   const filterUnReadCount = notifications.filter((n) => {
     return n.isRead === false;

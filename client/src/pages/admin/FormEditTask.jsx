@@ -184,22 +184,11 @@ function FormEditTask({ taskID }) {
   }, [isAddTaskOpen, taskData]);
 
   // CREATE NOTIFICATION
-  const [createNotif] = useMutation(CREATE_NOTIF, {
-    onCompleted: (data) => {
-      console.log("Notification created successfully:", data);
-    },
-    onError: (error) => {
-      console.log("error in creating notif: ", error);
-    },
-  });
+  const [createNotif] = useMutation(CREATE_NOTIF);
 
   const [updateTask, { loading: updatingTask }] = useMutation(UPDATE_TASK, {
     onCompleted: (data) => {
-      // console.log("=== TASK UPDATE COMPLETED ===");
-      // console.log("Task data:", data);
-      // console.log("oldMember (ref):", oldMemberRef.current);
-      // console.log("newTask.assignedTo:", newTask.assignedTo);
-      // console.log("userId:", userId);
+    
 
       toast.success("Task updated successfully");
 
@@ -207,17 +196,13 @@ function FormEditTask({ taskID }) {
       const oldMembers = oldMemberRef.current || [];
       const newMembers = newTask.assignedTo || [];
 
-      // console.log("Comparing:");
-      // console.log("  oldMembers:", oldMembers);
-      // console.log("  newMembers:", newMembers);
-
+    
       // If no changes, don't send notifications
       const hasChanges =
         JSON.stringify(oldMembers.sort()) !== JSON.stringify(newMembers.sort());
-      console.log("Has changes:", hasChanges);
-
+  
       if (!hasChanges) {
-        // console.log("No member changes detected, skipping notifications");
+        
         setIsAddTaskOpen(false);
         return;
       }
@@ -227,12 +212,9 @@ function FormEditTask({ taskID }) {
       );
       const addedMembers = newMembers.filter((id) => !oldMembers.includes(id));
 
-      console.log("removedMembers:", removedMembers);
-      console.log("addedMembers:", addedMembers);
 
       // Notify removed members
       if (removedMembers && removedMembers.length > 0) {
-        console.log("=== CREATING NOTIFICATION FOR REMOVED MEMBERS ===");
         createNotif({
           variables: {
             input: {
@@ -249,17 +231,11 @@ function FormEditTask({ taskID }) {
             },
           },
         })
-          .then(() => {
-            console.log("Removed notification sent!");
-          })
-          .catch((err) => {
-            console.error("Failed to send removed notification:", err);
-          });
       }
 
       // Notify added members
       if (addedMembers && addedMembers.length > 0) {
-        console.log("=== CREATING NOTIFICATION FOR ADDED MEMBERS ===");
+  
         createNotif({
           variables: {
             input: {
@@ -276,12 +252,7 @@ function FormEditTask({ taskID }) {
             },
           },
         })
-          .then(() => {
-            console.log("Added notification sent!");
-          })
-          .catch((err) => {
-            console.error("Failed to send added notification:", err);
-          });
+          
       }
 
       setIsAddTaskOpen(false);
@@ -412,24 +383,6 @@ function FormEditTask({ taskID }) {
                       </select>
                     </div>
 
-                    {/* <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Status *
-                      </label>
-                      <select
-                        value={newTask.status}
-                        onChange={(e) =>
-                          setNewTask({ ...newTask, status: e.target.value })
-                        }
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="todo">To Do</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                      </select>
-                    </div> */}
-
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Assign To *
@@ -449,25 +402,14 @@ function FormEditTask({ taskID }) {
                                 type="checkbox"
                                 checked={newTask.assignedTo.includes(member.id)}
                                 onChange={(e) => {
-                                  console.log(
-                                    "Checkbox clicked:",
-                                    member.id,
-                                    e.target.checked,
-                                  );
-                                  console.log(
-                                    "Current assignedTo before change:",
-                                    newTask.assignedTo,
-                                  );
+                                
                                   if (e.target.checked) {
                                     setNewTask((prev) => {
                                       const newAssigned = [
                                         ...prev.assignedTo,
                                         member.id,
                                       ];
-                                      console.log(
-                                        "New assignedTo after check:",
-                                        newAssigned,
-                                      );
+                                    
                                       return {
                                         ...prev,
                                         assignedTo: newAssigned,
@@ -479,10 +421,7 @@ function FormEditTask({ taskID }) {
                                         prev.assignedTo.filter(
                                           (id) => id !== member.id,
                                         );
-                                      console.log(
-                                        "New assignedTo after uncheck:",
-                                        newAssigned,
-                                      );
+                                     
                                       return {
                                         ...prev,
                                         assignedTo: newAssigned,
@@ -502,21 +441,6 @@ function FormEditTask({ taskID }) {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Due Date *
-                      </label>
-                      <input
-                        type="date"
-                        value={newTask.dueDate}
-                        onChange={(e) =>
-                          setNewTask({ ...newTask, dueDate: e.target.value })
-                        }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div> */}
-                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">

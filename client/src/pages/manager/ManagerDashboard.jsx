@@ -552,8 +552,6 @@ export default function ManagerDashboard() {
     variables: { projectsByManagerId: userId },
   });
 
-  console.log("Project Data:", projData);
-  console.log("Project Error:", projError);
 
   const projects = projData?.projectsByManager ?? [];
 

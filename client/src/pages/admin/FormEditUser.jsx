@@ -5,9 +5,7 @@ import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 
-/* ===========================
-   QUERIES & MUTATION
-=========================== */
+/* QUERIES & MUTATION*/
 
 const GET_DEPARTMENTS = gql`
   query GetDepartments {
@@ -79,10 +77,6 @@ const UPDATE_USER = gql`
   }
 `;
 
-/* ===========================
-   COMPONENT
-=========================== */
-
 export default function FormEditUser({ userId }) {
   const id = useId();
   const [open, setOpen] = useState(false);
@@ -95,22 +89,17 @@ export default function FormEditUser({ userId }) {
     role: "",
     position: "",
     email: "",
-    username: "", // intentionally blank
-    password: "", // intentionally blank
+    username: "", 
+    password: "", 
     status: true,
   });
 
-  /* ===========================
-     INPUT HANDLER
-  =========================== */
+ 
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  /* ===========================
-     GET USER — always mounted so
-     refetch() is always available
-  =========================== */
+
   const { loading: loadingUser, refetch } = useQuery(GET_USER, {
     variables: { userId },
     skip: !userId,
@@ -125,16 +114,13 @@ export default function FormEditUser({ userId }) {
       role: user.role || "",
       position: user.position || "",
       email: user.email || "",
-      username: "", // intentionally blank
-      password: "", // intentionally blank
+      username: "",
+      password: "", 
       status: user.status ?? true,
     });
   };
 
-  /* ===========================
-     OPEN — refetch every click
-     so values are always fresh
-  =========================== */
+
   const handleOpen = async () => {
     setOpen(true);
     try {
@@ -145,14 +131,10 @@ export default function FormEditUser({ userId }) {
     }
   };
 
-  /* ===========================
-     GET DEPARTMENTS
-  =========================== */
+
   const { data: dataDepartment } = useQuery(GET_DEPARTMENTS);
 
-  /* ===========================
-     UPDATE MUTATION
-  =========================== */
+
   const [updateUser, { loading: loadingUpdate }] = useMutation(UPDATE_USER, {
     onCompleted: () => {
       toast.success("Successfully updated account!");
@@ -164,10 +146,6 @@ export default function FormEditUser({ userId }) {
     refetchQueries: [{ query: GET_USERS }],
   });
 
-  /* ===========================
-     SUBMIT + VALIDATION
-     (same rules as FormAddUser)
-  =========================== */
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -216,9 +194,6 @@ export default function FormEditUser({ userId }) {
     });
   };
 
-  /* ===========================
-     RENDER
-  =========================== */
   return (
     <>
       {/* Trigger Button */}

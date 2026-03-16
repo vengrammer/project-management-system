@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Lock, User, Eye, EyeOff } from "lucide-react";
-// motion is used in JSX but ESLint occasionally flags it as unused
 /* eslint-disable no-unused-vars */
 import { motion } from "framer-motion";
 /* eslint-enable no-unused-vars */
@@ -45,8 +44,6 @@ export default function LoginUI() {
           password: password,
         },
       });
-      console.log("Login response:", res);
-      // save token in redux (persistence handled by redux-persist)
       dispatch(loginSuccess(res.data.login));
       toast.success("Login successful!");
 
@@ -62,7 +59,6 @@ export default function LoginUI() {
         navigate("/");
       }
     } catch (error) {
-      console.error("Login error:", error);
       toast.error(
         error.message || "Wrong username or password. Please try again.",
       );
@@ -81,21 +77,21 @@ export default function LoginUI() {
   //active the cursor
   return (
     <motion.div
-      initial={{ y: 100, opacity: 0 }} // start below
-      animate={{ y: 0, opacity: 1 }} // move to normal position
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeInOut" }}
       className=" w-full flex items-center justify-center p-6 overflow-hidden"
     >
-      {/* Login Container */}
+
       <div className="w-full max-w-md relative border-none z-10 animate-fade-in overflow-hidden">
         <div className="bg-linear-to-br from-blue-600 to-blue-700 backdrop-blur-2xl rounded-3xl p-10 sm:p-12 shadow-2xl shadow-blue-900/50 relative overflow-hidden border border-white/10">
-          {/* Decorative top line */}
+
           <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent" />
 
-          {/* Subtle inner glow */}
+  
           <div className="absolute inset-0 bg-linear-to-b from-white/5 to-transparent pointer-events-none" />
 
-          {/* Header */}
+
           <div className="mb-10 relative">
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 tracking-tight">
               Welcome back
@@ -105,9 +101,8 @@ export default function LoginUI() {
             </p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username Field */}
+  
             <div className="group">
               <label
                 htmlFor="username"
@@ -138,7 +133,7 @@ export default function LoginUI() {
               </div>
             </div>
 
-            {/* Password Field */}
+
             <div className="group">
               <label
                 htmlFor="password"
@@ -176,7 +171,7 @@ export default function LoginUI() {
               </div>
             </div>
 
-            {/* Submit Button */}
+
             <button
               type="submit"
               disabled={isLoading}

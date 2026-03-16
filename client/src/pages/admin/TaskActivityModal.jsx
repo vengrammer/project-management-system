@@ -420,8 +420,6 @@ export default function TaskActivityModal({ id: taskId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(userId);
-    console.log(taskData?.task?.users);
     if (
       projectData?.project?.startDate &&
       new Date(projectData.project.startDate).getTime() > Date.now()
@@ -507,8 +505,7 @@ export default function TaskActivityModal({ id: taskId }) {
     });
     return map;
   }, [allLogs]);
-  // console.log(taskData?.task?.status);
-  // ── Post form (shared between desktop left panel and mobile tab) ──
+
   const PostForm = (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
@@ -803,7 +800,6 @@ export default function TaskActivityModal({ id: taskId }) {
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4"
           onClick={(e) => e.target === e.currentTarget && setIsOpen(false)}
         >
-          {/* Modal container — full screen on mobile, constrained on desktop */}
           <div className="bg-white w-full sm:rounded-2xl sm:max-w-7xl sm:max-h-screen h-full sm:h-auto flex flex-col rounded-t-2xl">
             {/* ── HEADER ── */}
             <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex items-start justify-between gap-3 shrink-0">
@@ -892,7 +888,7 @@ export default function TaskActivityModal({ id: taskId }) {
                             <span className="text-xs">Mark as In Progress</span>
                           </>
                         )}
-                        {/* <span className="xs:hidden">Done</span> */}
+                     
                       </button>
                     )}
                   </div>
@@ -907,7 +903,7 @@ export default function TaskActivityModal({ id: taskId }) {
               </button>
             </div>
 
-            {/* ── MOBILE TABS ── */}
+     
             <div className="flex sm:hidden border-b border-gray-100 shrink-0">
               <button
                 onClick={() => setMobileTab("timeline")}
@@ -937,9 +933,7 @@ export default function TaskActivityModal({ id: taskId }) {
               </button>
             </div>
 
-            {/* ── BODY ── */}
-
-            {/* Mobile: single tab view */}
+          
             <div className="flex sm:hidden flex-1 overflow-hidden flex-col">
               {mobileTab === "timeline" ? (
                 Timeline
@@ -955,9 +949,9 @@ export default function TaskActivityModal({ id: taskId }) {
               )}
             </div>
 
-            {/* Desktop: two-column layout */}
+           
             <div className="hidden sm:flex flex-1 overflow-hidden">
-              {/* Left: Post form */}
+            
               <div className="w-72 shrink-0 border-r border-gray-100 overflow-y-auto p-5">
                 <div className="bg-linear-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
                   <h3 className="text-sm font-bold text-gray-800 mb-4">
@@ -967,7 +961,6 @@ export default function TaskActivityModal({ id: taskId }) {
                 </div>
               </div>
 
-              {/* Right: Timeline */}
               <div className="flex-1 flex flex-col overflow-hidden">
                 {Timeline}
               </div>

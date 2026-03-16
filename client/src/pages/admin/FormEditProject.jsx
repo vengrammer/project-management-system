@@ -228,9 +228,6 @@ export default function FormEditProject() {
         const newManagerId = data?.updateProject?.project?.projectManager?.id;
         const projectTitle = data?.updateProject?.project?.title;
 
-        // console.log("original manager:", originalManagerId);
-        // console.log("new manager:", newManagerId);
-
         if (originalManagerId && newManagerId && originalManagerId !== newManagerId) {
           // Notify the new manager
           createNotif({
@@ -267,8 +264,6 @@ export default function FormEditProject() {
               },
             },
           });
-        } else {
-          console.log("No manager change detected");
         }
       },
       onError: () => {
@@ -332,7 +327,7 @@ export default function FormEditProject() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
+  
 
     if (
       formData.projectManager &&
@@ -751,7 +746,6 @@ export default function FormEditProject() {
               </button>
             </div>
 
-            {/* Modal Footer */}
           </form>
         </div>
       )}
