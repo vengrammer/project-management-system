@@ -1,5 +1,5 @@
 import { useId, useState } from "react";
-import { Eye, EyeOff, Pen } from "lucide-react";
+import { Eye, EyeOff, Pen, X } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
@@ -209,12 +209,20 @@ export default function FormEditUser({ userId }) {
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 p-4"
-          onClick={(e) => e.target === e.currentTarget && setOpen(false)}
         >
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
-            {/* Header */}
-            <div className="flex justify-center mb-4">
-              <img src={logo} alt="logo" className="h-10 w-auto" />
+            {/* Header */} 
+            <div className="grid col-3  mb-4">
+              <div className="col-2 flex justify-center">
+                <img src={logo} alt="logo" className="h-10 flex justify-center align-middle col-2 w-auto rounded-4xl" />
+              </div>
+              <div className="col-3 flex justify-end">
+                 <X className="cursor-pointer rounded-2xl hover:bg-gray-300" 
+                 onClick={() =>  setOpen(false) }
+                 />
+              </div>
+              
+             
             </div>
             <h2 className="text-xl font-bold text-center text-gray-800">
               Edit User

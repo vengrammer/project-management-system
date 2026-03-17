@@ -245,10 +245,10 @@ function ProjectItem({ project, accent, isSelected, onClick }) {
     <button
       onClick={onClick}
       className={[
-        "w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-150 flex items-center gap-3",
+        "w-full text-left px-3 py-2.5 rounded-xl border-3 transition-all duration-150 flex items-center gap-3 cursor-pointer",
         isSelected
           ? `bg-white shadow-sm ring-2 ${accent.ring} ${accent.border}`
-          : "border-transparent hover:bg-white hover:border-slate-200",
+          : " hover:bg-white border-gray-200  hover:border-gray-200",
       ].join(" ")}
     >
       <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${accent.chip}`} />
@@ -298,7 +298,7 @@ function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       className={[
-        "border-b border-r border-slate-100 transition-all duration-150 relative select-none",
+        "border-b border-r border-slate-100 hover:bg-gray-200 transition-all duration-150 relative select-none",
         // Height: taller on md+ to fit chips, compact on small
         "min-h-13 md:min-h-22.5",
         "p-1 md:p-2",

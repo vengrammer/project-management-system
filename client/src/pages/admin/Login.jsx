@@ -40,8 +40,8 @@ export default function LoginUI() {
     try {
       const res = await login({
         variables: {
-          username: username,
-          password: password,
+          username: username.trim(),
+          password: password.trim(),
         },
       });
       dispatch(loginSuccess(res.data.login));
@@ -85,13 +85,8 @@ export default function LoginUI() {
 
       <div className="w-full max-w-md relative border-none z-10 animate-fade-in overflow-hidden">
         <div className="bg-linear-to-br from-blue-600 to-blue-700 backdrop-blur-2xl rounded-3xl p-10 sm:p-12 shadow-2xl shadow-blue-900/50 relative overflow-hidden border border-white/10">
-
           <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent" />
-
-  
           <div className="absolute inset-0 bg-linear-to-b from-white/5 to-transparent pointer-events-none" />
-
-
           <div className="mb-10 relative">
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 tracking-tight">
               Welcome back
@@ -101,8 +96,7 @@ export default function LoginUI() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-  
+          <form onSubmit={handleSubmit} className="space-y-6">  
             <div className="group">
               <label
                 htmlFor="username"
@@ -110,10 +104,8 @@ export default function LoginUI() {
               >
                 Username
               </label>
-
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none transition-colors group-focus-within:text-blue-600" />
-
                 <input
                   id="username"
                   type="text"
@@ -132,8 +124,6 @@ export default function LoginUI() {
                 />
               </div>
             </div>
-
-
             <div className="group">
               <label
                 htmlFor="password"
@@ -141,10 +131,8 @@ export default function LoginUI() {
               >
                 Password
               </label>
-
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none transition-colors group-focus-within:text-blue-600" />
-
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -155,7 +143,6 @@ export default function LoginUI() {
                   required
                   className="w-full pl-12 pr-14 py-3.5 bg-white/95 hover:bg-white rounded-xl text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all duration-300 shadow-sm"
                 />
-
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -170,8 +157,6 @@ export default function LoginUI() {
                 </button>
               </div>
             </div>
-
-
             <button
               type="submit"
               disabled={isLoading}

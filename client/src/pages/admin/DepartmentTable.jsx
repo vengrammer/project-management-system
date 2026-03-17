@@ -56,8 +56,8 @@ export default function DepartmentTable() {
     awaitRefetchQueries: true,
   });
   const handleDelete = (id, department) => {
-   
-    if (!department){
+
+    if (!department) {
       Swal.fire({
         title:
           "Unable to delete department. It is currently linked to active users or projects.",
@@ -67,7 +67,7 @@ export default function DepartmentTable() {
         confirmButtonText: "Okay",
       });
       return;
-    } 
+    }
     Swal.fire({
       title: "Are you sure you want to delete department?",
       text: "You won't be able to revert this!",
@@ -132,9 +132,9 @@ export default function DepartmentTable() {
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeInOut" }}
-      className="w-full md:p-2 max-w-8xl mx-auto"
+      className="overflow-hidden w-full h-full flex"
     >
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-lg shadow w-full h-full flex flex-col">
         {/* Header with Search */}
         <div className="p-4 md:p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
@@ -162,7 +162,8 @@ export default function DepartmentTable() {
           <div>Actions</div>
         </div>
 
-        <div className="divide-y divide-gray-200 max-h-150 overflow-auto">
+        {/* Grid Body */}
+        <div className=" divide-y divide-gray-200 h-full overflow-auto">
           {currentDepartments.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500">
               No departments found
@@ -236,7 +237,7 @@ export default function DepartmentTable() {
 
         {/* Pagination*/}
         {totalPages > 1 && (
-          <div className="px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="px-4 md:px-6 py-4 border-t border-gray-200  flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-gray-600">
               Showing {startIndex + 1} to{" "}
               {Math.min(endIndex, filteredDepartments.length)} of{" "}
@@ -257,11 +258,10 @@ export default function DepartmentTable() {
                   <button
                     key={index + 1}
                     onClick={() => setCurrentPage(index + 1)}
-                    className={`px-3 py-1 rounded-lg text-sm ${
-                      currentPage === index + 1
+                    className={`px-3 py-1 rounded-lg text-sm ${currentPage === index + 1
                         ? "bg-blue-600 text-white"
                         : "border border-gray-300 hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
                     {index + 1}
                   </button>
@@ -276,6 +276,7 @@ export default function DepartmentTable() {
                 Next
               </button>
             </div>
+         
           </div>
         )}
 

@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 const getSecret = () => process.env.JWT_SECRET;
 export const blacklist = new Set();
 
-console.log("[user.resolver] Module loaded");
+
 
 // data = fullname, department, role, email, username, password, timestamps
 export const userResolvers = {
@@ -52,7 +52,7 @@ export const userResolvers = {
           updatedAt: user.updatedAt.toISOString(),
         }));
       } catch (error) {
-        console.log("return users error: ", error);
+        throw new Error(error);
       }
     },
     //return user by id
@@ -75,7 +75,6 @@ export const userResolvers = {
           updatedAt: user.updatedAt?.toISOString() || null,
         };
       } catch (error) {
-        console.log("Error User Find", error);
         throw new Error(error.message);
       }
     },

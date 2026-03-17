@@ -15,7 +15,7 @@ const taskLogResolver = {
         }
         return taskLogs;
       } catch (error) {
-        console.log(error);
+
         throw new Error("Error in getting the task logs data", error);
       }
     },
@@ -30,25 +30,25 @@ const taskLogResolver = {
         }
         return taskLogs;
       } catch (error) {
-        console.log(error);
+
         throw new Error("Error in getting task logs by task", error);
       }
     },
     taskLogsByProject: async (_, { projectId, startDate, endDate }) => {
       try {
-        console.log("Fetching logs for project:", projectId);
+
 
         // Convert projectId to ObjectId if it's a string
         const projectObjectId = new mongoose.Types.ObjectId(projectId);
 
         // First get all tasks for this project
         const tasks = await Task.find({ project: projectObjectId });
-        console.log("Found tasks:", tasks.length);
+
 
         const taskIds = tasks.map((task) => task._id);
 
         if (taskIds.length === 0) {
-          console.log("No tasks found for this project");
+
           return [];
         }
 
@@ -67,7 +67,6 @@ const taskLogResolver = {
           };
         }
 
-        console.log("Query:", query);
 
         const taskLogs = await TaskLog.find(query)
           .populate({
@@ -77,10 +76,10 @@ const taskLogResolver = {
           .populate("author")
           .sort({ createdAt: -1 });
 
-        console.log("Found logs:", taskLogs.length);
+
         return taskLogs;
       } catch (error) {
-        console.log("Error getting task logs:", error);
+
         throw new Error(
           "Error in getting task logs by project: " + error.message,
         );
@@ -96,7 +95,7 @@ const taskLogResolver = {
         }
         return taskLog;
       } catch (error) {
-        console.log(error);
+
         throw new Error("Error in getting task log", error);
       }
     },
@@ -112,7 +111,7 @@ const taskLogResolver = {
         });
         return newTaskLog;
       } catch (error) {
-        console.log("Error in creating the logs", error);
+
         throw new Error(error);
       }
     },
@@ -134,7 +133,7 @@ const taskLogResolver = {
         }
         return updatedTaskLog;
       } catch (error) {
-        console.log("Error in updating the log", error);
+
         throw new Error(error);
       }
     },
@@ -149,7 +148,7 @@ const taskLogResolver = {
         }
         return deletedTaskLog;
       } catch (error) {
-        console.log("Error in deleting the log", error);
+
         throw new Error(error);
       }
     },

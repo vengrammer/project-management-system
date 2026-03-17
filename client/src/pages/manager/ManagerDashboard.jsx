@@ -245,10 +245,10 @@ function ProjectItem({ project, accent, isSelected, onClick }) {
     <button
       onClick={onClick}
       className={[
-        "w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-150 flex items-center gap-3",
+        "w-full text-left px-3 py-2.5 rounded-xl border-3 transition-all duration-150 flex items-center gap-3 cursor-pointer",
         isSelected
           ? `bg-white shadow-sm ring-2 ${accent.ring} ${accent.border}`
-          : "border-transparent hover:bg-white hover:border-slate-200",
+          : "border-gray-200 hover:bg-white hover:border-gray-300",
       ].join(" ")}
     >
       <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${accent.chip}`} />
@@ -298,7 +298,7 @@ function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       className={[
-        "border-b border-r border-slate-100 transition-all duration-150 relative select-none",
+        "border-b border-r border-slate-100 hover:bg-gray-200 transition-all duration-150 relative select-none",
         // Height: taller on md+ to fit chips, compact on small
         "min-h-13 md:min-h-22.5",
         "p-1 md:p-2",
@@ -391,7 +391,7 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
   
   if (!selectedDate) {
     return (
-      <div className="flex flex-col items-center justify-center h-full py-16 text-slate-400 text-center px-6">
+      <div className="flex flex-1 flex-col items-center justify-center h-full py-16 text-slate-400 text-center px-6">
         <div className="text-4xl mb-3">📅</div>
         <p className="text-sm font-semibold text-slate-600">Select a day</p>
         <p className="text-xs mt-1 leading-relaxed">
@@ -749,7 +749,7 @@ export default function ManagerDashboard() {
             </p>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-3 py-2.5 flex flex-col gap-1">
+          <div className="flex-1 overflow-y-auto h-full px-3 py-2.5 flex flex-col gap-1">
             {projLoading &&
               [1, 2, 3, 4].map((i) => (
                 <Skeleton key={i} className="h-14 w-full" />

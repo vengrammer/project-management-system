@@ -240,10 +240,10 @@ function ProjectItem({ project, accent, isSelected, onClick }) {
     <button
       onClick={onClick}
       className={[
-        "w-full text-left px-3 py-2.5 rounded-xl  border transition-all duration-150 flex items-center gap-3",
+        "w-full text-left bg-white  px-3 py-2.5 rounded-xl  border-3  transition-all duration-150 flex items-center gap-3 cursor-pointer",
         isSelected
           ? `bg-white shadow-sm ring-2 ${accent.ring} ${accent.border}`
-          : "border-transparent hover:bg-white hover:border-slate-200",
+          : " hover:bg-white border-gray-200 hover:border-gray-300 ",
       ].join(" ")}
     >
       <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${accent.chip}`} />
@@ -279,7 +279,7 @@ function ProjectItem({ project, accent, isSelected, onClick }) {
   );
 }
 
-DayCell
+//DayCell
 
 function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
   const [hov, setHov] = useState(false);
@@ -714,7 +714,7 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-3 py-2.5 flex flex-col gap-1">
+          <div className="flex-1 overflow-y-auto px-3 py-2.5 flex flex-col gap-2 ">
             {projLoading &&
               [1, 2, 3, 4].map((i) => (
                 <Skeleton key={i} className="h-14 w-full" />

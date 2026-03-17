@@ -188,7 +188,7 @@ export default function EmployeeSideBar() {
 
         {/* Navigation Links */}
         <nav className="flex-1 p-4 overflow-y-auto">
-          <div className="px-4 py-2 mb-4 rounded-2xl shadow-blue-800 border shadow-2xs">
+          <div className="px-4 py-2 mb-4 rounded-2xl shadow-blue-800 border shadow-2x">
             <h1 className=" font-semibold text-gray-800">
               Welcome, <span className="text-blue-600">Employee</span>
             </h1>

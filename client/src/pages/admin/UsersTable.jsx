@@ -188,6 +188,7 @@ export default function UsersTable() {
                     <div>
                       <div className="font-medium text-gray-900 truncate">
                         {user.fullname}
+                        
                       </div>
                       <div className="text-sm text-gray-500">
                         {user.department?.name || "No Department"}

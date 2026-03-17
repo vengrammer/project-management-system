@@ -37,7 +37,7 @@ const taskResolver = {
         if (!task) throw new Error("Task not found");
         return task;
       } catch (error) {
-        console.log("error in getting the task", error);
+    
         throw new Error(error.message || "Failed to fetch task by project id");
       }
     },
@@ -109,7 +109,7 @@ const taskResolver = {
         if (!deletedTask) throw new Error("Task not found");
         return deletedTask;
       } catch (error) {
-        console.log("Error in deleting the task");
+   
         throw new Error(error.message || "error in deleting task");
       }
     },

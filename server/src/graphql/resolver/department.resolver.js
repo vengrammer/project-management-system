@@ -10,7 +10,8 @@ export const departmentResolver = {
         const departments = await Department.find();
         return departments;
       } catch (error) {
-        console.log("error", error);
+      
+        throw new Error(error);
       }
     },
     department: async (_, { id }) => {
@@ -18,7 +19,7 @@ export const departmentResolver = {
         const department = await Department.findById(id);
         return department;
       } catch (error) {
-        console.log(error);
+  
         throw new Error(error);
       }
     },
@@ -29,7 +30,8 @@ export const departmentResolver = {
         const users = await User.find({ department: parent._id });
         return users;
       } catch (error) {
-        console.log(error);
+    
+        throw new Error(error);
       }
     },
   },

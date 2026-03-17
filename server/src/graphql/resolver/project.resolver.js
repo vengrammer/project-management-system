@@ -163,7 +163,6 @@ export const projectResolvers = {
 
         return reusableReturnmap(project);
       } catch (error) {
-        console.log(error);
         throw new Error(error);
       }
     },
@@ -223,7 +222,6 @@ export const projectResolvers = {
 
         return reusableReturnmap(project);
       } catch (error) {
-        console.log(error);
         throw new Error(error);
       }
     },
@@ -240,8 +238,6 @@ export const projectResolvers = {
       if (!foundUser) {
         throw new Error("Cannot find the user");
       }
-
-      //console.log(foundUser?.role)
 
       let filter = { isArchive: true }; // assuming archived projects use this status
 
