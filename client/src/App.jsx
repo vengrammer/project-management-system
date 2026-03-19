@@ -14,7 +14,7 @@ import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import { useSelector } from "react-redux";
 import { Loader } from "lucide-react";
-
+import DarkModeProvider from "./hooks/DarkModeProvider";
 const CURRENT_USER = gql`
   query CurrentUser {
     currentUser {
@@ -78,25 +78,27 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/*" element={<LandingPageRoute />} />
-        <Route path="admin/*" element={<AdminRoute />} />
-        <Route path="employee/*" element={<EmployeeRoute />} />
-        <Route path="manager/*" element={<ManagerRoute />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+    <DarkModeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/*" element={<LandingPageRoute />} />
+          <Route path="admin/*" element={<AdminRoute />} />
+          <Route path="employee/*" element={<EmployeeRoute />} />
+          <Route path="manager/*" element={<ManagerRoute />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
 
-      <ToastContainer
-        position="bottom-right"
-        autoClose={4000}
-        newestOnTop={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="colored"
-      />
-    </BrowserRouter>
+        <ToastContainer
+          position="bottom-right"
+          autoClose={4000}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="colored"
+        />
+      </BrowserRouter>
+    </DarkModeProvider>
   );
 }
 export default App;

@@ -70,7 +70,18 @@ const ADD_MEMBER = gql`
   }
 `;
 
-function AddMembers() {
+// Shared input class — mirrors FormAddUser
+const inputCls =
+  "w-full px-3 py-2 rounded-md text-sm transition-all " +
+  "border border-gray-300 dark:border-[#2a3040] " +
+  "bg-white dark:bg-[#1a1f2b] " +
+  "text-gray-800 dark:text-slate-200 " +
+  "placeholder-gray-400 dark:placeholder-slate-600 " +
+  "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#31f64b]/40";
+
+const labelCls = "block text-sm font-medium text-gray-700 dark:text-slate-300";
+
+function AddMembersForm() {
   const { id } = useParams();
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   ///query to get the department
@@ -111,7 +122,7 @@ function AddMembers() {
   });
 
   const selectedDept = dataDepartments?.departments?.find(
-    (d) => d.id === formData.department || d.name === formData.department ,
+    (d) => d.id === formData.department || d.name === formData.department,
   );
 
   const teamUsers = selectedDept?.users || [];
@@ -158,14 +169,12 @@ function AddMembers() {
 
   const filteredTeamMembers = teamUsers.filter(
     (emp) =>
-       emp.role === "user" && // show only users
+      emp.role === "user" && // show only users
       !existingUserIds.has(emp.id) && // exclude already added
       (emp.fullname || "")
         .toLowerCase()
         .includes((teamMemberSearch || "").toLowerCase()),
   );
-
-  
 
   const toggleEmployee = (id) => {
     setSelectedEmployees((prev) =>
@@ -202,34 +211,41 @@ function AddMembers() {
       {/* Button to open modal */}
       <button
         onClick={() => setIsAddMemberOpen(true)}
-        className="px-2 py-2 bg-blue-600 text-white rounded-lg flex"
+        className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold transition-all duration-150
+          bg-blue-600 hover:bg-blue-700 text-white
+          dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
+          dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]"
       >
-        <Plus />
+        <Plus size={16} />
         Member
       </button>
 
       {/* Modal */}
       {isAddMemberOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-[#222732] rounded-xl shadow-xl dark:shadow-[0_4px_40px_rgba(0,0,0,0.6)] w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-[#2a3040]">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
                 Add New Member
               </h2>
               <button
                 onClick={() => setIsAddMemberOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-[#252d3d] rounded-lg transition-colors"
               >
-                <XCircle size={24} className="text-gray-500 cursor-pointer" />
+                <XCircle size={24} className="text-gray-500 dark:text-slate-400 cursor-pointer" />
               </button>
             </div>
 
             <form onSubmit={handleAddTask} className="p-6">
               <div className="space-y-4">
                 <div className="flex flex-col gap-4">
+
+                  {/* Department Search */}
                   <div className="space-y-2 relative" ref={departmentRef}>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Department <span className="text-red-500">*</span>
+                    <label className={labelCls}>
+                      Department
                     </label>
                     <div className="relative">
                       <input
@@ -242,27 +258,27 @@ function AddMembers() {
                           setShowDepartmentDropdown(true);
                         }}
                         onFocus={() => setShowDepartmentDropdown(true)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className={inputCls}
                       />
                       {showDepartmentDropdown && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-auto">
+                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#1a1f2b] border border-gray-300 dark:border-[#2a3040] rounded-lg shadow-lg dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)] max-h-48 overflow-auto">
                           {filteredDepartments.length > 0 ? (
                             filteredDepartments.map((dept) => (
                               <div
                                 key={dept.id}
                                 onClick={() => {
-                                  // store department id for form submission, but keep name visible in the input  
+                                  // store department id for form submission, but keep name visible in the input
                                   handleInputChange("department", dept.id);
                                   setDepartmentSearch(dept.name);
                                   setShowDepartmentDropdown(false);
                                 }}
-                                className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                                className="px-3 py-2 hover:bg-blue-50 dark:hover:bg-[#252d3d] cursor-pointer text-sm text-gray-800 dark:text-slate-200"
                               >
                                 {dept.name}
                               </div>
                             ))
                           ) : (
-                            <div className="px-3 py-2 text-sm text-gray-500">
+                            <div className="px-3 py-2 text-sm text-gray-500 dark:text-slate-500">
                               No departments found
                             </div>
                           )}
@@ -271,36 +287,37 @@ function AddMembers() {
                     </div>
                   </div>
 
+                  {/* Team Members */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Team Members <span className="text-red-500">*</span>
+                    <label className={labelCls}>
+                      Team Members
                     </label>
                     <input
                       type="text"
                       placeholder="Search team members..."
                       value={teamMemberSearch}
                       onChange={(e) => setTeamMemberSearch(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                      className={inputCls + " mb-2"}
                     />
-                    <div className="w-full bg-gray-50 max-h-48 overflow-auto rounded-lg border border-gray-300 py-3 px-4">
+                    <div className="w-full bg-gray-50 dark:bg-[#1a1f2b] max-h-48 overflow-auto rounded-lg border border-gray-300 dark:border-[#2a3040] py-3 px-4">
                       {filteredTeamMembers.length > 0 ? (
                         filteredTeamMembers.map((emp) => (
                           <label
                             key={emp.id}
-                            className="flex items-center justify-between gap-3 py-2 px-2 rounded hover:bg-gray-100 cursor-pointer transition-colors"
+                            className="flex items-center justify-between gap-3 py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-[#252d3d] cursor-pointer transition-colors"
                           >
                             <div className="flex items-center gap-3">
                               <input
                                 type="checkbox"
                                 checked={selectedEmployees?.includes(emp.id)}
                                 onChange={() => toggleEmployee(emp.id)}
-                                className="w-4 h-4 accent-blue-600 cursor-pointer"
+                                className="w-4 h-4 accent-blue-600 dark:accent-[#31f64b] cursor-pointer"
                               />
                               <div className="text-sm">
-                                <div className="font-medium text-gray-800">
+                                <div className="font-medium text-gray-800 dark:text-slate-200">
                                   {emp.fullname}
                                 </div>
-                                <div className="text-xs text-gray-500">
+                                <div className="text-xs text-gray-500 dark:text-slate-500">
                                   {emp.position}
                                 </div>
                               </div>
@@ -308,31 +325,39 @@ function AddMembers() {
                           </label>
                         ))
                       ) : (
-                        <div className="text-sm text-gray-500 text-center py-2">
+                        <div className="text-sm text-gray-500 dark:text-slate-500 text-center py-2">
                           No team members found
                         </div>
                       )}
                     </div>
                     {selectedEmployees?.length > 0 && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-slate-500">
                         {selectedEmployees.length} member(s) selected
                       </p>
                     )}
                   </div>
+
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+              {/* Footer Buttons */}
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-[#2a3040]">
                 <button
                   type="button"
                   onClick={() => setIsAddMemberOpen(false)}
-                  className="px-6 py-2 cursor-pointer border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="px-6 py-2 cursor-pointer border border-gray-300 dark:border-[#2a3040] rounded-lg
+                    text-gray-700 dark:text-slate-300
+                    hover:bg-gray-100 dark:hover:bg-[#252d3d]
+                    transition-colors text-sm font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  className="flex items-center gap-2 px-6 py-2 cursor-pointer rounded-lg text-sm font-semibold transition-all duration-150
+                    bg-blue-600 hover:bg-blue-700 text-white
+                    dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
+                    dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]"
                 >
                   <Plus size={20} />
                   Add Member
@@ -346,4 +371,4 @@ function AddMembers() {
   );
 }
 
-export default AddMembers;
+export default AddMembersForm;

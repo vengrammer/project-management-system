@@ -90,11 +90,20 @@ const CREATE_NOTIF = gql`
   }
 `;
 
+// Shared input / select class — mirrors FormAddUser
+const inputCls =
+  "w-full px-3 py-2 rounded-md text-sm transition-all " +
+  "border border-gray-300 dark:border-[#2a3040] " +
+  "bg-white dark:bg-[#1a1f2b] " +
+  "text-gray-800 dark:text-slate-200 " +
+  "placeholder-gray-400 dark:placeholder-slate-600 " +
+  "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#31f64b]/40";
 
-function AddTaskForm({refetchProjects}) {
+const labelCls = "block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2";
 
-   const auth = useSelector((state) => state.auth);
-   const userId = auth.user?.id;
+function AddTaskForm({ refetchProjects }) {
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id;
 
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [newTask, setNewTask] = useState({
@@ -102,7 +111,6 @@ function AddTaskForm({refetchProjects}) {
     description: "",
     priority: "medium",
     assignedTo: [],
-
     status: "todo",
   });
 
@@ -113,7 +121,6 @@ function AddTaskForm({refetchProjects}) {
     onError: () => {
       toast.error("Failed to update the project");
     },
-    // refetchQueries: [{ query: GET_PROJECTS, variables: { projectId: id } }],
   });
 
   //get the tasks to check if this is the first task
@@ -128,13 +135,12 @@ function AddTaskForm({refetchProjects}) {
     data: memberData,
   } = useQuery(GET_MEMBERS, { variables: { projectId: id } });
 
-   const [createNotif] = useMutation(CREATE_NOTIF);
- 
+  const [createNotif] = useMutation(CREATE_NOTIF);
+
   //insert the task
   const [createTask] = useMutation(INSERT_TASK, {
     onCompleted: (data) => {
       toast.success("Task created successfully");
-      // reset form and selection (restore defaults)
       setNewTask({
         title: "",
         description: "",
@@ -147,7 +153,6 @@ function AddTaskForm({refetchProjects}) {
       refetchProjects();
       setIsAddTaskOpen(false);
 
-      //create a notif for the user that assigned to the task
       if (data.createTask.users.length > 0) {
         createNotif({
           variables: {
@@ -175,7 +180,6 @@ function AddTaskForm({refetchProjects}) {
   const handleAddTask = (e) => {
     e.preventDefault();
 
-    // Check if this is the first task (no existing tasks)
     const existingTasks = tasksData?.taskByProject || [];
     const isFirstTask = existingTasks.length === 0;
 
@@ -191,13 +195,10 @@ function AddTaskForm({refetchProjects}) {
       },
     });
 
-    // Always update status to in progress
     updateProject({
       variables: {
         updateProjectId: id,
-        ...(isFirstTask && {status: "in progress"}),
-        // Only include start date if this is the first task
-        // ...(isFirstTask && { startDate: new Date().toISOString() }),
+        ...(isFirstTask && { status: "in progress" }),
       },
     });
   };
@@ -217,78 +218,74 @@ function AddTaskForm({refetchProjects}) {
     );
   }
 
- 
   return (
     <>
-      {/* Button to open modal */}
+      {/* Trigger Button */}
       <button
         onClick={() => setIsAddTaskOpen(true)}
-        className="flex px-4 py-2 bg-blue-600 text-white rounded-lg "
+        className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold transition-all duration-150
+          bg-blue-600 hover:bg-blue-700 text-white
+          dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
+          dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]"
       >
-        <Plus />
+        <Plus size={16} />
         Add Task
       </button>
 
       {/* Modal */}
       {isAddTaskOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900">Add Task</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-[#222732] rounded-xl shadow-xl dark:shadow-[0_4px_40px_rgba(0,0,0,0.6)] w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-[#2a3040]">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Add Task</h2>
               <button
                 onClick={() => setIsAddTaskOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-[#252d3d] rounded-lg transition-colors"
               >
-                <XCircle size={24} className="text-gray-500 cursor-pointer" />
+                <XCircle size={24} className="text-gray-500 dark:text-slate-400 cursor-pointer" />
               </button>
             </div>
 
             <form onSubmit={handleAddTask} className="p-6">
               <div className="space-y-4">
+
+                {/* Task Title */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Task Title *
-                  </label>
+                  <label className={labelCls}>Task Title *</label>
                   <input
                     type="text"
                     value={newTask.title}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, title: e.target.value })
-                    }
+                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
                     placeholder="Enter task title"
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={inputCls}
                   />
                 </div>
 
+                {/* Description */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Description *
-                  </label>
+                  <label className={labelCls}>Description *</label>
                   <textarea
                     value={newTask.description}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, description: e.target.value })
-                    }
+                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
                     placeholder="Enter task description"
                     required
                     rows="3"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className={inputCls + " resize-none"}
                   />
                 </div>
 
+                {/* Priority + Assign To */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Priority *
-                    </label>
+                    <label className={labelCls}>Priority *</label>
                     <select
                       value={newTask.priority}
-                      onChange={(e) =>
-                        setNewTask({ ...newTask, priority: e.target.value })
-                      }
+                      onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={inputCls + " appearance-none"}
                     >
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
@@ -297,19 +294,17 @@ function AddTaskForm({refetchProjects}) {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Assign To *
-                    </label>
-                    <div className="border border-gray-300 rounded-lg p-3 max-h-40 overflow-y-auto">
+                    <label className={labelCls}>Assign To *</label>
+                    <div className="border border-gray-300 dark:border-[#2a3040] rounded-md p-3 max-h-40 overflow-y-auto bg-white dark:bg-[#1a1f2b]">
                       {(memberData?.project?.users || []).length === 0 ? (
-                        <p className="text-gray-500 text-sm">
+                        <p className="text-gray-500 dark:text-slate-500 text-sm">
                           No team members available
                         </p>
                       ) : (
                         (memberData?.project?.users || []).map((member) => (
                           <label
                             key={member.id}
-                            className="flex items-center gap-2 py-1.5 cursor-pointer hover:bg-gray-50 rounded px-1"
+                            className="flex items-center gap-2 py-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-[#252d3d] rounded px-1"
                           >
                             <input
                               type="checkbox"
@@ -318,23 +313,18 @@ function AddTaskForm({refetchProjects}) {
                                 if (e.target.checked) {
                                   setNewTask({
                                     ...newTask,
-                                    assignedTo: [
-                                      ...newTask.assignedTo,
-                                      member.id,
-                                    ],
+                                    assignedTo: [...newTask.assignedTo, member.id],
                                   });
                                 } else {
                                   setNewTask({
                                     ...newTask,
-                                    assignedTo: newTask.assignedTo.filter(
-                                      (id) => id !== member.id,
-                                    ),
+                                    assignedTo: newTask.assignedTo.filter((id) => id !== member.id),
                                   });
                                 }
                               }}
-                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                              className="w-4 h-4 text-blue-600 dark:accent-[#31f64b] rounded border-gray-300 dark:border-[#2a3040] focus:ring-blue-500 dark:focus:ring-[#31f64b]/40"
                             />
-                            <span className="text-sm text-gray-700">
+                            <span className="text-sm text-gray-700 dark:text-slate-300">
                               {member.fullname} - {member.position}
                             </span>
                           </label>
@@ -342,23 +332,28 @@ function AddTaskForm({refetchProjects}) {
                       )}
                     </div>
                   </div>
-
-                  
                 </div>
 
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+              {/* Footer Buttons */}
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-[#2a3040]">
                 <button
                   type="button"
                   onClick={() => setIsAddTaskOpen(false)}
-                  className="px-6 py-2 cursor-pointer border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="px-6 py-2 cursor-pointer border border-gray-300 dark:border-[#2a3040] rounded-lg
+                    text-gray-700 dark:text-slate-300
+                    hover:bg-gray-100 dark:hover:bg-[#252d3d]
+                    transition-colors text-sm font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  className="flex items-center gap-2 px-6 py-2 cursor-pointer rounded-lg text-sm font-semibold transition-all duration-150
+                    bg-blue-600 hover:bg-blue-700 text-white
+                    dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
+                    dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]"
                 >
                   <Plus size={20} />
                   Add Task

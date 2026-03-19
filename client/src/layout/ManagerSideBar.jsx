@@ -18,6 +18,7 @@ import {
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/middleware/authSlice";
+import DarkModeSwitch from "@/hooks/DarkModeSwitch";
 
 const GET_USER = gql`
   query User($userId: ID!) {
@@ -148,8 +149,13 @@ export default function ManagerSideBar() {
   const fullnameMgr = userData?.user.fullname || "";
   const emailMgr = userData?.user.email || "";
 
+  const linkDesign =
+    "flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-[#252d3d] hover:text-blue-600 dark:hover:text-[#b8ed06] transition-colors";
+  const active =
+    "bg-blue-100 dark:bg-[#049417] dark:text-[#b8ed06] text-blue-600";
+
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen dark:bg-[#202120] dark:text-white bg-gray-100">
       {/* Mobile Menu Button */}
       <button
         onClick={toggleSidebar}
@@ -162,7 +168,7 @@ export default function ManagerSideBar() {
       <aside
         className={`
           fixed md:static inset-y-0 left-0 z-40
-          w-64 bg-white shadow-lg
+          w-64 dark:bg-[#222732] shadow-lg
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
@@ -170,34 +176,35 @@ export default function ManagerSideBar() {
         `}
       >
         {/* Logo/Header */}
-        <div className="p-6 border-b flex items-center gap-3">
-          <div className="flex size-14 shrink-0 items-center justify-center rounded-full border border-gray-200">
+        <div className="p-6 border-b dark:border-[#2a3040] flex items-center gap-3 bg-white dark:bg-[#222732]">
+          <div className="flex size-14 shrink-0 items-center justify-center rounded-full border border-gray-200 dark:border-[#2a3040]">
             <img
               src={logo}
               alt="Logo"
               className="h-12 w-12 object-contain rounded-full"
             />
           </div>
-          <h1 className="text-xl font-bold text-gray-800">
+          <h1 className="text-xl font-bold text-gray-800 dark:text-slate-100">
             Project Management
           </h1>
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 p-4 overflow-y-auto">
-          <div className="px-4 py-2 mb-4 rounded-2xl border shadow-blue-800 shadow-2xs">
-            <h1 className=" font-semibold text-gray-800">
-              Welcome, <span className="text-blue-600">Manager</span>
+        <nav className="flex-1 p-4 overflow-y-auto bg-white dark:bg-[#222732]">
+          <div className="px-4 py-2 mb-4 rounded-2xl border dark:border-[#2a3040] shadow-blue-800 shadow-2xs">
+            <h1 className="font-semibold text-gray-800 dark:text-slate-200">
+              Welcome, <span className="text-blue-600 dark:text-[#31f64b]">Manager</span>
             </h1>
+            <div className="flex items-center justify-center p-2">
+              <DarkModeSwitch />
+            </div>
           </div>
           <ul className="space-y-2">
             <li>
               <Link
                 to="/manager/dashboard"
-                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/manager/dashboard")
-                    ? "bg-blue-100 text-blue-600"
-                    : ""
+                className={`${linkDesign} ${
+                  isActive("/manager/dashboard") ? active : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
@@ -208,10 +215,8 @@ export default function ManagerSideBar() {
             <li>
               <Link
                 to="/manager/projects"
-                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/manager/projects")
-                    ? "bg-blue-100 text-blue-600"
-                    : ""
+                className={`${linkDesign} ${
+                  isActive("/manager/projects") ? active : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
@@ -222,10 +227,8 @@ export default function ManagerSideBar() {
             <li>
               <Link
                 to="/manager/archive"
-                className={`flex items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/manager/archive")
-                    ? "bg-blue-100 text-blue-600"
-                    : ""
+                className={`${linkDesign} ${
+                  isActive("/manager/archive") ? active : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
@@ -237,17 +240,15 @@ export default function ManagerSideBar() {
             <li>
               <Link
                 to="/manager/notification"
-                className={`flex relative items-center gap-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors ${
-                  isActive("/manager/notification")
-                    ? "bg-blue-100 text-blue-600"
-                    : ""
+                className={`flex relative ${linkDesign} ${
+                  isActive("/manager/notification") ? active : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
                 <Bell size={20} />
                 <span>Notifications</span>{" "}
                 {filterUnReadCount.length > 0 && (
-                  <span className=" absolute right-0 bg-red-600 bold text-white px-2  rounded-4xl">
+                  <span className="absolute right-0 bg-red-600 bold text-white px-2 rounded-4xl">
                     {filterUnReadCount.length}
                   </span>
                 )}
@@ -255,26 +256,29 @@ export default function ManagerSideBar() {
             </li>
           </ul>
         </nav>
+
         {/* Account Section at Bottom */}
-        <div className="p-4 border-t">
+        <div className="p-4 border-t dark:border-[#2a3040] bg-white dark:bg-[#222732]">
           {/* User Info */}
-          <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-gray-50 dark:bg-[#0e0698] rounded-lg">
             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
               {getInitials(fullnameMgr || "U")}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-800">
+              <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">
                 {fullnameMgr || "Unknown user"}{" "}
               </p>
-              <p className="text-xs text-gray-500">{emailMgr || "no email"}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-200">
+                {emailMgr || "no email"}
+              </p>
             </div>
           </div>
 
-          {/* Account Links */}
+          {/* Profile Link */}
           <Link
             to="/manager/profile"
-            className={`flex items-center gap-3 px-4 py-2 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors mb-1 ${
-              isActive("/manager/profile") ? "bg-blue-100 text-blue-600" : ""
+            className={`${linkDesign} mb-1 ${
+              isActive("/manager/profile") ? active : ""
             }`}
             onClick={() => setIsOpen(false)}
           >
@@ -289,7 +293,7 @@ export default function ManagerSideBar() {
               client.resetStore();
               navigate("/");
             }}
-            className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
           >
             <LogOut size={18} />
             <span className="text-sm">Logout</span>
@@ -304,10 +308,9 @@ export default function ManagerSideBar() {
           onClick={toggleSidebar}
         ></div>
       )}
+
       {/* Main Content Area */}
-      <main
-        className="flex-1 flex overflow-hidden p-2"
-      >
+      <main className="flex-1 flex overflow-hidden p-2">
         <Outlet />
       </main>
     </div>
