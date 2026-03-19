@@ -83,12 +83,12 @@ export default function LoginUI() {
       className=" w-full flex items-center justify-center p-6 overflow-hidden"
     >
 
-      <div className="w-full max-w-md relative border-none z-10 animate-fade-in overflow-hidden">
-        <div className="bg-linear-to-br from-blue-600 to-blue-700 backdrop-blur-2xl rounded-3xl p-10 sm:p-12 shadow-2xl shadow-blue-900/50 relative overflow-hidden border border-white/10">
+      <div className="w-full max-w-md relative z-10 animate-fade-in overflow-hidden">
+        <div className="bg-linear-to-br from-blue-600 to-blue-400 backdrop-blur-2xl rounded-3xl p-10 sm:p-12 shadow-2xl shadow-blue-900/50 relative overflow-hidden border border-white/10">
           <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent" />
           <div className="absolute inset-0 bg-linear-to-b from-white/5 to-transparent pointer-events-none" />
           <div className="mb-10 relative">
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 tracking-tight">
+            <h1 className="text-4xl sm:text-4xl font-bold text-white mb-3 tracking-tight">
               Welcome back
             </h1>
             <p className="text-blue-100 text-sm tracking-wide">
@@ -100,7 +100,7 @@ export default function LoginUI() {
             <div className="group">
               <label
                 htmlFor="username"
-                className="block text-xs font-semibold text-blue-100 uppercase tracking-wider mb-3"
+                className="block text-xs font-semibold text-white uppercase tracking-wider mb-3"
               >
                 Username
               </label>
@@ -127,7 +127,7 @@ export default function LoginUI() {
             <div className="group">
               <label
                 htmlFor="password"
-                className="block text-xs font-semibold text-blue-100 uppercase tracking-wider mb-3"
+                className="block text-xs font-semibold text-white  uppercase tracking-wider mb-3"
               >
                 Password
               </label>

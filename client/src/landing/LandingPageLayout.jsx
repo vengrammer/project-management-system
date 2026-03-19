@@ -1,5 +1,4 @@
 
-import Navbar from "@/components/Navbar";
 import { Outlet } from "react-router-dom";
 import background from "@/assets/background.jpg";
 

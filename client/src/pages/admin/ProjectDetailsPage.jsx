@@ -234,6 +234,7 @@ const ProjectDetailsPage = () => {
 
  useEffect(() => {
    if (!userId) {
+    toast.error("Failed to view the projects. They may have been removed, or you are not part of the project.");
      navigate("/", { replace: true });
      return;
    }
@@ -242,7 +243,9 @@ const ProjectDetailsPage = () => {
    if (!projectData?.project) return;
 
    if (!isAdmin && !isIncluded && !isProjectManager) {
+     toast.error("Failed to view the projects. They may have been removed, or you are not part of the project.");
      navigate("/", { replace: true });
+    
    }
  }, [userId, isAdmin, isIncluded, isProjectManager, projectData, navigate]);
   // 1. Is included in the project (for employees), OR
@@ -288,11 +291,13 @@ const ProjectDetailsPage = () => {
 
     // If project is NOT archived but user is in archive route
     if (!isArchive && validRouteForArchive) {
+       toast.error("Failed to view the projects. They may have been removed, or you are not part of the project.");
       navigate("/", { replace: true });
     }
 
     // If project IS archived but user is in non-archive route
     if (isArchive && validRouteForNotArchive) {
+      toast.error("Failed to view the projects. They may have been removed, or you are not part of the project.");
       navigate("/", { replace: true });
     }
   }, [projectData, validRouteForNotArchive, validRouteForArchive, navigate]);
@@ -477,10 +482,8 @@ const ProjectDetailsPage = () => {
    };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
- 
-      <div className="w-full  p-2 sm:p-6 lg:py-8">
-   
+    <div className="flex flex-col h-screen w-full sm:overflow-hidden  bg-gray-200">
+      <div className="w-full p-2 sm:p-6 lg:py-8  h-full">
         <button
           onClick={() =>
             navigate(
@@ -616,10 +619,9 @@ const ProjectDetailsPage = () => {
             </div>
           </div>
 
-
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
     
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+            <div className="bg-blue-50 rounded-lg p-4 border hover:scale-105 hover:shadow-xl border-blue-100">
               <div className="flex items-center justify-between mb-2">
                 <Target className="text-blue-600" size={20} />
               </div>
@@ -682,8 +684,8 @@ const ProjectDetailsPage = () => {
           className="grid grid-cols-1 lg:grid-cols-3 gap-6"
         >
       
-          <div className="lg:col-span-2 flex h-full w-full  flex-col gap-4">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="lg:col-span-2 flex flex-1 w-full   flex-col gap-4">
+            <div className="bg-white min-h-full overflow-auto  rounded-lg shadow-sm border border-gray-200">  
               <div className="p-3 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
@@ -707,7 +709,7 @@ const ProjectDetailsPage = () => {
                       key={task.id}
                       className="px-4 py-1 hover:bg-gray-100 transition-colors"
                     >
-                      <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center justify-between mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <h3 className="text-lg font-semibold text-gray-900">
@@ -797,7 +799,7 @@ const ProjectDetailsPage = () => {
           </div>
           {/* Team Members Section */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="bg-white rounded-lg shadow-sm flex flex-col flex-1 min-h-full border border-gray-200 p-6 mb-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-900">
                   Team Members

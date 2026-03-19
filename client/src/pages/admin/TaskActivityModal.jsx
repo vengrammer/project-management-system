@@ -798,7 +798,6 @@ export default function TaskActivityModal({ id: taskId }) {
       {isOpen && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4"
-          onClick={(e) => e.target === e.currentTarget && setIsOpen(false)}
         >
           <div className="bg-white w-full sm:rounded-2xl sm:max-w-7xl sm:max-h-screen h-full sm:h-auto flex flex-col rounded-t-2xl">
             {/* ── HEADER ── */}

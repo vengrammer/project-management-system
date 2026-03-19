@@ -173,7 +173,7 @@ export default function ArchiveAdminEmployeeManager() {
 
           <input
             type="text"
-            placeholder="Search by title, description, department, or status..."
+            placeholder="Search by title or department..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);

@@ -42,7 +42,7 @@ function App() {
     loading: currentUserLoading,
     error: currentUserError,
   } = useQuery(CURRENT_USER, {
-    skip: !auth.token, // only query if token exists
+    skip: !auth.token,
   });
 
   // Handle user login when data is ready

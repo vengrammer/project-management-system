@@ -122,7 +122,7 @@ export default function ProjectTableEmployee() {
         <div className="p-4 md:p-6 border-b border-gray-200 ">
           <input
             type="text"
-            placeholder="Search by title, description, department, or status..."
+            placeholder="Search by title or department..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
