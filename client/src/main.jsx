@@ -8,7 +8,6 @@ import { setContext } from "@apollo/client/link/context";
 
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-// store and persistor will be imported below for auth link
 
 
 //import for the websocket

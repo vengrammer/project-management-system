@@ -27,14 +27,12 @@ const server = new ApolloServer({
 });
 
 await server.start();
-
-// Middleware to parse JSON
 app.use(express.json());
 
 // use the graphql endpoint
 app.use(
   "/graphql",
-  cors(),
+  cors(""),
   bodyParser.json(),
   expressMiddleware(server, {
     context: async ({ req }) => {
