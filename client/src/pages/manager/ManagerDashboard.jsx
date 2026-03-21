@@ -152,6 +152,26 @@ function Skeleton({ className = "" }) {
   return <div className={`animate-pulse bg-slate-200 dark:bg-[#2e3545] rounded-xl ${className}`} />;
 }
 
+
+//date format
+//date format
+function formatTimeAgo(value) {
+  if (!value) return "";
+  const now = new Date();
+  const date = new Date(Number(value));
+  const diffMs = now - date;
+  const minutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const weeks = Math.floor(days / 7);
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  if (weeks <= 2) return `${weeks}w ago`;
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 function ProjectItem({ project, accent, isSelected, onClick }) {
   return (
     <button
@@ -368,7 +388,7 @@ function DayDetail({ selectedDate, logs, loading, project, accent }) {
                   </span>
                 </div>
                 <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
-                  {time.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                  {formatTimeAgo(time)}
                 </span>
               </div>
             </div>

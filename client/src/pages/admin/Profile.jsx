@@ -71,7 +71,7 @@ const UPDATE_USER = gql`
   }
 `;
 
-// ── Shared input class — light + dark ──
+// ── Shared input class DESIGN
 const inputCls =
   "w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border transition-all " +
   "border-slate-200 dark:border-[#2a3040] " +
