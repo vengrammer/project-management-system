@@ -161,7 +161,7 @@ export default function AdminSideBar() {
   if (userError) {
     toast.error("Failed to load user data");
   }
-
+  //TESTING COMMIT
   // show placeholder while loading
   const fullname = userData?.user.fullname || "";
   const email = userData?.user.email || "";
