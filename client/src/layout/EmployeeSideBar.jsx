@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { gql } from "@apollo/client";
@@ -9,6 +9,7 @@ import { logout } from "@/middleware/authSlice";
 import { persistor } from "@/middleware/store";
 import { useApolloClient, useSubscription } from "@apollo/client/react";
 import DarkModeSwitch from "@/hooks/DarkModeSwitch";
+import notificationSound from "../assets/notification.wav";
 
 import {
   Menu,
@@ -65,6 +66,7 @@ export default function EmployeeSideBar() {
   const auth = useSelector((state) => state.auth);
   const client = useApolloClient();
   const user = auth.user?.id;
+   const audioRef = useRef(null);
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -159,6 +161,7 @@ export default function EmployeeSideBar() {
 
   return (
     <div className="flex h-screen dark:bg-[#202120] dark:text-white bg-gray-100">
+       <audio ref={audioRef} src={notificationSound} preload="auto" />
       {/* Mobile Menu Button */}
       <button
         onClick={toggleSidebar}
