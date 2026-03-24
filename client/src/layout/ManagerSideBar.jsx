@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   Archive,
   Bell,
+  CalendarClock,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
@@ -237,6 +238,25 @@ export default function ManagerSideBar() {
               </Link>
             </li>
 
+            {/* calendar mentions  */}
+             <li>
+              <Link
+                to="/manager/calendarmentions"
+                className={`flex relative ${linkDesign} ${
+                  isActive("/manager/calendarmentions") ? active : ""
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <CalendarClock size={20} />
+                <span>Calendar Mentions</span>{" "}
+                {filterUnReadCount.length > 0 && (
+                  <span className="absolute right-0 bg-red-600 bold text-white px-2 rounded-4xl">
+                    {filterUnReadCount.length}
+                  </span>
+                )}
+              </Link>
+            </li>
+ 
             <li>
               <Link
                 to="/manager/notification"

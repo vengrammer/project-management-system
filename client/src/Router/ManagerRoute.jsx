@@ -9,7 +9,7 @@ import ProjectTableManager from "@/pages/manager/ProjectTableManager";
 import ProtectedRoute from "./ProtectedRoute";
 import ArchiveAdminEmployeeManager from "@/pages/admin/ArchiveAdminEmployeeManager";
 import Notification from "@/pages/admin/Notification";
-
+import CalendaMentions from "@/pages/CalendarMentions";
 function ManagerRoute() {
   return (
     <ProtectedRoute requiredRole="manager">
@@ -23,6 +23,7 @@ function ManagerRoute() {
           <Route path="projects" element={<ProjectTableManager />} />
           <Route path="archive" element={<ArchiveAdminEmployeeManager />} />
           <Route path="notification" element={<Notification />} />
+          <Route path="calendarmentions" element={<CalendaMentions/>}/>
           <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="*" element={<NotFound />} />
