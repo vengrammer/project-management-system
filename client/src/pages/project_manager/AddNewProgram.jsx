@@ -5,6 +5,49 @@ import logo from "@/assets/logo.png";
 function AddNewProgram({ open, setOpen }) {
     if (!open) return null;
 
+    const dept = [
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+        { id: 2, name: "Shopee" },
+        { id: 1, name: "I.T" },
+     
+    ]
+
+    const [checkDept, setCheckDept] = useState([])
+    const handleToggle = (id) => {
+        setCheckDept((prev) =>
+            prev.includes(id)
+                ? prev.filter((item) => item !== id) // remove
+                : [...prev, id] // add
+        );
+    };
+
     // Shared input class
     const inputCls =
         "w-full px-3 py-2 rounded-lg text-sm transition-all " +
@@ -13,15 +56,15 @@ function AddNewProgram({ open, setOpen }) {
         "text-gray-800 dark:text-slate-200 " +
         "placeholder-gray-400 dark:placeholder-slate-600 " +
         "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#31f64b]/40 " +
-        "disabled:opacity-50 disabled:cursor-not-allowed";
+        "disabled:opacity-50 disabled:cursor-not-allowed ";
 
     const sectionHeading = "text-sm font-semibold text-gray-700 dark:text-[#31f64b]/70 border-b border-gray-200 dark:border-[#2a3040] pb-2";
     const labelCls = "block text-sm font-medium text-gray-700 dark:text-slate-300";
     return (
         <>
             {open && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
-                    <form className=" bg-white dark:bg-[#222732] flex flex-1 flex-col max-w-280 rounded-xl h-full">
+                <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+                    <form className=" bg-white dark:bg-[#222732] flex flex-1 flex-col max-w-280 rounded-xl h-full overflow-auto">
                         {/* ── Modal Header ── */}
                         <div className="flex flex-col items-center pt-2 px-2 pb-1 border-b-2 border-gray-200 dark:border-[#2a3040]">
                             <div className="w-full flex justify-end">
@@ -45,8 +88,8 @@ function AddNewProgram({ open, setOpen }) {
                                 Please fill in the information below to create a new program.
                             </p>
                         </div>
-                        <main className="flex flex-1 flex-col px-5  overflow-auto">
-                            <div className="space-y-2   ">
+                        <main className="flex flex-1 flex-col px-5 min-h-0 h-full  overflow-auto">
+                            <div className="space-y-4 py-4   ">
                                 <h3 className={sectionHeading}>Basic Information </h3>
                             </div>
                             <div className="space-y-4 px-6">
@@ -97,24 +140,44 @@ function AddNewProgram({ open, setOpen }) {
                                 </div>
                             </div>
 
-                            
-                            <div className="bg-green-400 flex flex-row h-full  flex-1">
-                                {/*Departments*/}
-                                <div className="flex h-full flex-col w-full">
-                                    <input type="Search department" />
-                                    <div className="bg-red-500 flex flex-col flex-1 h-full">
 
+                            <div className=" flex  h-full w-full min-h-0 overflow-auto   flex-1 px-10">
+                                <div className="flex flex-col flex-1 lg:flex-row gap-20">
+                                    {/*Departments*/}
+                                    <div className="flex h-full flex-col w-full gap-2 min-h-0">
+                                        <label className={labelCls}>
+                                            Departments <span className="text-red-500">*</span>
+                                        </label>
+                                        <input type="Search department" className={inputCls} placeholder="search department..." />
+
+                                        <div className="dark:bg-[#3b404b] border-blue-500 border-2 focus:dark:border-green-600 rounded m-2 flex flex-col min-h-0 h-full overflow-auto">
+                                            {dept.map((item) => (
+                                                <div key={item.id}
+                                                    onClick={() => handleToggle(item.id)}
+                                                    className="flex h-12 dark:bg-[#545859] dark:hover:bg-[#079aab] bg-gray-200 hover:bg-gray-300 cursor-pointer border-gray-300 gap-2 px-4 border-b-2 ">
+                                                    <input type="checkbox"
+                                                        id="check"
+                                                        checked={checkDept.includes(item.id)}
+                                                        onChange={() => handleToggle(item.id)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="w-4" /> <label htmlFor="check" className="flex justify-center items-center ">{item.name}</label>
+                                                </div>
+                                            )
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/*Managers*/}
+                                    <div className="flex h-full flex-col w-full gap-2">
+                                        <label className={labelCls}>
+                                            Managers     <span className="text-red-500">*</span>
+                                        </label>
+                                        <input type="Search department" className={inputCls} placeholder="search managers..." />
+                                        <div className="bg-green-500 flex flex-col flex-1 h-full">
+
+                                        </div>
                                     </div>
                                 </div>
-
-                                {/*Managers*/}
-                                <div className="flex h-full flex-col w-full">
-                                    <input type="Search department" />
-                                    <div className="bg-green-500 flex flex-col flex-1 h-full">
-
-                                    </div>
-                                </div>
-
                             </div>
                         </main>
                         <footer className="flex w-full justify-end items-center border-t-2 ">
