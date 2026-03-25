@@ -105,7 +105,7 @@ export default function UsersTable() {
     const colors = {
       admin: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
       manager: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-      hr: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+      pm: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
       user: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-[#31f64b]",
     };
     return colors[role?.toLowerCase()] || "bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-slate-300";
@@ -237,7 +237,7 @@ export default function UsersTable() {
                   <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-[#2a3040] md:border-t-0 md:pt-0 md:gap-2">
                     <FormEditUser userId={user?.id} />
 
-                    {user.role != "admin" && (
+                    {user.role != "admin" || "pm" && (
                       <button
                         onClick={() => handleUpdateStatus(user?.id, !user?.status)}
                         title={user.status ? "Deactivate User" : "Activate User"}

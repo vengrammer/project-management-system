@@ -11,7 +11,6 @@ function CalendarMentions() {
     const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
     const currentDay = today.getDate()
 
-
     function handleYearChange(e) { setCurYear(Number(e.target.value)); setSelectedDay(null); }
     function handleMonthChange(e) { setCurMonth(Number(e.target.value)); setSelectedDay(null); }
 
@@ -46,6 +45,33 @@ function CalendarMentions() {
         return dayNumber;
     })
 
+    const color_mentions = [
+        "bg-purple-600",
+        "bg-pink-600",
+        "bg-emerald-600",
+        "bg-orange-500"
+    ];
+
+    const sample_data = [
+        {
+            text: "Details for the admin",
+            date: new Date(2026, 2, 24) // March 24, 2026
+        },
+        {
+            text: "Someone mention you",
+            date: new Date(2026, 2, 25)
+        },
+        {
+            text: "Something mention you",
+            date: new Date(2026, 2, 26)
+        }
+    ];
+    //filter data's date then show the data to the exact day it mention'
+    const mentionThisDay = sample_data.filter(item =>
+        item.date.getDate() === currentDay &&
+        item.date.getMonth() === curMonth &&
+        item.date.getFullYear() === curYear
+    );
     const years = buildYears();
     return (
 
@@ -96,28 +122,46 @@ function CalendarMentions() {
                                 <div className="font-bold flex self-end">|</div>
                             </>
                         ))}
-
                     </div>
 
                     <div className="grid grid-cols-7  h-full w-full grid-rows-5 gap-2 p-2 ">
                         {/* weeks */}
                         {daycells.map((day, i) => (
-                            <div key={i} className="group flex relative hover:scale-110 flex-col min-h-0 h-full  bg-blue-700 border-2 rounded-2xl border-black ">
+                            <div key={i}
+
+                                className={`${day === null ? "pointer-events-none opacity-50 " : ""}group flex relative hover:scale-110 flex-col min-h-0 h-full bg-blue-700 border-2 rounded-2xl border-black`}>
                                 <div className="h-10 absolute z-10 ">
                                     <p className={`${day === currentDay && today.getMonth() === curMonth && today.getFullYear() === curYear ? " bg-[#06ff27] text-black" : "text-white"}  h-8 w-8 rounded-2xl  font-bold flex flex-col flex-1 items-center justify-center m-2`}>{day || null}</p>
                                 </div>
-                                <div className="pt-9 px-2 flex flex-col flex-1 rounded-b-lg min-h-0  gap-0.5">
-                                    <p className="bg-violet-600 rounded-2xl px-2">Details mentions</p>
-                                    <p className="bg-violet-600 rounded-2xl px-2">Details mentions</p>
-                                    <p className="bg-violet-600 rounded-2xl px-2">Details mentions</p>
-                                    <p className="bg-violet-600 rounded-2xl px-2">Details mentions</p>
+
+                                {/*data: I filter the data based on their date then show to the calendar */}
+                                <div className="pt-9 px-2 flex flex-col flex-1 rounded-b-lg min-h-0  gap-0.5 overflow-auto">
+
+
+                                    {mentionThisDay.map((data, i) => {
+                                        const randomIndex = Math.floor(Math.random() * color_mentions.length);
+
+                                        return (
+                                            <p
+                                                key={i}
+                                                className={`${color_mentions[randomIndex]} rounded-2xl px-2 text-white dark:text-[#fff700]`}
+                                            >
+                                                {data.text}
+                                            </p>
+                                        );
+                                    })}
+
+
+
                                 </div>
-                                <div className=" absolute h-full flex w-full b-1 items-end justify-end">
-                                    <button className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ec7ff] rounded-lg h-10 w-10   items-center justify-center m-1 p-1">
+
+                                {/*action button*/}
+                                <div className={` absolute h-full flex w-full b-1 items-end justify-end`}>
+                                    <button className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ec7ff] rounded-lg h-8 w-10   items-center justify-center m-1 p-1">
                                         <NotepadText size={30} className="text-gray-800" />
                                     </button>
-                                    <button className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ad045] rounded-lg h-10 w-10   items-center justify-center m-1 p-1">
-                                        <NotebookPen size={30} className="text-gray-800"/>
+                                    <button className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ad045] rounded-lg h-8 w-10   items-center justify-center m-1 p-1">
+                                        <NotebookPen size={30} className="text-gray-800" />
                                     </button>
                                 </div>
                             </div>

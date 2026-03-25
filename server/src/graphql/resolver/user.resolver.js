@@ -7,8 +7,6 @@ import jwt from "jsonwebtoken";
 const getSecret = () => process.env.JWT_SECRET;
 export const blacklist = new Set();
 
-
-
 // data = fullname, department, role, email, username, password, timestamps
 export const userResolvers = {
   Query: {

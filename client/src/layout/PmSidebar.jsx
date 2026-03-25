@@ -1,0 +1,350 @@
+import React, { useEffect, useState } from "react";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import logo from "../assets/logo.png";
+import { gql } from "@apollo/client";
+import { useQuery, useSubscription } from "@apollo/client/react";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { logout } from "@/middleware/authSlice";
+import { persistor } from "@/middleware/store";
+import { useApolloClient } from "@apollo/client/react";
+import notificationSound from "../assets/notification.wav";
+import { useRef } from "react";
+import DarkModeSwitch from "@/hooks/DarkModeSwitch";
+
+import {
+  Menu,
+  X,
+  FolderOpenDot,
+  UserCheck,
+  LogOut,
+  User,
+  LayoutDashboard,
+  Building2,
+  Archive,
+  Bell,
+} from "lucide-react";
+import { toast } from "react-toastify";
+
+const GET_USER = gql`
+  query User($userId: ID!) {
+    user(id: $userId) {
+      id
+      fullname
+      email
+    }
+  }
+`;
+
+const COUNT_UNREAD_NOTIFICATIOS = gql`
+  query Notifications {
+    notifications {
+      id
+      isRead
+    }
+  }
+`;
+
+const NOTIFICATION_SUB = gql`
+  subscription Subscription($userId: ID!) {
+    notificationAdded(userId: $userId) {
+      id
+      isRead
+    }
+  }
+`;
+
+const NOTIFICATION_MARK_AS_READ_SUB = gql`
+  subscription NotificationMarkAsRead($userId: ID!) {
+    notificationMarkAsRead(userId: $userId) {
+      id
+      isRead
+    }
+  }
+`;
+
+export default function PmSideBar() {
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
+  const client = useApolloClient();
+  const userId = auth.user?.id; // may be undefined initially
+
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [notifications, setNotifications] = useState([]);
+  const audioRef = useRef(null);
+
+  const getInitials = (name) => {
+    if (!name) return "";
+
+    const words = name.trim().split(" ");
+
+    if (words.length === 1) {
+      return words[0][0].toUpperCase();
+    }
+
+    return (words[0][0] + words[1][0]).toUpperCase();
+  };
+
+  // Remove async - not needed for simple path checking
+  const isActive = (route) => {
+    return location.pathname.includes(route);
+  };
+
+  // Toggle sidebar on mobile
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const { error: userError, data: userData } = useQuery(GET_USER, {
+    variables: { userId },
+    skip: !userId, // don't run until we have id
+  });
+  //get the noticatios count
+  const { data } = useQuery(COUNT_UNREAD_NOTIFICATIOS);
+  const { data: subData } = useSubscription(NOTIFICATION_SUB, {
+    variables: { userId },
+  });
+
+  const { data: markAsReadSubData } = useSubscription(
+    NOTIFICATION_MARK_AS_READ_SUB,
+    {
+      variables: { userId },
+    },
+  );
+
+  //get the updated count of the notif
+  useEffect(() => {
+    function isNotfification() {
+      if (data?.notifications) setNotifications(data.notifications);
+    }
+
+    isNotfification();
+  }, [data]);
+
+  useEffect(() => {
+    function isAddNotification() {
+      if (subData?.notificationAdded) {
+        setNotifications((prev) => [subData.notificationAdded, ...prev]);
+        // Play notification sound
+        if (audioRef.current) {
+          audioRef.current
+            .play()
+            .catch((err) => toast.error("Audio play error:", err));
+        }
+      }
+    }
+    isAddNotification();
+  }, [subData]);
+
+  useEffect(() => {
+    function isMarkAsReadNotification() {
+      if (markAsReadSubData?.notificationMarkAsRead) {
+        const updatedNotification = markAsReadSubData.notificationMarkAsRead;
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.id === updatedNotification.id ? updatedNotification : n,
+          ),
+        );
+      }
+    }
+    isMarkAsReadNotification();
+  }, [markAsReadSubData]);
+
+
+
+  const filterUnReadCount = notifications.filter((n) => {
+    return n.isRead === false;
+  });
+
+  if (userError) {
+    toast.error("Failed to load user data");
+  }
+  //TESTING COMMIT
+  // show placeholder while loading
+  const fullname = userData?.user.fullname || "";
+  const email = userData?.user.email || "";
+
+  const linkDesign = "flex items-center gap-3 px-4 py-3   rounded-lg hover:bg-blue-50 hover:text-blue-600  transition-colors"
+  const active = "bg-blue-100 dark:bg-[#049417] dark:text-[#b8ed06] text-blue-600"
+
+  return (
+    <div className="flex h-screen dark:bg-[#202120] dark:text-white bg-gray-100">
+      <audio ref={audioRef} src={notificationSound} preload="auto" />
+      <button
+        onClick={toggleSidebar}
+        className="fixed top-4 right-4 z-50 p-2 bg-blue-600 text-white rounded-lg md:hidden"
+      >
+        {isOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      <aside
+        className={`
+          fixed md:static inset-y-0 left-0 z-40
+          w-64 dark:bg-[#222732] shadow-lg
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0
+          flex flex-col
+        `}
+      >
+        {/* Logo/Header */}
+        <div className="p-6 border-b flex items-center gap-3 dark:bg-[#222732] bg-white ">
+          <div className="flex size-14 shrink-0 items-center justify-center rounded-full border border-gray-200">
+            <img
+              src={logo}
+              alt="Logo"
+              className="h-12 w-12 object-contain rounded-full"
+            />
+          </div>
+          <h1 className="text-xl font-bold dark ">
+            Project Management
+          </h1>
+        </div>
+
+        {/* Navigation Links */}
+        <nav className="flex-1 p-4 overflow-y-auto bg-white dark:bg-[#222732]">
+          <div className="px-4 py-2 mb-4 rounded-2xl border shadow-blue-800 shadow-2xs">
+            <h1 className="relative flex flex-row font-semibold text-2xl">
+              Welcome, <span className="text-blue-600">PM</span>
+            </h1>
+            <div className="flex items-center justify-center p-2">
+              <DarkModeSwitch/>
+            </div>
+            
+          </div>
+          <ul className="space-y-2">
+            <li>
+              <Link
+                to="/projectmanager/dashboard"
+                className={`${linkDesign} ${
+                  isActive("/projectmanager/dashboard")
+                    ? `${active}`
+                    : ""
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <LayoutDashboard size={20} />
+                <span>Dashboard</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                to="/projectmanager/projects"
+                className={`${linkDesign} ${
+                  isActive("/projectmanager/projects") ? `${active}` : ""
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <FolderOpenDot size={20} />
+                <span>Projects</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                to="/projectmanager/managers"
+                className={` ${linkDesign} ${
+                  isActive("/projectmanager/managers") ? `${active}` : ""
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <UserCheck size={20} />
+                <span>Managers</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                to="/projectmanager/archive"
+                className={` ${linkDesign} ${
+                  isActive("/projectmanager/archive") ? `${active}` : ""
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <Archive size={20} />
+                <span>Archive</span>
+              </Link>
+            </li>
+          </ul>
+
+          <li>
+            <Link
+              to="/projectmanager/notification"
+              className={`${linkDesign} mt-2 ${
+                isActive("/projectmanager/notification")
+                  ? `${active}`
+                  : ""
+              }`}
+              onClick={() => setIsOpen(false)}
+            >
+              <Bell size={20} />
+              <span>Notifications</span>{" "}
+              {filterUnReadCount.length > 0 && (
+                <span className="absolute right-0 bg-red-600 bold text-white px-2  rounded-4xl">
+                  {filterUnReadCount.length}
+                </span>
+              )}
+            </Link>
+          </li>
+        </nav>
+        {/* Account Section at Bottom */}
+        <div className="p-4 border-t">
+          {/* User Info */}
+          <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-gray-50 dark:bg-[#0e0698]  rounded-lg">
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-semibold">
+              {getInitials(fullname || "U")}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold ">
+                {fullname || "Unknown user"}{" "}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-200">{email || "no email"}</p>
+            </div>
+          </div>
+
+          {/* Account */}
+          <Link
+            to="/projectmanager/profile"
+            className={`${linkDesign} ${
+              isActive("/projectmanager/profile") ? `${active}` : ""
+            }`}
+            onClick={() => setIsOpen(false)}
+          >
+            <User size={18} />
+            <span className="text-sm">Profile</span>
+          </Link>
+
+          <button
+            onClick={() => {
+              dispatch(logout()); 
+              persistor.purge();
+              client.resetStore();
+              navigate("/");
+            }}
+            className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+          >
+            <LogOut size={18} />
+            <span className="text-sm">Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 backdrop-blur-sm bg-opacity-50 z-30 md:hidden"
+          onClick={toggleSidebar}
+        ></div>
+      )}
+      {/* Main */}
+      <main
+        className="flex-1 flex overflow-hidden p-2"
+      >
+        <Outlet />
+      </main>
+    </div>
+  );
+}
