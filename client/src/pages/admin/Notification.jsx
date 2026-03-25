@@ -6,6 +6,8 @@ import { Bell, CheckCheck, BellOff, ArrowRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
+////-----------------THIS PAGE IS SHARED BY ALL TYPE OF USERS-----------------////
+
 const NOTIFICATIONS = gql`
   query Notifications {
     notifications {

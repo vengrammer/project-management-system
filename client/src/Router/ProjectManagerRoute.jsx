@@ -13,7 +13,10 @@ import CalendaMentions from "@/pages/CalendarMentions";
 
 
 
+
+//all component of project manager
 import ProjectManagerDashboard from "@/pages/project_manager/ProjectManagerDashboard";
+import Program from "@/pages/project_manager/Projectmgnt";
 
 function ProjectManagerRoute() {
     return (
@@ -25,6 +28,10 @@ function ProjectManagerRoute() {
                         element={<Navigate to="/projectmanager/dashboard" replace />}
                     />
                     <Route path="dashboard" element={<ProjectManagerDashboard />} />
+                    <Route path="projectmgnt" element={<Program />} />
+                    <Route path="notification" element={<Notification />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="archive" element={<ArchiveAdminEmployeeManager />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
             </Routes>

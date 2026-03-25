@@ -232,14 +232,14 @@ export default function PmSideBar() {
 
             <li>
               <Link
-                to="/projectmanager/projects"
+                to="/projectmanager/projectmgnt"
                 className={`${linkDesign} ${
-                  isActive("/projectmanager/projects") ? `${active}` : ""
+                  isActive("/projectmanager/projectmgnt") ? `${active}` : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
                 <FolderOpenDot size={20} />
-                <span>Projects</span>
+                <span>Project/mgnt</span>
               </Link>
             </li>
 

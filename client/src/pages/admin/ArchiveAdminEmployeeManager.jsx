@@ -14,6 +14,8 @@ import { gql } from "@apollo/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 
+//////// ----------------THIS IS SHARDED BY ALL TYPE OF USERS --------------////////////
+
 export default function ArchiveAdminEmployeeManager() {
   const navigate = useNavigate();
   const location = useLocation();

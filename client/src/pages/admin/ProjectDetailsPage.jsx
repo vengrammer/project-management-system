@@ -26,6 +26,8 @@ import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
 
+////-----------------THIS PAGE IS SHARED BY ADMIN,USER-EMPLOYEE, AND MANAGER-----------------////
+
 const UPDATE_PROJECT_STATUS = gql`
   mutation updateProject($updateProjectId: ID!, $status: String) {
     updateProject(id: $updateProjectId, status: $status) {

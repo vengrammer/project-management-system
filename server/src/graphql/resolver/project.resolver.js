@@ -247,7 +247,9 @@ export const projectResolvers = {
         filter.projectManager = new mongoose.Types.ObjectId(currentUserId);
       } else if (foundUser?.role === "user") {
         filter.users = { $in: [new mongoose.Types.ObjectId(currentUserId)] };
-      } else {
+      } else if(foundUser?.role === "pm") {
+        filter.pm = { $in: [new mongoose.Types.ObjectId(currentUserId)] };
+      }  else {
         throw new Error("Unauthorized role");
       }
 
