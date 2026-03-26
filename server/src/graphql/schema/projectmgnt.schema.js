@@ -1,6 +1,6 @@
 export const projectMgntSchema = `#graphql
     type ProjectMgnt {
-            _id: ID!
+            _id: ID
             title: String
             pm: User
             priority: String

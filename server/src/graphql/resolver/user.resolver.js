@@ -3,7 +3,6 @@ import Department from "../../model/department.model.js";
 import User from "../../model/user.model.js";
 import jwt from "jsonwebtoken";
 
-// Get SECRET at runtime (not at module load time) to ensure dotenv has already loaded
 const getSecret = () => process.env.JWT_SECRET;
 export const blacklist = new Set();
 
@@ -53,6 +52,20 @@ export const userResolvers = {
         throw new Error(error);
       }
     },
+    //show all the managers of the department
+    managersWithDepartments: async (_, { ids }) => {
+      try {
+        const managers = await User.find({
+          role: "manager",
+          department: { $in: ids }, 
+        }).populate("department");
+
+        return managers; 
+      } catch (error) {
+        console.error("Get managers by departments error:", error);
+        throw new Error("Failed to fetch managers");
+      }
+    },
     //return user by id
     user: async (_, { id }) => {
       try {
@@ -79,7 +92,7 @@ export const userResolvers = {
     //get all the user with a role manager
     userRoleManager: async () => {
       try {
-        const managers = await User.find({ role: "manager" });
+        const managers = await User.find({ role: "manager" }).populate("department");
         if (!managers) {
           throw new Error("No manager found!");
         }

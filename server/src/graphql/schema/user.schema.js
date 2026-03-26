@@ -25,6 +25,7 @@ export const userSchema = `#graphql
 
     type Query {
         users: [User]!
+        managersWithDepartments(ids: [ID!]): [User]
         userRoleManager: [User]
         userRoleAdmin: [User]
         user(id: ID!): User

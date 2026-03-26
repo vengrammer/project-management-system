@@ -1,61 +1,66 @@
-import { X } from "lucide-react";
-import { useState } from "react"
+import { Loader, X } from "lucide-react";
+import { useEffect, useState } from "react"
 import logo from "@/assets/logo.png";
+import { gql } from "@apollo/client";
+import { useLazyQuery, useQuery } from "@apollo/client/react";
+
+const GET_ALL_DEPARTMENTS = gql`
+    query Departments {
+        departments {
+            id
+            name
+        }
+    }
+`
+
+const GET_THE_MANAGERS = gql`
+   query ManagersWithDepartments($managersWithDepartmentsId: [ID!]) {
+        managersWithDepartments(ids: $managersWithDepartmentsId) {
+            id  
+            fullname
+            position    
+        }
+    }
+`
 
 function AddNewProgram({ open, setOpen }) {
     if (!open) return null;
+    //data to insert
+    const [checkDept, setCheckDept] = useState([]);
+    const [allManagers, setAllManagers] = useState([]);
+    const [startDate, setStartDate] = useState();
+    const [title,setTitle] = useState()
+    const [endDate, setEndDate] = useState();
+    const [priority, setPriority] = useState();
 
-    const dept = [
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-        { id: 2, name: "Shopee" },
-        { id: 1, name: "I.T" },
-     
-    ]
+    // Fetch all departments
+    const { data: dataDeft, loading: loadingDept } = useQuery(GET_ALL_DEPARTMENTS);
+    const departments = dataDeft?.departments || [];
 
-    const [checkDept, setCheckDept] = useState([])
-    const [checkMgr, setCheckMgr] = useState([])
+    // Fetch managers based on selected departments
+    const { data: dataManager, refetch } = useQuery(GET_THE_MANAGERS, {
+        variables: { managersWithDepartmentsId: checkDept },
+        skip: checkDept.length === 0,
+    });
+
+    // Update allManagers whenever dataManager changes
+    useEffect(() => {
+        if (dataManager?.managersWithDepartments) {
+            setAllManagers(dataManager.managersWithDepartments);
+        } else {
+            setAllManagers([]);
+        }
+    }, [dataManager]);
+
+    // Toggle department checkbox
     const handleToggleDept = (id) => {
-        setCheckDept((prev) =>
-            prev.includes(id)
-                ? prev.filter((item) => item !== id) // remove
-                : [...prev, id] // add
-        );
+        setCheckDept((prev) => {
+            const newCheck = prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id];
+            refetch({ managersWithDepartmentsId: newCheck });
+            return newCheck;
+        });
     };
 
-    const handleToggleManager = (id) => {
-        setCheckMgr((prev) =>
-            prev.includes(id)
-                ? prev.filter((item) => item !== id) // remove
-                : [...prev, id] // add
-        );
-    };
 
     // Shared input class
     const inputCls =
@@ -69,6 +74,17 @@ function AddNewProgram({ open, setOpen }) {
 
     const sectionHeading = "text-sm font-semibold text-gray-700 dark:text-[#31f64b]/70 border-b border-gray-200 dark:border-[#2a3040] pb-2";
     const labelCls = "block text-sm font-medium text-gray-700 dark:text-slate-300";
+
+    //all the loading
+    if (loadingDept) {
+        return (
+            <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader size={70} className="animate-spin text-blue-500 dark:text-[#31f64b]" />
+                </div>
+            </div>
+        );
+    }
     return (
         <>
             {open && (
@@ -103,7 +119,7 @@ function AddNewProgram({ open, setOpen }) {
                             </div>
                             <div className="space-y-4 px-6">
                                 <p className={labelCls}>title <span className="text-red-600 text-xl font-bold">*</span></p>
-                                <input type="text" placeholder="enter program title...." className={inputCls} />
+                                <input value={title} onChange={(e) => setTitle(e.target.value)}   type="text" placeholder="enter program title...." className={inputCls} />
                             </div>
 
                             {/* Timeline  and status*/}
@@ -115,7 +131,7 @@ function AddNewProgram({ open, setOpen }) {
                                         </label>
                                         <input
                                             type="date"
-
+                                            value={startDate} onChange={(e) => setStartDate(e.target.value)}
                                             className={inputCls}
                                         />
                                     </div>
@@ -125,8 +141,9 @@ function AddNewProgram({ open, setOpen }) {
                                         </label>
                                         <input
                                             type="date"
-
-
+                                            disabled={!startDate}
+                                            min={startDate}
+                                            value={endDate} onChange={(e) => setEndDate(e.target.value)}
                                             required
                                             className={inputCls}
                                         />
@@ -138,6 +155,7 @@ function AddNewProgram({ open, setOpen }) {
                                         </label>
                                         <select
                                             required
+                                            value={priority} onChange={(e) => setPriority(e.target.value)}
                                             className={inputCls + " appearance-none"}
                                         >
                                             <option value="">Select priority</option>
@@ -160,7 +178,7 @@ function AddNewProgram({ open, setOpen }) {
                                         <input type="text" className={inputCls} placeholder="search department..." />
 
                                         <div className="dark:bg-[#3b404b] border-blue-500 border-2 focus:dark:border-green-600 rounded m-2 flex flex-col min-h-0 h-full overflow-auto">
-                                            {dept.map((item) => (
+                                            {departments.map((item) => (
                                                 <div key={item.id}
                                                     onClick={() => handleToggleDept(item.id)}
                                                     className="flex h-12 dark:bg-[#545859] dark:hover:bg-[#079aab] bg-gray-200 hover:bg-gray-300 cursor-pointer border-gray-300 gap-2 px-4 border-b-2 ">
@@ -179,23 +197,23 @@ function AddNewProgram({ open, setOpen }) {
                                     {/*Managers*/}
                                     <div className="flex h-full flex-col w-full gap-2 min-h-0">
                                         <label className={labelCls}>
-                                            Managers 
+                                            Managers Selected
                                         </label>
-                                        <input type="text" className={inputCls} placeholder="search managers..." />
-
+                                        {/* <input type="text" className={inputCls} placeholder="search managers..." /> */}
                                         <div className="dark:bg-[#3b404b] border-blue-500 border-2 focus:dark:border-green-600 rounded m-2 flex flex-col min-h-0 h-full overflow-auto">
-                                            {dept.map((item) => (
-                                                <div key={item.id}
-                                                    onClick={() => handleToggleManager(item.id)}
-                                                    className="flex h-12 dark:bg-[#545859] dark:hover:bg-[#079aab] bg-gray-200 hover:bg-gray-300 cursor-pointer border-gray-300 gap-2 px-4 border-b-2 ">
-                                                    <input type="checkbox"
-                                                        id="check"
-                                                        checked={checkMgr.includes(item.id)}
-                                                        onChange={() => handleToggleManager(item.id)}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="w-4" /> <label htmlFor="check" className="flex justify-center items-center ">{item.name}</label>
-                                                </div>
-                                            )
+                                            {allManagers.length > 0 ? (
+                                                allManagers.map((item) => (
+                                                    <div
+                                                        key={item.id}
+                                                        className="flex h-12 dark:bg-[#545859] dark:hover:bg-[#079aab] bg-gray-200 hover:bg-gray-300 cursor-pointer border-gray-300 gap-2 px-4 border-b-2"
+                                                    >
+                                                        <label htmlFor="check" className="flex justify-center items-center gap-2">
+                                                            {item.fullname} <span className="dark:text-[#00fc22]">({item.position})</span>
+                                                        </label>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <span className="text-gray-400 flex  w-full items-center justify-center py-5" >no selected department</span>
                                             )}
                                         </div>
                                     </div>
@@ -204,7 +222,6 @@ function AddNewProgram({ open, setOpen }) {
                         </main>
                         <footer className="flex w-full justify-end items-center border-t-2 ">
                             <div className="flex gap-3 px-10 rounded-b-xl my-5">
-                                <button className="dark:bg-gray-600 py-1 hover:scale-110 duration-200 border-gray-300 px-6 rounded-xl border-2">Cancel</button>
                                 <button className="bg-[#0362f0] text-white hover:scale-110 duration-200 dark:bg-[#02eb21] py-1 font-bold dark:text-black px-6 rounded-xl border-2">Create Program</button>
                             </div>
                         </footer>
