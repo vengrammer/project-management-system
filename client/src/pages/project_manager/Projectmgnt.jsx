@@ -1,80 +1,42 @@
 import { motion } from "framer-motion";
-import { Archive, Eye, Trash2, CalendarArrowUp, CalendarArrowDown, Plus } from "lucide-react";
+import { Archive, Eye, Trash2, CalendarArrowUp, CalendarArrowDown, Plus, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import AddNewProgram from "./AddNewProgram";
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
+
+const GET_THE_PROJECTMGNT = gql`
+    query ProjectMgnts {
+        projectMgnts {
+            _id
+            title
+            status
+            startDate
+            priority
+            isArchive
+            endDate
+            departments {
+                id
+                name
+            }
+            managers {
+                id
+                fullname
+            }
+            pm {
+                id
+                fullname
+            }
+        }
+    }
+`
+
+
 
 function Projectmgnt() {
     const [openAddProgram, setOpenAddProgram] = useState(false)
+    const toggle = () => setOpen(!open);
 
-    const projects = [
-        {
-            id: 1,
-            title: "Website Redesign",
-            department: { name: "IT Department" },
-            status: "In Progress",
-            priority: "High",
-            projectManager: { fullname: "Juan Dela Cruz" },
-
-            startDate: "2026-01-10",
-            endDate: "2026-04-15",
-        },
-        {
-            id: 2,
-            title: "Mobile App Development",
-            department: { name: "Software Team" },
-            status: "Pending",
-            priority: "Medium",
-            projectManager: { fullname: "Maria Santos" },
-
-            startDate: "2026-02-01",
-            endDate: "2026-06-30",
-        },
-        {
-            id: 3,
-            title: "Marketing Campaign",
-            department: { name: "Marketing" },
-            status: "Completed",
-            priority: "Low",
-            projectManager: { fullname: "Carlos Reyes" },
-
-            startDate: "2025-11-01",
-            endDate: "2026-01-15",
-        },
-        {
-            id: 4,
-            title: "Inventory System",
-            department: { name: "Operations" },
-            status: "In Progress",
-            priority: "High",
-            projectManager: { fullname: "Ana Lopez" },
-
-            startDate: "2026-03-01",
-            endDate: "2026-07-20",
-        },
-        {
-            id: 5,
-            title: "",
-            department: null,
-            status: "",
-            priority: "",
-            projectManager: null,
-
-            startDate: "2026-02-15",
-            endDate: "2026-03-10",
-        },
-        {
-            id: 6,
-            title: "CRM Implementation",
-            department: { name: "Business Development" },
-            status: "Overdue",
-            priority: "High",
-            projectManager: { fullname: "Luis Garcia" },
-
-            startDate: "2025-12-01",
-            endDate: "2026-02-28",
-        },
-    ];
-    const currentProjects = projects;
     const overdue = (project) => {
         if (!project.endDate) return false;
         return new Date(project.endDate) < new Date();
@@ -107,6 +69,45 @@ function Projectmgnt() {
         }
     };
 
+    const {
+        loading: loadindProjectMgnt,
+        error: errorProjectMgnt,
+        data: dataProjectMgnt,
+    } = useQuery(GET_THE_PROJECTMGNT);
+
+    //data of the projectmgnt
+    const projectMgnts = dataProjectMgnt?.projectMgnts || [];
+
+    //dropdown for the managers and departments
+    function Dropdown({ items, defaultLabel }) {
+        const [open, setOpen] = useState(false);
+        const toggle = () => setOpen(!open);
+
+        return (
+            <div className="relative w-full flex flex-col">
+                <button
+                    onClick={toggle}
+                    className="inline-flex justify-between rounded-md border py-1 px-2 border-gray-300 dark:border-[#3a3f50] shadow-sm text-sm font-medium text-gray-700 dark:text-slate-200 bg-white dark:bg-[#1e2233] hover:bg-gray-50 dark:hover:bg-[#2a3040] focus:outline-none"
+                >
+                    {defaultLabel}
+                    <ChevronDown size={16} className="ml-2" />
+                </button>
+
+                {open && (
+                    <div className="absolute z-10 mt-8 w-full bg-white dark:bg-[#1e2233]  border border-gray-200 dark:border-[#3a3f50] shadow-lg rounded-md max-h-60 overflow-auto">
+                        {items.map((item) => (
+                            <div
+                                key={item.id || item.fullname || item.name}
+                                className="cursor-pointer px-3 py-2 text-sm text-gray-700 w-full dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-[#252d3d] rounded-md"
+                            >
+                                {item.name || item.fullname}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>)
+    }
+
     return (
         <>
             <motion.div
@@ -114,16 +115,16 @@ function Projectmgnt() {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 className="bg-white border-2 dark:bg-[#222732] rounded-lg shadow dark:shadow-[0_2px_20px_rgba(0,0,0,0.5)] w-full h-full flex flex-col">
-                    {/*This is the add new program model*/}
-                <AddNewProgram open={openAddProgram} setOpen={setOpenAddProgram}/>
+                {/*This is the add new program model*/}
+                <AddNewProgram open={openAddProgram} setOpen={setOpenAddProgram} />
 
                 <div className="flex flex-col flex-1 gap-3">
                     <header className="flex flex-row justify-between py-4 px-4">
                         <div className="p-3  dark:text-green-400 text-blue-600 text-2xl font-extrabold rounded-4xl">| <span className="dark:text-white text-black">Project management</span></div>
                         <div className="flex justify-center items-center  pr-8">
                             <button
-                            onClick={() => setOpenAddProgram(true)}
-                             className="bg-[#03c01c] text-white cursor-pointer hover:scale-120 duration-200 px-4 p-2 rounded-lg flex gap-2"><Plus/> Project/mgnt</button>
+                                onClick={() => setOpenAddProgram(true)}
+                                className="bg-[#03c01c] text-white cursor-pointer hover:scale-120 duration-200 px-4 p-2 rounded-lg flex gap-2"><Plus /> Project/mgnt</button>
                         </div>
                     </header>
                     <div className="flex mx-4">
@@ -150,31 +151,26 @@ function Projectmgnt() {
                             <div className="flex flex-col flex-1 items-start justify-center">Departments</div>
                             <div className="flex flex-col flex-1 items-start justify-center">Status</div>
                             <div className="flex flex-col flex-1 items-start justify-center">Priority</div>
-                            <div className="flex flex-col flex-1 items-start justify-center">Project Managers</div>
+                            <div className="flex flex-col flex-1 items-start justify-center">Managers</div>
                             <div className="flex flex-col flex-1 items-start justify-center">Start Date</div>
                             <div className="flex flex-col flex-1 items-start justify-center">End Date</div>
                             <div className="flex flex-col flex-1 items-start justify-center">Actions</div>
                         </div>
+
                         {/* ── Rows ── */}
-                        <div className="divide-y divide-gray-200 dark:divide-[#2a3040] max-h-full overflow-auto">
-                            {projects.length === 0 ? (
-                                <div className="px-6 py-8 text-center text-gray-500 dark:text-slate-500">
+                        <div className="divide-y divide-gray-200 dark:divide-[#2a3040] max-h-full overflow-hidde">
+                            {projectMgnts.length === 0 ? (
+                                <div className="px-6 py-8 text-center  text-gray-500 dark:text-slate-500">
                                     No projects found
                                 </div>
-                            ) : currentProjects.length === 0 ? (
-                                <div className="px-6 py-8 text-center text-gray-500 dark:text-slate-500">
-                                    No results for "{searchTerm}"
-                                </div>
                             ) : (
-                                currentProjects.map((project) => (
+                                projectMgnts.map((project) => (
                                     <div
-                                        key={project.id}
+                                        key={project._id}
                                         className={`transition-colors p-4 lg:px-6 lg:py-4 border
-                  hover:bg-gray-50 dark:hover:bg-[#252d3d]
-                  ${overdue(project)
-                                                ? "border-red-500 border-2 dark:border-red-500/60"
-                                                : "border-transparent"
-                                            }`}
+          hover:bg-gray-50 dark:hover:bg-[#252d3d]
+          ${overdue(project) ? "border-red-500 border-2 dark:border-red-500/60" : "border-transparent"}
+        `}
                                     >
                                         <div className="lg:grid lg:grid-cols-8 lg:gap-4 lg:items-center space-y-3 lg:space-y-0">
 
@@ -182,7 +178,7 @@ function Projectmgnt() {
                                             <div className="flex flex-row items-start justify-between lg:justify-start lg:block">
                                                 <div className="flex-1">
                                                     <div className="font-semibold text-gray-900 dark:text-slate-100 wrap-break-word">
-                                                        {project.title ? project.title : "No project title"}
+                                                        {project?.title || "No project title"}
                                                     </div>
                                                     {overdue(project) && (
                                                         <span className="text-[10px] font-bold text-red-500 dark:text-red-400 uppercase tracking-wide">
@@ -192,118 +188,102 @@ function Projectmgnt() {
                                                 </div>
                                             </div>
 
-                                            {/* Department */}
-                                            <div className="text-sm text-gray-700 dark:text-slate-300 lg:block">
+                                            {/* Departments Dropdown */}
+                                            <div className="relative text-sm text-gray-700 dark:text-slate-300">
                                                 <span className="text-gray-500 dark:text-slate-500 lg:hidden">Department: </span>
-                                                <span className="font-medium lg:font-normal">
-                                                    {project.department?.name ? project.department?.name : "No department"}
-                                                </span>
+                                                <Dropdown
+                                                    items={project.departments || []}
+                                                    defaultLabel={project.departments?.[0]?.name || "No department"}
+                                                />
                                             </div>
 
                                             {/* Status — desktop */}
                                             <div className="hidden lg:block">
-                                                <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(project.status)}`}>
-                                                    {project.status ? project.status : "No status"}
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(
+                                                    project.status
+                                                        ? project.status.toLowerCase() === "completed"
+                                                            ? "Completed"
+                                                            : project.status.toLowerCase() === "in progress"
+                                                                ? "In Progress"
+                                                                : project.status.toLowerCase() === "not started"
+                                                                    ? "Pending"
+                                                                    : project.status
+                                                        : ""
+                                                )}`}>
+                                                    {project.status || "No status"}
                                                 </span>
                                             </div>
 
                                             {/* Priority — desktop */}
                                             <div className="hidden lg:block">
-                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(project.priority)}`}>
-                                                    {project.priority ? project.priority : "No Priority"}
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
+                                                    project.priority
+                                                        ? project.priority.charAt(0).toUpperCase() + project.priority.slice(1)
+                                                        : ""
+                                                )}`}>
+                                                    {project.priority || "No priority"}
                                                 </span>
                                             </div>
 
                                             {/* Status + Priority — mobile */}
                                             <div className="flex gap-2 lg:hidden">
-                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(project.status)}`}>
-                                                    {project.status}
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(project.status || "")}`}>
+                                                    {project.status || "No status"}
                                                 </span>
-                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(project.priority)}`}>
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(project.priority || "")}`}>
                                                     {project.priority || "No priority"}
                                                 </span>
                                             </div>
 
-                                            {/* PM */}
-                                            <div className="text-sm text-gray-700 dark:text-slate-300">
-                                                <span className="text-gray-500 dark:text-slate-500 lg:hidden">PM: </span>
-                                                <span className="font-medium lg:font-normal">
-                                                    {project?.projectManager?.fullname ? project?.projectManager.fullname : "No PM"}
-                                                </span>
-                                            </div>
-
-
-
-                                            {/* Dates — mobile */}
-                                            <div className="flex gap-4 text-sm lg:hidden">
-                                                <div className="flex items-center gap-1">
-                                                    <CalendarArrowUp size={15} className="text-gray-500 dark:text-slate-500" />
-                                                    <span className="text-gray-900 dark:text-slate-300 font-medium">{project.startDate}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <CalendarArrowDown size={15} className="text-gray-500 dark:text-slate-500" />
-                                                    <span className="text-gray-900 dark:text-slate-300 font-medium">{project.endDate}</span>
-                                                </div>
+                                            {/* Managers Dropdown */}
+                                            <div className="text-sm text-gray-700 w-full dark:text-slate-300">
+                                                <span className="text-gray-500 dark:text-slate-500 lg:hidden">Manager: </span>
+                                                <Dropdown
+                                                    items={project.managers || []}
+                                                    defaultLabel={project.managers?.[0]?.fullname || "No manager"}
+                                                />
                                             </div>
 
                                             {/* Start Date — desktop */}
                                             <div className="hidden lg:block text-sm text-gray-700 dark:text-slate-400">
-                                                {project.startDate}
+                                                {project?.startDate || "No start date"}
                                             </div>
 
                                             {/* End Date — desktop */}
                                             <div className="hidden lg:block text-sm text-gray-700 dark:text-slate-400">
-                                                {project.endDate}
+                                                {project?.endDate || "No end date"}
                                             </div>
 
                                             {/* Actions */}
                                             <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-[#2a3040] lg:border-t-0 lg:pt-0 lg:gap-1">
-
-                                                {/* View */}
                                                 <button
                                                     onClick={() => handleView(project)}
                                                     title="View"
-                                                    className="flex-1 lg:flex-none cursor-pointer
-                        bg-blue-600 hover:bg-blue-700
-                        dark:bg-blue-600/90 dark:hover:bg-blue-500
-                        dark:hover:shadow-[0_0_8px_rgba(59,130,246,0.4)]
-                        text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md
-                        text-sm font-medium transition-all duration-150"
+                                                    className="flex-1 lg:flex-none cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-600/90 dark:hover:bg-blue-500 text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
                                                 >
                                                     <span className="lg:hidden">View</span>
                                                     <Eye size={18} className="hidden lg:inline" />
                                                 </button>
 
-                                                {/* Archive — green in dark mode */}
                                                 <button
                                                     title="Archive"
-                                                    onClick={() => handleArchive(project.id)}
-                                                    className="flex-1 lg:flex-none cursor-pointer
-                        bg-gray-500 hover:bg-gray-600 text-white
-                        dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
-                        dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]
-                        py-2 lg:py-1.5 lg:px-1.5 rounded-md
-                        text-sm font-medium transition-all duration-150"
+                                                    onClick={() => handleArchive(project._id)}
+                                                    className="flex-1 lg:flex-none cursor-pointer bg-gray-500 hover:bg-gray-600 text-white dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
                                                 >
                                                     <span className="lg:hidden">Archive</span>
                                                     <Archive size={18} className="hidden lg:inline" />
                                                 </button>
 
-                                                {/* Delete */}
                                                 <button
-                                                    onClick={() => handleDelete(project.id)}
+                                                    onClick={() => handleDelete(project._id)}
                                                     title="Delete"
-                                                    className="flex-1 lg:flex-none cursor-pointer
-                        bg-red-600 hover:bg-red-700
-                        dark:bg-red-600/90 dark:hover:bg-red-500
-                        dark:hover:shadow-[0_0_8px_rgba(239,68,68,0.35)]
-                        text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md
-                        text-sm font-medium transition-all duration-150"
+                                                    className="flex-1 lg:flex-none cursor-pointer bg-red-600 hover:bg-red-700 dark:bg-red-600/90 dark:hover:bg-red-500 text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
                                                 >
                                                     <span className="lg:hidden">Delete</span>
                                                     <Trash2 size={17} className="hidden lg:inline" />
                                                 </button>
                                             </div>
+
                                         </div>
                                     </div>
                                 ))

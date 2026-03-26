@@ -40,8 +40,17 @@ function AddNewProgram({ open, setOpen }) {
     ]
 
     const [checkDept, setCheckDept] = useState([])
-    const handleToggle = (id) => {
+    const [checkMgr, setCheckMgr] = useState([])
+    const handleToggleDept = (id) => {
         setCheckDept((prev) =>
+            prev.includes(id)
+                ? prev.filter((item) => item !== id) // remove
+                : [...prev, id] // add
+        );
+    };
+
+    const handleToggleManager = (id) => {
+        setCheckMgr((prev) =>
             prev.includes(id)
                 ? prev.filter((item) => item !== id) // remove
                 : [...prev, id] // add
@@ -146,19 +155,19 @@ function AddNewProgram({ open, setOpen }) {
                                     {/*Departments*/}
                                     <div className="flex h-full flex-col w-full gap-2 min-h-0">
                                         <label className={labelCls}>
-                                            Departments <span className="text-red-500">*</span>
+                                            Departments
                                         </label>
-                                        <input type="Search department" className={inputCls} placeholder="search department..." />
+                                        <input type="text" className={inputCls} placeholder="search department..." />
 
                                         <div className="dark:bg-[#3b404b] border-blue-500 border-2 focus:dark:border-green-600 rounded m-2 flex flex-col min-h-0 h-full overflow-auto">
                                             {dept.map((item) => (
                                                 <div key={item.id}
-                                                    onClick={() => handleToggle(item.id)}
+                                                    onClick={() => handleToggleDept(item.id)}
                                                     className="flex h-12 dark:bg-[#545859] dark:hover:bg-[#079aab] bg-gray-200 hover:bg-gray-300 cursor-pointer border-gray-300 gap-2 px-4 border-b-2 ">
                                                     <input type="checkbox"
                                                         id="check"
                                                         checked={checkDept.includes(item.id)}
-                                                        onChange={() => handleToggle(item.id)}
+                                                        onChange={() => handleToggleDept(item.id)}
                                                         onClick={(e) => e.stopPropagation()}
                                                         className="w-4" /> <label htmlFor="check" className="flex justify-center items-center ">{item.name}</label>
                                                 </div>
@@ -168,13 +177,26 @@ function AddNewProgram({ open, setOpen }) {
                                     </div>
 
                                     {/*Managers*/}
-                                    <div className="flex h-full flex-col w-full gap-2">
+                                    <div className="flex h-full flex-col w-full gap-2 min-h-0">
                                         <label className={labelCls}>
-                                            Managers     <span className="text-red-500">*</span>
+                                            Managers 
                                         </label>
-                                        <input type="Search department" className={inputCls} placeholder="search managers..." />
-                                        <div className="bg-green-500 flex flex-col flex-1 h-full">
+                                        <input type="text" className={inputCls} placeholder="search managers..." />
 
+                                        <div className="dark:bg-[#3b404b] border-blue-500 border-2 focus:dark:border-green-600 rounded m-2 flex flex-col min-h-0 h-full overflow-auto">
+                                            {dept.map((item) => (
+                                                <div key={item.id}
+                                                    onClick={() => handleToggleManager(item.id)}
+                                                    className="flex h-12 dark:bg-[#545859] dark:hover:bg-[#079aab] bg-gray-200 hover:bg-gray-300 cursor-pointer border-gray-300 gap-2 px-4 border-b-2 ">
+                                                    <input type="checkbox"
+                                                        id="check"
+                                                        checked={checkMgr.includes(item.id)}
+                                                        onChange={() => handleToggleManager(item.id)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="w-4" /> <label htmlFor="check" className="flex justify-center items-center ">{item.name}</label>
+                                                </div>
+                                            )
+                                            )}
                                         </div>
                                     </div>
                                 </div>
