@@ -3,7 +3,9 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Loader,
   Pen,
+  Plus,
   Target,
   TrendingUp,
   User,
@@ -49,35 +51,7 @@ function ProjectmgntDetails() {
       variables: { projectMgntId: id },
     },
   );
-    const projectmgnt = dataProjectMgnt?.projectMgnt || null;
-
-//   const projectmgnt = {
-//     _id: "69c5eee7736eb9c6ea6af8f0",
-//     title: "New Website Redesign", // project title
-//     pm: {
-//       _id: "69c5151dcbc4bf6455719e61",
-//       fullname: "Alice Johnson", // project manager name
-//     },
-//     departments: [
-//       { _id: "dep001", title: "Marketing" },
-//       { _id: "dep002", title: "Design" },
-//     ],
-//     managers: [
-//       { _id: "mgr001", name: "Bob Smith" },
-//       { _id: "mgr002", name: "Carol Lee" },
-//     ],
-//     projects: [
-//       { _id: "subproj001", title: "Landing Page Update" },
-//       { _id: "subproj002", title: "SEO Optimization" },
-//     ],
-//     priority: "medium",
-//     status: "not started",
-//     isArchive: false,
-//     startDate: "2026-04-04T00:00:00.000+00:00",
-//     endDate: "2026-05-09T00:00:00.000+00:00",
-//     createdAt: "2026-03-27T02:43:51.233+00:00",
-//     updatedAt: "2026-03-27T02:43:51.233+00:00",
-//   };
+  const projectmgnt = dataProjectMgnt?.projectMgnt || null;
 
   const getPriorityColor = (priority) => {
     if (!priority)
@@ -104,6 +78,19 @@ function ProjectmgntDetails() {
       return "bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600";
     return "bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600";
   };
+
+  if (loadingProjectMgnt) {
+    return (
+      <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+        <div className="flex flex-col items-center gap-3">
+          <Loader
+            size={70}
+            className="animate-spin text-blue-500 dark:text-[#31f64b]"
+          />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="h-screen flex flex-col w-flow sm:overflow-hidden overflow-auto bg-gray-200 dark:bg-[#181d28] p-3 lg:px-10 lg:py-5">
       <motion.div
@@ -124,23 +111,28 @@ function ProjectmgntDetails() {
           <header className="bg-white dark:bg-[#222732] flex flex-col rounded-lg shadow-sm border p-6 mb-2">
             <div className="flex flex-col w-full h-full lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
               <div className="flex flex-col flex-1 gap-4">
-                <h1 className="text-3xl font-extrabold">{projectmgnt?.title}</h1>
-                <div className="gap-1 flex">
-                  <span
-                    className={`whitespace-nowrap first-letter:uppercase px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                      projectmgnt?.status,
-                    )}`}
-                  >
-                    Not Started
-                  </span>
-                  <span
-                    className={`whitespace-nowrap px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(
-                      projectmgnt?.priority,
-                    )}`}
-                  >
-                    Low
-                  </span>
+                <div className="flex flex-col sm:flex-row  justify-start gap-3  md:gap-8">
+                  <h1 className="text-3xl font-extrabold">
+                    {projectmgnt?.title}
+                  </h1>
+                  <div className="gap-1 flex items-center">
+                    <span
+                      className={`whitespace-nowrap first-letter:uppercase px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                        projectmgnt?.status,
+                      )}`}
+                    >
+                      {projectmgnt?.status}
+                    </span>
+                    <span
+                      className={`whitespace-nowrap px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(
+                        projectmgnt?.priority,
+                      )}`}
+                    >
+                      {projectmgnt?.priority}
+                    </span>
+                  </div>
                 </div>
+
                 {/*All department*/}
                 <div className="w-full flex gap-2 ">
                   {projectmgnt?.departments.map((item) => (
@@ -297,9 +289,32 @@ function ProjectmgntDetails() {
         <main className="flex flex-col rounded-lg shadow-sm  p-2 sm:p-0 h-full">
           <div className="flex flex-col md:flex-row gap-5 w-full h-full overflow-auto">
             <div
-              className="flex-1 min-h-100 bg-white dark:bg-[#222732] rounded-lg shadow-sm 
-                    max-h-10  md:max-h-none"
-            ></div>
+              className="flex-1 min-h-0 bg-white dark:bg-[#222732] rounded-lg shadow-sm flex flex-col"
+            >
+           
+                <header className="flex justify-between w-full min-w-0 p-4 rounded-t-xl border-b-2 ">
+                  <div className="flex flex-col gap-1">
+                    <h1 className="font-bold text-xl">Projects</h1>
+                    <p className="text-gray-400 text-sm">2 total projects</p>
+                  </div>
+                  <div>
+                    <div className="flex gap-3 flex-wrap">
+                      <div className="">
+                        <button
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
+                           bg-green-600 hover:bg-green-700 dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]
+                      "
+                        >
+                          <Plus/> Add Project
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </header>
+                <main className="bg-amber-400 flex flex-col h-full min-h-0 w-full">
+                  
+                </main>
+            </div>
             <div
               className="flex-1 min-h-100 bg-white max-w-150  dark:bg-[#222732] rounded-lg shadow-sm 
                     max-h-80 md:max-h-none"

@@ -32,8 +32,6 @@ export const GET_THE_PROJECTMGNT = gql`
     }
 `
 
-
-
 function Projectmgnt() {
     const [openAddProgram, setOpenAddProgram] = useState(false)
     const navigate = useNavigate();
@@ -71,7 +69,7 @@ function Projectmgnt() {
     };
 
     const {
-        loading: loadindProjectMgnt,
+        loading: loadingProjectMgnt,
         error: errorProjectMgnt,
         data: dataProjectMgnt,
     } = useQuery(GET_THE_PROJECTMGNT);
@@ -113,7 +111,7 @@ function Projectmgnt() {
         toast.error("Something went wrong on the server. Try again.")
     }
 
-     if (loadindProjectMgnt) {
+     if (loadingProjectMgnt) {
         return (
           <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
             <div className="flex flex-col items-center gap-3">
