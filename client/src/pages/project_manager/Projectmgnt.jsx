@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
-import { Archive, Eye, Trash2, CalendarArrowUp, CalendarArrowDown, Plus, ChevronDown } from "lucide-react";
+import { Archive, Eye, Trash2, CalendarArrowUp, CalendarArrowDown, Plus, ChevronDown, Loader } from "lucide-react";
 import { useState } from "react";
 import AddNewProgram from "./AddNewProgram";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 
-const GET_THE_PROJECTMGNT = gql`
+export const GET_THE_PROJECTMGNT = gql`
     query ProjectMgnts {
         projectMgnts {
             _id
@@ -25,7 +25,7 @@ const GET_THE_PROJECTMGNT = gql`
             }
             pm {
                 id
-                fullname
+                fullname    
             }
         }
     }
@@ -35,8 +35,7 @@ const GET_THE_PROJECTMGNT = gql`
 
 function Projectmgnt() {
     const [openAddProgram, setOpenAddProgram] = useState(false)
-    const toggle = () => setOpen(!open);
-
+    // const toggle = () => setOpen(!open);
     const overdue = (project) => {
         if (!project.endDate) return false;
         return new Date(project.endDate) < new Date();
@@ -73,6 +72,7 @@ function Projectmgnt() {
         loading: loadindProjectMgnt,
         error: errorProjectMgnt,
         data: dataProjectMgnt,
+
     } = useQuery(GET_THE_PROJECTMGNT);
 
     //data of the projectmgnt
@@ -107,6 +107,19 @@ function Projectmgnt() {
                 )}
             </div>)
     }
+
+     if (loadindProjectMgnt) {
+        return (
+          <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+            <div className="flex flex-col items-center gap-3">
+              <Loader
+                size={70}
+                className="animate-spin text-blue-500 dark:text-[#31f64b]"
+              />
+            </div>
+          </div>
+        );
+      }
 
     return (
         <>

@@ -4,8 +4,6 @@ export const projectMgntResolver = {
     Query: {
         projectMgnts: async () => {
             const projectMgnts = await ProjectMgnt.aggregate([
-
-                // 🔹 Populate pm (single user)
                 {
                     $lookup: {
                         from: "users",
@@ -21,7 +19,6 @@ export const projectMgntResolver = {
                     },
                 },
 
-                // 🔹 Populate managers (array)
                 {
                     $lookup: {
                         from: "users",
@@ -31,7 +28,6 @@ export const projectMgntResolver = {
                     },
                 },
 
-                // 🔹 Populate departments
                 {
                     $lookup: {
                         from: "departments",
@@ -40,8 +36,6 @@ export const projectMgntResolver = {
                         as: "departments",
                     },
                 },
-
-                // 🔹 Populate projects
                 {
                     $lookup: {
                         from: "projects",

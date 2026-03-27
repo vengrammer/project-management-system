@@ -2,7 +2,10 @@ import { Loader, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import logo from "@/assets/logo.png";
 import { gql } from "@apollo/client";
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import { GET_THE_PROJECTMGNT } from "./Projectmgnt";
 
 const GET_ALL_DEPARTMENTS = gql`
   query Departments {
@@ -23,7 +26,40 @@ const GET_THE_MANAGERS = gql`
   }
 `;
 
-function AddNewProgram({ open, setOpen }) {
+const CREATE_PROJECTMGNT = gql`
+  mutation Mutation(
+    $title: String!
+    $pm: ID!
+    $priority: String
+    $departments: [ID]
+    $managers: [ID]
+    $projects: [ID]
+    $startDate: String
+    $endDate: String
+  ) {
+    createProjectMgnt(
+      title: $title
+      pm: $pm
+      priority: $priority
+      departments: $departments
+      managers: $managers
+      projects: $projects
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      message
+      projectMgnt {
+        _id
+        title
+      }
+    }
+  }
+`;
+
+function AddNewProgram({ open, setOpen}) {
+  const auth = useSelector((state) => state.auth);
+  const pmId = auth.user?.id;
+
   //data to insert
   const [checkDept, setCheckDept] = useState([]);
   const [allManagers, setAllManagers] = useState([]);
@@ -32,6 +68,44 @@ function AddNewProgram({ open, setOpen }) {
   const [endDate, setEndDate] = useState("");
   const [priority, setPriority] = useState("");
   const [searchDept, setSearchDept] = useState("");
+
+  //create new projectmgnt
+  const [createProjectMgnt, { loading: loadingProjectMgnt }] = useMutation(
+    CREATE_PROJECTMGNT,
+    {
+      onCompleted: () => {
+        toast.success("Project management created successfully!");
+        setTitle("");
+        setStartDate("");
+        setEndDate("");
+        setPriority("");
+        setCheckDept([]);
+        setAllManagers([]);
+        setOpen(false);
+      },
+      onError: () => {
+        toast.error("Failed to add member");
+      },
+      awaitRefetchQueries: true,
+      refetchQueries: [{ query: GET_THE_PROJECTMGNT }]
+    },
+  );
+
+  const handleAddProjectmgnt = (e) => {
+    e.preventDefault();
+    const managersSelected = allManagers?.map((item) => {return item.id})
+    createProjectMgnt({
+      variables: {
+        title: title,
+        pm: pmId || null,
+        priority: priority,
+        departments: checkDept,
+        managers: managersSelected,
+        startDate: startDate,
+        endDate: endDate,
+      },
+    });
+  };
 
   // departments
   const { data: dataDeft, loading: loadingDept } = useQuery(
@@ -94,7 +168,7 @@ function AddNewProgram({ open, setOpen }) {
     "block text-sm font-medium text-gray-700 dark:text-slate-300";
 
   //all the loading
-  if (loadingDept) {
+  if (loadingDept || loadingProjectMgnt) {
     return (
       <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
         <div className="flex flex-col items-center gap-3">
@@ -110,7 +184,7 @@ function AddNewProgram({ open, setOpen }) {
     <>
       {open && (
         <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
-          <form className=" bg-white dark:bg-[#222732] flex flex-1 flex-col max-w-280 rounded-xl h-full overflow-auto">
+          <form onSubmit={handleAddProjectmgnt} className=" bg-white dark:bg-[#222732] flex flex-1 flex-col max-w-280 rounded-xl h-full overflow-auto">
             {/* ── Modal Header ── */}
             <div className="flex flex-col items-center pt-2 px-2 pb-1 border-b-2 border-gray-200 dark:border-[#2a3040]">
               <div className="w-full flex justify-end">
@@ -280,9 +354,7 @@ function AddNewProgram({ open, setOpen }) {
             </main>
             <footer className="flex w-full justify-end items-center border-t-2 ">
               <div className="flex gap-3 px-10 rounded-b-xl my-5">
-                <button
-                  className="bg-[#0362f0] text-white  hover:scale-110 duration-200 dark:bg-[#02eb21] py-1 font-bold dark:text-black px-6 rounded-xl border-2"
-                >
+                <button className="bg-[#0362f0] text-white  hover:scale-110 duration-200 dark:bg-[#02eb21] py-1 font-bold dark:text-black px-6 rounded-xl border-2">
                   Create Program
                 </button>
               </div>
