@@ -432,7 +432,7 @@ const ProjectDetailsPage = () => {
               <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-slate-400">
                 <span className="flex items-center gap-1">
                   <User size={16} />
-                  PM: {project?.projectManager?.fullname ? project?.projectManager?.fullname : "no project manager"}
+                  M: {project?.projectManager?.fullname ? project?.projectManager?.fullname : "no manager"}
                 </span>
                 <span className="flex items-center gap-1">
                   <Users size={16} />

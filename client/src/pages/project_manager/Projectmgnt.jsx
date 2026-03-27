@@ -4,7 +4,8 @@ import { useState } from "react";
 import AddNewProgram from "./AddNewProgram";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
-
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 export const GET_THE_PROJECTMGNT = gql`
     query ProjectMgnts {
         projectMgnts {
@@ -35,6 +36,7 @@ export const GET_THE_PROJECTMGNT = gql`
 
 function Projectmgnt() {
     const [openAddProgram, setOpenAddProgram] = useState(false)
+    const navigate = useNavigate();
     // const toggle = () => setOpen(!open);
     const overdue = (project) => {
         if (!project.endDate) return false;
@@ -72,7 +74,6 @@ function Projectmgnt() {
         loading: loadindProjectMgnt,
         error: errorProjectMgnt,
         data: dataProjectMgnt,
-
     } = useQuery(GET_THE_PROJECTMGNT);
 
     //data of the projectmgnt
@@ -108,6 +109,10 @@ function Projectmgnt() {
             </div>)
     }
 
+    if (errorProjectMgnt) {
+        toast.error("Something went wrong on the server. Try again.")
+    }
+
      if (loadindProjectMgnt) {
         return (
           <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
@@ -121,6 +126,11 @@ function Projectmgnt() {
         );
       }
 
+    //handel view 
+    function handleView(projectmgnt) {
+        navigate(`/projectmanager/projectmgntdetails/${projectmgnt}`);
+    }
+    
     return (
         <>
             <motion.div
@@ -270,7 +280,7 @@ function Projectmgnt() {
                                             {/* Actions */}
                                             <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-[#2a3040] lg:border-t-0 lg:pt-0 lg:gap-1">
                                                 <button
-                                                    onClick={() => handleView(project)}
+                                                    onClick={() => handleView(project?._id)}
                                                     title="View"
                                                     className="flex-1 lg:flex-none cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-600/90 dark:hover:bg-blue-500 text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
                                                 >

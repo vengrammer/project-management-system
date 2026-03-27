@@ -1,86 +1,130 @@
-
 import ProjectMgnt from "../../model/projectmgnt.js";
+import mongoose from "mongoose";
 export const projectMgntResolver = {
-    Query: {
-        projectMgnts: async () => {
-            const projectMgnts = await ProjectMgnt.aggregate([
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "pm",
-                        foreignField: "_id",
-                        as: "pm",
-                    },
-                },
-                {
-                    $unwind: {
-                        path: "$pm",
-                        preserveNullAndEmptyArrays: true,
-                    },
-                },
+  Query: {
+    projectMgnts: async () => {
+      const projectMgnts = await ProjectMgnt.aggregate([
+        {
+          $lookup: {
+            from: "users",
+            localField: "pm",
+            foreignField: "_id",
+            as: "pm",
+          },
+        },
+        {
+          $unwind: {
+            path: "$pm",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
 
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "managers",
-                        foreignField: "_id",
-                        as: "managers",
-                    },
-                },
+        {
+          $lookup: {
+            from: "users",
+            localField: "managers",
+            foreignField: "_id",
+            as: "managers",
+          },
+        },
 
-                {
-                    $lookup: {
-                        from: "departments",
-                        localField: "departments",
-                        foreignField: "_id",
-                        as: "departments",
-                    },
-                },
-                {
-                    $lookup: {
-                        from: "projects",
-                        localField: "projects",
-                        foreignField: "_id",
-                        as: "projects",
-                    },
-                },
-            ]);
-
-            
-            return reusableReturnmap(projectMgnts);
-        }
+        {
+          $lookup: {
+            from: "departments",
+            localField: "departments",
+            foreignField: "_id",
+            as: "departments",
+          },
+        },
+        {
+          $lookup: {
+            from: "projects",
+            localField: "projects",
+            foreignField: "_id",
+            as: "projects",
+          },
+        },
+      ]);
+      return reusableReturnmap(projectMgnts);
     },
-    Mutation: {
-        createProjectMgnt: async (__dirname, args, context) => {
-            // check who is the pm and who is the user and if it's authenticated
-            const userId = args.pm || context?.user?.id;
-            if (!userId) {
-                throw new Error("User ID is required to fetch projectMgnt");
-            }
-            try {
-                const newProjectMgnt = await ProjectMgnt.create({
-                    title: args.title,
-                    pm: args.pm || userId,
-                    priority: args.priority,
-                    status: args.status,
-                    isArchive: false,
-                    departments: args.departments,
-                    managers: args.managers,
-                    projects: args.projects,
-                    startDate: args.startDate,
-                    endDate: args.endDate,
-                });
+    projectMgnt: async (__dirname, { id }) => {
+      const projectMgnt = await ProjectMgnt.aggregate([
+        {
+          $match: { _id: new mongoose.Types.ObjectId(id) },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "pm",
+            foreignField: "_id",
+            as: "pm",
+          },
+        },
+        {
+          $unwind: {
+            path: "$pm",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "managers",
+            foreignField: "_id",
+            as: "managers",
+          },
+        },
+        {
+          $lookup: {
+            from: "departments",
+            localField: "departments",
+            foreignField: "_id",
+            as: "departments",
+          },
+        },
+        {
+          $lookup: {
+            from: "projects",
+            localField: "projects",
+            foreignField: "_id",
+            as: "projects",
+          },
+        },
+      ]);
+      return reusableReturnmap(projectMgnt)[0] || null;
+    },
+  },
+  Mutation: {
+    createProjectMgnt: async (__dirname, args, context) => {
+      // check who is the pm and who is the user and if it's authenticated
+      const userId = args.pm || context?.user?.id;
+      if (!userId) {
+        throw new Error("User ID is required to fetch projectMgnt");
+      }
+      try {
+        const newProjectMgnt = await ProjectMgnt.create({
+          title: args.title,
+          pm: args.pm || userId,
+          priority: args.priority,
+          status: args.status,
+          isArchive: false,
+          departments: args.departments,
+          managers: args.managers,
+          projects: args.projects,
+          startDate: args.startDate,
+          endDate: args.endDate,
+        });
 
-                return {
-                    "projectMgnt": newProjectMgnt,
-                    "message": "Successfully created project management"
-                }
-            } catch (error) {
-                throw new Error(error);
-            }
-        }
-    }
-}
+        return {
+          projectMgnt: newProjectMgnt,
+          message: "Successfully created project management",
+        };
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
+  },
+};
 const reusableReturnmap = (projectMgnts) => {
   const formattedDate = (date) => {
     return date?.toLocaleString("en-US", {

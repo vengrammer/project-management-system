@@ -10,7 +10,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import ArchiveAdminEmployeeManager from "@/pages/admin/ArchiveAdminEmployeeManager";
 import Notification from "@/pages/admin/Notification";
 import CalendaMentions from "@/pages/CalendarMentions";
-
+import ProjectmgntDetails from "@/pages/project_manager/ProjectmgntDetails";
 
 
 
@@ -33,6 +33,7 @@ function ProjectManagerRoute() {
                     <Route path="profile" element={<Profile />} />
                     <Route path="archive" element={<ArchiveAdminEmployeeManager />} />
                 </Route>
+                <Route path="projectmgntdetails/:id" element={<ProjectmgntDetails />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>
         </ProtectedRoute>
