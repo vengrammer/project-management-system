@@ -30,14 +30,32 @@ export const projectMgntSchema = `#graphql
 
         type Mutation {
             createProjectMgnt(
-                title: String!
-                pm: ID!
+                    title: String!
+                    pm: ID!
+                    priority: String
+                    departments: [ID]
+                    managers: [ID]
+                    projects: [ID]
+                    startDate: String
+                    endDate: String
+        ): Message
+
+            updateProjectMgnt(
+                id: ID!
+                title: String
+                pm: ID
                 priority: String
-                departments: [ID]
-                managers: [ID]
-                projects: [ID]
+                departments: [ID!]
+                managers: [ID!]
+                projects: [ID!]
                 startDate: String
                 endDate: String
-        ): Message
+                addDepartments: [ID!]
+                removeDepartments: [ID!]
+                addManagers: [ID!]
+                removeManagers: [ID!]
+                addProjects: [ID!]
+                removeProjects: [ID!]
+            ): Message
     }
-`
+`;

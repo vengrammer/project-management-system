@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import { useParams } from "react-router-dom";
+import PmFormAddProjectModal from "./PmFormAddProjectModal";
 
 export const GET_THE_PROJECTMGNT = gql`
   query ProjectMgnt($projectMgntId: ID!) {
@@ -287,33 +288,26 @@ function ProjectmgntDetails() {
           </header>
         </div>
         <main className="flex flex-col rounded-lg shadow-sm  p-2 sm:p-0 h-full">
-          <div className="flex flex-col md:flex-row gap-5 w-full h-full overflow-auto">
-            <div
-              className="flex-1 min-h-0 bg-white dark:bg-[#222732] rounded-lg shadow-sm flex flex-col"
-            >
-           
-                <header className="flex justify-between w-full min-w-0 p-4 rounded-t-xl border-b-2 ">
-                  <div className="flex flex-col gap-1">
-                    <h1 className="font-bold text-xl">Projects</h1>
-                    <p className="text-gray-400 text-sm">2 total projects</p>
-                  </div>
-                  <div>
-                    <div className="flex gap-3 flex-wrap">
-                      <div className="">
-                        <button
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
-                           bg-green-600 hover:bg-green-700 dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]
-                      "
-                        >
-                          <Plus/> Add Project
-                        </button>
-                      </div>
+          <div className="flex flex-col  md:flex-row gap-5 w-full h-full overflow-auto">
+            <div className="flex-1 border-3  min-h-0 bg-white dark:bg-[#222732] rounded-lg shadow-sm flex flex-col">
+              <header className="flex justify-between w-full min-w-0 p-4 rounded-t-xl border-b-2 ">
+                <div className="flex flex-col gap-1">
+                  <h1 className="font-bold text-xl">Projects</h1>
+                  <p className="text-gray-400 text-sm">2 total projects</p>
+                </div>
+                <div>
+                  <div className="flex gap-3 flex-wrap">
+                    <div className="">
+                      <PmFormAddProjectModal/>
                     </div>
                   </div>
-                </header>
-                <main className="bg-amber-400 flex flex-col h-full min-h-0 w-full">
-                  
-                </main>
+                </div>
+              </header>
+              <main className=" flex flex-col h-full min-h-0 w-full">
+                <div>
+                    
+                </div>
+              </main>
             </div>
             <div
               className="flex-1 min-h-100 bg-white max-w-150  dark:bg-[#222732] rounded-lg shadow-sm 

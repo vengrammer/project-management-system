@@ -123,6 +123,102 @@ export const projectMgntResolver = {
         throw new Error(error);
       }
     },
+
+    updateProjectMgnt: async (_, args, context) => {
+      const userId =   args.pm || context?.user?.id;
+      if (!userId) {
+        throw new Error("User ID is required");
+      }
+      try {
+        const {
+          id,
+          departments,
+          managers,
+          projects,
+          addDepartments,
+          removeDepartments,
+          addManagers,
+          removeManagers,
+          addProjects,
+          removeProjects,
+          ...fields
+        } = args;
+
+        if (!id) throw new Error("ProjectMgnt id is required");
+
+        // fetch existing document
+        const projectMgnt = await ProjectMgnt.findById(id);
+        if (!projectMgnt) throw new Error("ProjectMgnt not found");
+
+        // fields allowed to update
+        const updatable = ["title", "pm", "priority", "startDate", "endDate"];
+
+        // update scalar fields only if provided
+        updatable.forEach((key) => {
+          if (fields[key] !== undefined) {
+            projectMgnt[key] = fields[key];
+          }
+        });
+
+        // ===== ARRAY HANDLING =====
+
+        // replace full arrays if provided
+        if (Array.isArray(departments)) {
+          projectMgnt.departments = departments;
+        }
+        if (Array.isArray(managers)) {
+          projectMgnt.managers = managers;
+        }
+        if (Array.isArray(projects)) {
+          projectMgnt.projects = projects;
+        }
+
+        // helper function for add/remove
+        const updateArray = (existing = [], add = [], remove = []) => {
+          let set = new Set(existing.map(String));
+
+          if (Array.isArray(add)) {
+            add.forEach((item) => set.add(String(item)));
+          }
+
+          if (Array.isArray(remove)) {
+            remove.forEach((item) => set.delete(String(item)));
+          }
+
+          return Array.from(set);
+        };
+
+        // apply add/remove logic
+        projectMgnt.departments = updateArray(
+          projectMgnt.departments,
+          addDepartments,
+          removeDepartments,
+        );
+
+        projectMgnt.managers = updateArray(
+          projectMgnt.managers,
+          addManagers,
+          removeManagers,
+        );
+
+        projectMgnt.projects = updateArray(
+          projectMgnt.projects,
+          addProjects,
+          removeProjects,
+        );
+
+        // save updated document
+        await projectMgnt.save();
+
+        return {
+          message: "Project Management updated successfully",
+          projectMgnt,
+        };
+      } catch (error) {
+        console.error("Update ProjectMgnt error:", error);
+        throw new Error(error.message || "Failed to update ProjectMgnt");
+      }
+    },
   },
 };
 const reusableReturnmap = (projectMgnts) => {
