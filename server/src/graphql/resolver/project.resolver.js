@@ -247,9 +247,9 @@ export const projectResolvers = {
         filter.projectManager = new mongoose.Types.ObjectId(currentUserId);
       } else if (foundUser?.role === "user") {
         filter.users = { $in: [new mongoose.Types.ObjectId(currentUserId)] };
-      } else if(foundUser?.role === "pm") {
+      } else if (foundUser?.role === "pm") {
         filter.pm = { $in: [new mongoose.Types.ObjectId(currentUserId)] };
-      }  else {
+      } else {
         throw new Error("Unauthorized role");
       }
 
@@ -298,6 +298,60 @@ export const projectResolvers = {
       }
 
       return reusableReturnmap(projects);
+    },
+    projectsByProjectMgnt: async (_, { id }) => {
+      try {
+        const projects = await Project.aggregate([
+          {
+            $match: {
+              _id: { $in: id.map((i) => new mongoose.Types.ObjectId(i)) },
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "users",
+              foreignField: "_id",
+              as: "users",
+            },
+          },
+          {
+            $lookup: {
+              from: "departments",
+              localField: "department",
+              foreignField: "_id",
+              as: "department",
+            },
+          },
+          {
+            $unwind: {
+              path: "$department",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "projectManager",
+              foreignField: "_id",
+              as: "projectManager",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectManager",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ]);
+
+        if (projects.length === 0) {
+          return [];
+        }
+        return reusableReturnmap(projects);
+      } catch (error) {
+        throw new Error(error);
+      }
     },
   },
 

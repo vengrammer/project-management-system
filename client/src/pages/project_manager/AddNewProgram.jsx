@@ -205,7 +205,7 @@ function AddNewProgram({ open, setOpen}) {
                   />
                 </div>
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-slate-100">
-                  Create Program
+                  Create Progect Management
                 </h2>
               </div>
               <p className="text-center text-sm text-gray-500 dark:text-slate-500 mt-1">

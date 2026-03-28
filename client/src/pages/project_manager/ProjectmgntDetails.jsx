@@ -6,6 +6,8 @@ import {
   Loader,
   Pen,
   Plus,
+  Eye,
+  Trash2,
   Target,
   TrendingUp,
   User,
@@ -27,6 +29,9 @@ export const GET_THE_PROJECTMGNT = gql`
       priority
       isArchive
       endDate
+      projects {
+        id
+      }
       departments {
         id
         name
@@ -42,10 +47,55 @@ export const GET_THE_PROJECTMGNT = gql`
     }
   }
 `;
+const GET_PROJECTS_BY_PROJECTMGNT = gql`
+  query ProjectsByProjectMgnt($projectsByProjectMgntId: [ID]) {
+    projectsByProjectMgnt(id: $projectsByProjectMgntId) {
+      id
+      title
+      status
+      startDate
+      projectManager {
+        id
+        fullname
+      }
+      priority
+      isArchive
+      users {
+        id
+      }
+      endDate
+      description
+      department {
+        id
+        name
+      }
+      client
+      budget
+    }
+  }
+`;
+
+const GET_TASKS = gql`
+  query TaskByProject($taskByProjectId: ID!) {
+    taskByProject(id: $taskByProjectId) {
+      id
+      title
+      description
+      users {
+        id
+        fullname
+      }
+      priority
+      status
+      completedDate
+      createdAt
+    }
+  }
+`;
 
 function ProjectmgntDetails() {
   const { id } = useParams();
-
+  //get the project management details
   const { data: dataProjectMgnt, loading: loadingProjectMgnt } = useQuery(
     GET_THE_PROJECTMGNT,
     {
@@ -53,6 +103,29 @@ function ProjectmgntDetails() {
     },
   );
   const projectmgnt = dataProjectMgnt?.projectMgnt || null;
+
+  const projectMgntProjectIds =
+    projectmgnt?.projects?.map((p) => p?.id).filter(Boolean) || [];
+
+  // get the projects by project management id
+  const {
+    data: dataProjectsByProjectMgnt,
+    loading: loadingProjectsByProjectMgnt,
+  } = useQuery(GET_PROJECTS_BY_PROJECTMGNT, {
+    variables: { projectsByProjectMgntId: projectMgntProjectIds },
+    skip: projectMgntProjectIds.length === 0,
+  });
+  const projectsByProjectMgnt = dataProjectsByProjectMgnt?.projectsByProjectMgnt || [];
+  //get the tasks by project
+   const {
+      loading: taskLoading,
+      error: taskError,
+      data: taskData,
+    } = useQuery(GET_TASKS, {
+      variables: { taskByProjectId: id },
+      notifyOnNetworkStatusChange: true,
+    });
+    const tasks = taskData?.taskByProject ?? [];
 
   const getPriorityColor = (priority) => {
     if (!priority)
@@ -80,7 +153,17 @@ function ProjectmgntDetails() {
     return "bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600";
   };
 
-  if (loadingProjectMgnt) {
+  const calculateProgressProjectMgnt = (projectLength, projectCompleted) => {
+    if (projectLength === 0) return 0;
+    return Math.round((projectCompleted / projectLength) * 100);
+  };
+
+  const calculateProgressProject = (taskLength, taskComplete) => {
+    if (taskLength === 0) return 0;
+    return Math.round((taskComplete / taskLength) * 100);
+  };
+
+  if (loadingProjectMgnt || loadingProjectsByProjectMgnt) {
     return (
       <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
         <div className="flex flex-col items-center gap-3">
@@ -148,7 +231,7 @@ function ProjectmgntDetails() {
                 <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-slate-400">
                   <span className="flex items-center gap-1">
                     <User size={16} />
-                    M:{" "}
+                    PM:{" "}
                     {projectmgnt?.pm?.fullname
                       ? projectmgnt?.pm?.fullname
                       : "no pm"}
@@ -210,14 +293,25 @@ function ProjectmgntDetails() {
                   Overall Progress
                 </span>
                 <span className="text-sm font-bold text-gray-900 dark:text-slate-100">
-                  100%
+                  {calculateProgressProjectMgnt(
+                    projectsByProjectMgnt.length,
+                    projectsByProjectMgnt.filter((p) =>
+                      String(p.status).toLowerCase().includes("completed"),
+                    ).length,
+                  )}
+                  %
                 </span>
               </div>
               <div className="h-3 bg-gray-200 dark:bg-[#2a3040] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-linear-to-r from-blue-500 to-blue-600 dark:from-[#31f64b] dark:to-[#28d940] transition-all duration-500"
                   style={{
-                    width: `50%`,
+                    width: `${calculateProgressProjectMgnt(
+                      projectsByProjectMgnt.length,
+                      projectsByProjectMgnt.filter((p) =>
+                        String(p.status).toLowerCase().includes("completed"),
+                      ).length
+                    )}%`,
                   }}
                 />
               </div>
@@ -288,31 +382,183 @@ function ProjectmgntDetails() {
           </header>
         </div>
         <main className="flex flex-col rounded-lg shadow-sm  p-2 sm:p-0 h-full">
-          <div className="flex flex-col  md:flex-row gap-5 w-full h-full overflow-auto">
+          <div className="flex flex-col  lg:flex-row gap-5 w-full h-full overflow-auto">
             <div className="flex-1 border-3  min-h-0 bg-white dark:bg-[#222732] rounded-lg shadow-sm flex flex-col">
               <header className="flex justify-between w-full min-w-0 p-4 rounded-t-xl border-b-2 ">
                 <div className="flex flex-col gap-1">
                   <h1 className="font-bold text-xl">Projects</h1>
-                  <p className="text-gray-400 text-sm">2 total projects</p>
+                  <p className="text-gray-400 text-sm">
+                    {projectsByProjectMgnt?.length || 0} total projects
+                  </p>
                 </div>
                 <div>
                   <div className="flex gap-3 flex-wrap">
                     <div className="">
-                      <PmFormAddProjectModal/>
+                      <PmFormAddProjectModal />
                     </div>
                   </div>
                 </div>
               </header>
-              <main className=" flex flex-col h-full min-h-0 w-full">
-                <div>
-                    
-                </div>
+              {/* Projects list */}
+              <main className="flex flex-col h-full min-h-0 w-full">
+                {projectsByProjectMgnt?.map((project) => (
+                  <div
+                    key={project.id}
+                    className="w-full border-b border-gray-200 dark:border-gray-600 p-3 sm:p-4 flex flex-col gap-3"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="min-w-0 flex gap-3">
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-slate-100 truncate">
+                          {project?.title || "No Title"}
+                        </h3>
+                        <div className="gap-1 flex items-center">
+                          <span
+                            className={`whitespace-nowrap first-letter:uppercase px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                              project?.status,
+                            )}`}
+                          >
+                            {project?.status}
+                          </span>
+                          <span
+                            className={`whitespace-nowrap px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(
+                              project?.priority,
+                            )}`}
+                          >
+                            {project?.priority}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <button
+                          type="button"
+                          className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700"
+                          title="View"
+                        >
+                          <Eye size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-2 rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-800"
+                          title="Edit"
+                        >
+                          <Pen size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-800"
+                          title="Delete"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 text-sm text-gray-600 dark:text-slate-300">
+                      <span className="inline-flex items-center gap-1 truncate">
+                        <User size={14} />
+                        <strong className="min-w-0 truncate">M:</strong>
+                        <span className="min-w-0 truncate">
+                          {project?.projectManager?.fullname || "No Manager"}
+                        </span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 truncate">
+                        <Users size={14} />
+                        <strong>Member:</strong>
+                        <span>{project?.users?.length || 0}</span>
+                      </span>
+
+                      <span className="inline-flex items-center gap-1 truncate">
+                        <strong>Start:</strong>
+                        <span>{project?.startDate || "N/A"}</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 truncate">
+                        <strong>End:</strong>
+                        <span>{project?.endDate || "N/A"}</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 truncate">
+                        <strong>Priority:</strong>
+                        <span>{project?.priority || "N/A"}</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 truncate col-span-1 sm:col-span-2 lg:col-span-3">
+                        <strong>Department:</strong>
+                        <span className="min-w-0 truncate">
+                          {project?.department?.name || "No Department"}
+                        </span>
+                      </span>
+                    </div>
+                    {/* for the progress*/}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700 dark:text-slate-300">
+                          Overall Progress
+                        </span>
+                        <span className="text-sm font-bold text-gray-900 dark:text-slate-100">
+                          {calculateProgressProject(tasks.length, tasks.filter((t) => t.status === "completed").length)}%
+                        </span>
+                      </div>
+                      <div className="h-3 bg-gray-200 dark:bg-[#2a3040] rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-linear-to-r from-blue-500 to-blue-600 dark:from-[#31f64b] dark:to-[#28d940] transition-all duration-500"
+                          style={{
+                            width: `${calculateProgressProject(tasks.length, tasks.filter((t) => t.status === "completed").length)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </main>
             </div>
+
+            {/*department*/}
             <div
-              className="flex-1 min-h-100 bg-white max-w-150  dark:bg-[#222732] rounded-lg shadow-sm 
+              className="flex-1 min-h-100 bg-white max-w-150 border-3  dark:bg-[#222732] rounded-lg shadow-sm 
                     max-h-80 md:max-h-none"
-            ></div>
+            >
+              <header className="flex justify-between w-full min-w-0 p-4 rounded-t-xl border-b-2 ">
+                <div className="flex flex-col gap-1">
+                  <h1 className="font-bold text-xl">Departments</h1>
+                  <p className="text-gray-400 text-sm">
+                    {projectmgnt?.departments?.length || 0} total departments
+                  </p>
+                </div>
+                <div>
+                  <div className="flex gap-3 flex-wrap">
+                    <div className="">
+                      <button className="bg-green-400 ">
+                        Add new department
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </header>
+              {projectmgnt?.departments?.map((department) => (
+                <div className="w-full border-b border-gray-200 dark:border-gray-600 p-3 sm:p-4 flex flex-col gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div>
+                      <p>{department.name}</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <button
+                        type="button"
+                        className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700"
+                        title="View"
+                      >
+                        <Eye size={18} />
+                      </button>
+                      <button
+                        type="button"
+                        className="p-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-800"
+                        title="Delete"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </main>
       </motion.div>

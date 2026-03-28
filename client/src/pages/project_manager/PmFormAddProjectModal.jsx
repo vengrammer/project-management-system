@@ -210,7 +210,6 @@ export default function PmFormAddProjectModal({ refechProjects }) {
         setDepartmentSearch("");
         setIsOpen(false);
 
-
         if (projectId && AdminData?.userRoleAdmin) {
           createNotif({
             variables: {
@@ -395,7 +394,7 @@ export default function PmFormAddProjectModal({ refechProjects }) {
                   />
                 </div>
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-slate-100">
-                  Create Project for Project Management
+                  Add New Project
                 </h2>
               </div>
               <p className="text-center text-sm text-gray-500 dark:text-slate-500 mt-1">

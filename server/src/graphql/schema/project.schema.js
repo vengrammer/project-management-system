@@ -22,6 +22,7 @@ export const projectSchema = `#graphql
         projectByUser(id: ID): [Project]
         projectsByManager(id: ID): [Project]
         projectsByArchive: [Project]
+        projectsByProjectMgnt(id: [ID]): [Project]
     }
     type Message {
         message: String
