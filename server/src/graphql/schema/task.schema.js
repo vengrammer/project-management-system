@@ -16,6 +16,7 @@ const taskSchema = `#graphql
         task(id: ID!): Task
         tasks: [Task]
         taskByProject(id: ID!): [Task]
+        tasksByProjects(ids: [ID!]!): [Task]
     }
     type Mutation {
         createTask(

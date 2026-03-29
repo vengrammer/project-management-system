@@ -37,8 +37,20 @@ const taskResolver = {
         if (!task) throw new Error("Task not found");
         return task;
       } catch (error) {
-    
         throw new Error(error.message || "Failed to fetch task by project id");
+      }
+    },
+
+    // return all tasks for a list of project ids
+    tasksByProjects: async (_, { ids }) => {
+      try {
+        const tasks = await Task.find({ project: { $in: ids } })
+          .populate("project")
+          .populate("users");
+        return tasks;
+      } catch (error) {
+        console.error("Return tasks by projects error:", error);
+        throw new Error("Failed to fetch tasks by project ids");
       }
     },
   },
@@ -109,7 +121,6 @@ const taskResolver = {
         if (!deletedTask) throw new Error("Task not found");
         return deletedTask;
       } catch (error) {
-   
         throw new Error(error.message || "error in deleting task");
       }
     },

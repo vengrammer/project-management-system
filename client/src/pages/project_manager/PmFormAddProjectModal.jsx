@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Loader } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 import { gql } from "@apollo/client";
@@ -7,6 +7,11 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+
+import {
+  GET_PROJECTS_BY_PROJECTMGNT,
+  GET_THE_PROJECTMGNT,
+} from "./ProjectmgntDetails";
 
 const GET_DEPARTMENTS = gql`
   query ProjectMgnt($projectMgntId: ID!) {
@@ -117,7 +122,10 @@ const inputCls =
   "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#31f64b]/40 " +
   "disabled:opacity-50 disabled:cursor-not-allowed";
 
-export default function PmFormAddProjectModal({ refechProjects }) {
+export default function PmFormAddProjectModal({
+  onProjectAdded,
+  projectMgntId,
+}) {
   const { id } = useParams();
   const auth = useSelector((state) => state.auth);
   const managerId = auth.user?.id;
@@ -170,11 +178,18 @@ export default function PmFormAddProjectModal({ refechProjects }) {
       await refetchDepartments();
     };
     refetching();
-  }, []);
+  }, [refetchUserManager, refetchDepartments]);
 
   const [updateProjectMgnt, { loading: loadingUpdateProjectMgnt }] =
     useMutation(UPDATE_PROJECTMGNT_PROJECTS, {
       onError: () => toast.error("Failed to add the project in projectMgnt"),
+      refetchQueries: [
+        {
+          query: GET_THE_PROJECTMGNT,
+          variables: { projectMgntId: projectMgntId || id },
+        },
+      ],
+      awaitRefetchQueries: true,
     });
 
   const [createProject, { loading: loadingCreateProject }] = useMutation(
@@ -189,7 +204,7 @@ export default function PmFormAddProjectModal({ refechProjects }) {
 
         await updateProjectMgnt({
           variables: {
-            updateProjectMgntId: id,
+            updateProjectMgntId: projectMgntId || id,
             addProjects: [projectId],
           },
         });
@@ -205,7 +220,9 @@ export default function PmFormAddProjectModal({ refechProjects }) {
           startDate: "",
           endDate: "",
         });
-        await refechProjects();
+        if (onProjectAdded) {
+          await onProjectAdded();
+        }
         setSelectedEmployees([]);
         setDepartmentSearch("");
         setIsOpen(false);
@@ -216,27 +233,30 @@ export default function PmFormAddProjectModal({ refechProjects }) {
               input: {
                 entity: { id: projectId, type: "Project" },
                 isRead: false,
-                message: `A new project "${data?.createProject?.project?.title}" has been created.`,
+                message: `A new project management "${data?.createProject?.project?.title}" has been created.`,
                 recipients: AdminData.userRoleAdmin.map((admin) => admin.id),
                 sender: userId,
-                title: "New Project Created",
-                type: "New Project",
+                title: "New Project Management Created",
+                type: "New Project management",
               },
             },
           });
         }
 
-        const managerAssigned = data.createProject?.project.projectManager.id;
-        if (managerAssigned) {
+        const selectedManagerId =
+          formData.projectManager ||
+          data.createProject?.project.projectManager?.id;
+
+        if (selectedManagerId) {
           createNotif({
             variables: {
               input: {
                 entity: { id: projectId, type: "Project" },
                 isRead: false,
-                message: `You have been assigned as the project manager for "${data?.createProject?.project?.title}".`,
-                recipients: managerAssigned,
+                message: `You have been assigned as the manager for "${data?.createProject?.project?.title}".`,
+                recipients: selectedManagerId,
                 sender: userId,
-                title: "You've Been Assigned to a Project as Manager",
+                title: "You've Been Assigned as Manager",
                 type: "Project Assigned",
               },
             },
@@ -282,19 +302,40 @@ export default function PmFormAddProjectModal({ refechProjects }) {
       formData.projectManager && formData.projectManager.trim() !== ""
         ? formData.projectManager
         : null;
+
+    const hasDeptManagers = filteredManagersByDept.length > 0;
+    if (hasDeptManagers && !projectManager) {
+      toast.error("Please select a project manager for this department.");
+      return;
+    }
+
     if (isNaN(formData.budget)) {
       toast.error("Budget must be a number.");
       return;
     }
+
+    const validDepartment = availableDepartments.find(
+      (dept) =>
+        dept.id === formData.department || dept.name === formData.department,
+    );
+    if (!validDepartment) {
+      toast.error("Please choose a valid department from the list.");
+      return;
+    }
+
+    const projectManagerId = hasDeptManagers
+      ? projectManager
+      : managerId || projectManager;
+
     createProject({
       variables: {
         title: formData.projectName,
         description: formData.description,
         client: formData.client,
-        department: formData.department,
+        department: validDepartment.id,
         status: formData.status,
         priority: formData.priority,
-        projectManager: managerId || projectManager,
+        projectManager: projectManagerId,
         budget: parseInt(formData.budget, 10) || 0,
         users: selectedEmployees,
         startDate: formData.startDate,
@@ -303,22 +344,23 @@ export default function PmFormAddProjectModal({ refechProjects }) {
     });
   };
 
-  if (loadindDepartments)
+  //all the loading
+  if (loadindDepartments || loadingUserManager || loadingUpdateProjectMgnt) {
     return (
-      <div className="flex justify-center items-center min-h-screen dark:bg-[#181d28]">
-        <span className="loading loading-spinner loading-xl"></span>
+      <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+        <div className="flex flex-col items-center gap-3">
+          <Loader
+            size={70}
+            className="animate-spin text-blue-500 dark:text-[#31f64b]"
+          />
+        </div>
       </div>
     );
+  }
   if (errorDepartments)
     return (
       <div className="flex justify-center items-center min-h-screen dark:bg-[#181d28]">
         <div className="text-red-600">Failed to load projects</div>
-      </div>
-    );
-  if (loadingUserManager)
-    return (
-      <div className="flex justify-center items-center min-h-screen dark:bg-[#181d28]">
-        <span className="loading loading-spinner loading-xl"></span>
       </div>
     );
   if (errorUserManager)
@@ -334,10 +376,10 @@ export default function PmFormAddProjectModal({ refechProjects }) {
     dept.name?.toLowerCase().includes((departmentSearch || "").toLowerCase()),
   );
 
-  const selectedDept = (dataDepartments?.projectMgnt?.departments || []).find(
+  const availableDepartments = dataDepartments?.projectMgnt?.departments || [];
+  const selectedDept = availableDepartments.find(
     (d) => d.id === formData.department || d.name === formData.department,
   );
-  //console.log("id of selected deft", selectedDept?.id)
 
   const managers = dataUserManager?.userRoleManager || [];
 
@@ -465,14 +507,24 @@ export default function PmFormAddProjectModal({ refechProjects }) {
                             placeholder="Search department..."
                             value={departmentSearch}
                             onChange={(e) => {
-                              if (departmentSearch) {
-                                setDepartmentSearch(e.target.value);
-                                setShowDepartmentDropdown(true);
-                              }
                               setDepartmentSearch(e.target.value);
                               setShowDepartmentDropdown(true);
+                              handleInputChange("department", "");
                             }}
                             onFocus={() => setShowDepartmentDropdown(true)}
+                            onBlur={() => {
+                              const exact = availableDepartments.find(
+                                (dept) =>
+                                  dept.name.toLowerCase() ===
+                                  departmentSearch.trim().toLowerCase(),
+                              );
+                              if (exact) {
+                                handleInputChange("department", exact.id);
+                                setDepartmentSearch(exact.name);
+                              } else if (departmentSearch) {
+                                handleInputChange("department", "");
+                              }
+                            }}
                             required
                             className={inputCls}
                           />

@@ -13,7 +13,6 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import { useParams } from "react-router-dom";
@@ -47,7 +46,7 @@ export const GET_THE_PROJECTMGNT = gql`
     }
   }
 `;
-const GET_PROJECTS_BY_PROJECTMGNT = gql`
+export const GET_PROJECTS_BY_PROJECTMGNT = gql`
   query ProjectsByProjectMgnt($projectsByProjectMgntId: [ID]) {
     projectsByProjectMgnt(id: $projectsByProjectMgntId) {
       id
@@ -75,7 +74,7 @@ const GET_PROJECTS_BY_PROJECTMGNT = gql`
   }
 `;
 
-const GET_TASKS = gql`
+export const GET_TASKS = gql`
   query TaskByProject($taskByProjectId: ID!) {
     taskByProject(id: $taskByProjectId) {
       id
@@ -93,15 +92,28 @@ const GET_TASKS = gql`
   }
 `;
 
+export const GET_TASKS_BY_PROJECTS = gql`
+  query TasksByProjects($projectIds: [ID!]!) {
+    tasksByProjects(ids: $projectIds) {
+      id
+      status
+      project {
+        id
+      }
+    }
+  }
+`;
+
 function ProjectmgntDetails() {
   const { id } = useParams();
   //get the project management details
-  const { data: dataProjectMgnt, loading: loadingProjectMgnt } = useQuery(
-    GET_THE_PROJECTMGNT,
-    {
-      variables: { projectMgntId: id },
-    },
-  );
+  const {
+    data: dataProjectMgnt,
+    loading: loadingProjectMgnt,
+    refetch: refetchProjectMgnt,
+  } = useQuery(GET_THE_PROJECTMGNT, {
+    variables: { projectMgntId: id },
+  });
   const projectmgnt = dataProjectMgnt?.projectMgnt || null;
 
   const projectMgntProjectIds =
@@ -115,17 +127,19 @@ function ProjectmgntDetails() {
     variables: { projectsByProjectMgntId: projectMgntProjectIds },
     skip: projectMgntProjectIds.length === 0,
   });
-  const projectsByProjectMgnt = dataProjectsByProjectMgnt?.projectsByProjectMgnt || [];
-  //get the tasks by project
-   const {
-      loading: taskLoading,
-      error: taskError,
-      data: taskData,
-    } = useQuery(GET_TASKS, {
-      variables: { taskByProjectId: id },
+  const projectsByProjectMgnt =
+    dataProjectsByProjectMgnt?.projectsByProjectMgnt || [];
+
+  const { data: tasksByProjectData, loading: loadingTasksByProjects } =
+    useQuery(GET_TASKS_BY_PROJECTS, {
+      variables: { projectIds: projectMgntProjectIds },
+      skip: projectMgntProjectIds.length === 0,
       notifyOnNetworkStatusChange: true,
     });
-    const tasks = taskData?.taskByProject ?? [];
+
+  const tasksByProjects = tasksByProjectData?.tasksByProjects || [];
+
+  // no top-level task query needed here
 
   const getPriorityColor = (priority) => {
     if (!priority)
@@ -163,7 +177,16 @@ function ProjectmgntDetails() {
     return Math.round((taskComplete / taskLength) * 100);
   };
 
-  if (loadingProjectMgnt || loadingProjectsByProjectMgnt) {
+  const totalTaskCount = tasksByProjects.length;
+  const completedTaskCount = tasksByProjects.filter(
+    (t) => t.status === "completed",
+  ).length;
+
+  if (
+    loadingProjectMgnt ||
+    loadingProjectsByProjectMgnt ||
+    loadingTasksByProjects
+  ) {
     return (
       <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
         <div className="flex flex-col items-center gap-3">
@@ -177,12 +200,7 @@ function ProjectmgntDetails() {
   }
   return (
     <div className="h-screen flex flex-col w-flow sm:overflow-hidden overflow-auto bg-gray-200 dark:bg-[#181d28] p-3 lg:px-10 lg:py-5">
-      <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
-        className="flex flex-col  h-full min-h-0 "
-      >
+      <div className="flex flex-col h-full min-h-0">
         <div
           key={projectmgnt?.id}
           className="flex flex-col flex-1 w-full h-full"
@@ -290,15 +308,10 @@ function ProjectmgntDetails() {
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700 dark:text-slate-300">
-                  Overall Progress
+                  Overall Task Progress
                 </span>
                 <span className="text-sm font-bold text-gray-900 dark:text-slate-100">
-                  {calculateProgressProjectMgnt(
-                    projectsByProjectMgnt.length,
-                    projectsByProjectMgnt.filter((p) =>
-                      String(p.status).toLowerCase().includes("completed"),
-                    ).length,
-                  )}
+                  {calculateProgressProject(totalTaskCount, completedTaskCount)}
                   %
                 </span>
               </div>
@@ -310,7 +323,7 @@ function ProjectmgntDetails() {
                       projectsByProjectMgnt.length,
                       projectsByProjectMgnt.filter((p) =>
                         String(p.status).toLowerCase().includes("completed"),
-                      ).length
+                      ).length,
                     )}%`,
                   }}
                 />
@@ -382,8 +395,8 @@ function ProjectmgntDetails() {
           </header>
         </div>
         <main className="flex flex-col rounded-lg shadow-sm  p-2 sm:p-0 h-full">
-          <div className="flex flex-col  lg:flex-row gap-5 w-full h-full overflow-auto">
-            <div className="flex-1 border-3  min-h-0 bg-white dark:bg-[#222732] rounded-lg shadow-sm flex flex-col">
+          <div className="flex flex-col lg:flex-row gap-5 w-full h-full overflow-auto">
+            <div className="flex-1 border-3 min-h-0 bg-white dark:bg-[#222732] rounded-lg shadow-sm flex flex-col max-h-[64vh] overflow-hidden">
               <header className="flex justify-between w-full min-w-0 p-4 rounded-t-xl border-b-2 ">
                 <div className="flex flex-col gap-1">
                   <h1 className="font-bold text-xl">Projects</h1>
@@ -394,13 +407,16 @@ function ProjectmgntDetails() {
                 <div>
                   <div className="flex gap-3 flex-wrap">
                     <div className="">
-                      <PmFormAddProjectModal />
+                      <PmFormAddProjectModal
+                        onProjectAdded={refetchProjectMgnt}
+                        projectMgntId={id}
+                      />
                     </div>
                   </div>
                 </div>
               </header>
               {/* Projects list */}
-              <main className="flex flex-col h-full min-h-0 w-full">
+              <main className="flex flex-col h-full min-h-0 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-gray-200 dark:scrollbar-thumb-[#31f64b] dark:scrollbar-track-[#1a1f2b]">
                 {projectsByProjectMgnt?.map((project) => (
                   <div
                     key={project.id}
@@ -494,14 +510,41 @@ function ProjectmgntDetails() {
                           Overall Progress
                         </span>
                         <span className="text-sm font-bold text-gray-900 dark:text-slate-100">
-                          {calculateProgressProject(tasks.length, tasks.filter((t) => t.status === "completed").length)}%
+                          {(() => {
+                            const projectTasks = tasksByProjects.filter(
+                              (t) =>
+                                t.project?.id === project.id ||
+                                t.project?._id === project.id,
+                            );
+                            const projectCompleted = projectTasks.filter(
+                              (t) => t.status === "completed",
+                            ).length;
+                            return calculateProgressProject(
+                              projectTasks.length,
+                              projectCompleted,
+                            );
+                          })()}
+                          %
                         </span>
                       </div>
                       <div className="h-3 bg-gray-200 dark:bg-[#2a3040] rounded-full overflow-hidden">
                         <div
                           className="h-full bg-linear-to-r from-blue-500 to-blue-600 dark:from-[#31f64b] dark:to-[#28d940] transition-all duration-500"
                           style={{
-                            width: `${calculateProgressProject(tasks.length, tasks.filter((t) => t.status === "completed").length)}%`,
+                            width: `${(() => {
+                              const projectTasks = tasksByProjects.filter(
+                                (t) =>
+                                  t.project?.id === project.id ||
+                                  t.project?._id === project.id,
+                              );
+                              const projectCompleted = projectTasks.filter(
+                                (t) => t.status === "completed",
+                              ).length;
+                              return calculateProgressProject(
+                                projectTasks.length,
+                                projectCompleted,
+                              );
+                            })()}%`,
                           }}
                         />
                       </div>
@@ -513,8 +556,8 @@ function ProjectmgntDetails() {
 
             {/*department*/}
             <div
-              className="flex-1 min-h-100 bg-white max-w-150 border-3  dark:bg-[#222732] rounded-lg shadow-sm 
-                    max-h-80 md:max-h-none"
+              className="flex-1 min-h-100 bg-white max-w-150 border-3 dark:bg-[#222732] rounded-lg shadow-sm 
+                    max-h-[58vh] overflow-y-auto"
             >
               <header className="flex justify-between w-full min-w-0 p-4 rounded-t-xl border-b-2 ">
                 <div className="flex flex-col gap-1">
@@ -561,7 +604,7 @@ function ProjectmgntDetails() {
             </div>
           </div>
         </main>
-      </motion.div>
+      </div>
     </div>
   );
 }
