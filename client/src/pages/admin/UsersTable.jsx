@@ -237,7 +237,7 @@ export default function UsersTable() {
                   <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-[#2a3040] md:border-t-0 md:pt-0 md:gap-2">
                     <FormEditUser userId={user?.id} />
 
-                    {user.role != "admin" || "pm" && (
+                    {user.role !== "admin" && user.role !== "pm" && (
                       <button
                         onClick={() => handleUpdateStatus(user?.id, !user?.status)}
                         title={user.status ? "Deactivate User" : "Activate User"}

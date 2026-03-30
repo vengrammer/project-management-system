@@ -24,6 +24,7 @@ import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import ViewCurrentManager from "./ViewCurrentManager";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 export const GET_THE_PROJECTMGNT = gql`
   query ProjectMgnt($projectMgntId: ID!) {
@@ -417,7 +418,11 @@ function ProjectmgntDetails() {
 
   return (
     <div className="h-screen flex flex-col w-flow  overflow-auto bg-gray-200 dark:bg-[#181d28] p-3 lg:px-10 lg:py-5">
-      <div className="flex flex-col h-full min-h-0">
+      <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+       className="flex flex-col h-full min-h-0">
         <div
           key={projectmgnt?.id}
           className="flex flex-col flex-1 w-full h-full"
@@ -458,13 +463,14 @@ function ProjectmgntDetails() {
                 <div className="w-full flex gap-2 ">
                   {projectmgnt?.departments.map((item) => (
                     <div
-                      key={item._id}
-                      className=" bg-[rgb(29,122,1)] text-white px-5 flex items-center justify-center  rounded-2xl "
+                      key={item?.id}
+                      className="bg-[rgb(29,122,1)] text-white px-5 flex items-center justify-center  rounded-2xl "
                     >
                       {item.name}
                     </div>
                   ))}
                 </div>
+
                 <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-slate-400">
                   <span className="flex items-center gap-1">
                     <User size={16} />
@@ -793,7 +799,7 @@ function ProjectmgntDetails() {
                 </div>
               </header>
               {projectmgnt?.departments?.map((department) => (
-                <div className="flex flex-col w-full max-w-full border-b border-gray-200 dark:border-gray-600 p-3  gap-3">
+                <div key={department?.id} className="flex flex-col w-full max-w-full border-b border-gray-200 dark:border-gray-600 p-3  gap-3">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div>
                       <p>{department.name}</p>
@@ -844,7 +850,7 @@ function ProjectmgntDetails() {
             </div>
           </div>
         </main>
-      </div>
+      </motion.div>
       <ViewCurrentManager
         open={openCurrentManager}
         setOpen={setOpenCurrentManager}

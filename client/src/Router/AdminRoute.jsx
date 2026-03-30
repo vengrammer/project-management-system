@@ -13,6 +13,8 @@ import ProjectDetailsPage from "@/pages/admin/ProjectDetailsPage";
 import Profile from "@/pages/admin/Profile";
 import ProtectedRoute from "./ProtectedRoute";
 import Notification from "@/pages/admin/Notification";
+import Projectmgnt from "@/pages/admin/ProjectmgntAdmin";
+
 
 function HomeRoute() {
   return (
@@ -25,6 +27,7 @@ function HomeRoute() {
           />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="projects" element={<ProjectTable />} />
+          <Route path="projectmgnt" element={<Projectmgnt />} />
           <Route path="users" element={<UsersTable />} />
           <Route path="department" element={<DepartmentTable />} />
           <Route path="archive" element={<ArchiveAdminEmployeeManager />} />

@@ -23,6 +23,7 @@ import {
   Building2,
   Archive,
   Bell,
+  FolderOpen,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -240,6 +241,19 @@ export default function AdminSideBar() {
               >
                 <FolderOpenDot size={20} />
                 <span>Projects</span>
+              </Link>
+            </li>
+
+              <li>
+              <Link
+                to="/admin/projectmgnt"
+                className={`${linkDesign} ${
+                  isActive("/admin/projctmgnt") ? `${active}` : ""
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <FolderOpen size={20} />
+                <span>Project Management</span>
               </Link>
             </li>
 

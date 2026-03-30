@@ -43,7 +43,10 @@ export default function ProjectTable() {
           id
           fullname
         }
-        budget
+        projectMgnt {
+          _id
+          title
+        }
         startDate
         endDate
       }
@@ -168,6 +171,9 @@ export default function ProjectTable() {
     return colors[priority?.toLowerCase()] || "bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-slate-300";
   };
 
+  
+
+
   const getStatusColor = (status) => {
     const colors = {
       "in progress": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
@@ -234,7 +240,7 @@ export default function ProjectTable() {
           <div>Status</div>
           <div>Priority</div>
           <div>Project Manager</div>
-          <div>Budget</div>
+          <div>Project Management</div>
           <div>Start Date</div>
           <div>End Date</div>
           <div>Actions</div>
@@ -319,9 +325,9 @@ export default function ProjectTable() {
 
                   {/* Budget */}
                   <div className="text-sm text-gray-700 dark:text-slate-300">
-                    <span className="text-gray-500 dark:text-slate-500 lg:hidden">Budget: </span>
+                    <span className="text-gray-500 dark:text-slate-500 lg:hidden">Project Management: </span>
                     <span className="font-medium lg:font-normal">
-                      {project.budget?.toLocaleString() || "0"}
+                      {project?.projectMgnt?.title ? project.projectMgnt.title : "None"}
                     </span>
                   </div>
 
@@ -365,35 +371,39 @@ export default function ProjectTable() {
                       <Eye size={18} className="hidden lg:inline" />
                     </button>
 
-                    {/* Archive — green in dark mode */}
-                    <button
-                      title="Archive"
-                      onClick={() => handleArchive(project.id)}
-                      className="flex-1 lg:flex-none cursor-pointer
-                        bg-gray-500 hover:bg-gray-600 text-white
-                        dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
-                        dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]
-                        py-2 lg:py-1.5 lg:px-1.5 rounded-md
-                        text-sm font-medium transition-all duration-150"
-                    >
-                      <span className="lg:hidden">Archive</span>
-                      <Archive size={18} className="hidden lg:inline" />
-                    </button>
+                    {!project?.projectMgnt && (
+                      <>
+                        {/* Archive — green in dark mode */}
+                        <button
+                          title="Archive"
+                          onClick={() => handleArchive(project.id)}
+                          className="flex-1 lg:flex-none cursor-pointer
+                            bg-gray-500 hover:bg-gray-600 text-white
+                            dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
+                            dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]
+                            py-2 lg:py-1.5 lg:px-1.5 rounded-md
+                            text-sm font-medium transition-all duration-150"
+                        >
+                          <span className="lg:hidden">Archive</span>
+                          <Archive size={18} className="hidden lg:inline" />
+                        </button>
 
-                    {/* Delete */}
-                    <button
-                      onClick={() => handleDelete(project.id)}
-                      title="Delete"
-                      className="flex-1 lg:flex-none cursor-pointer
-                        bg-red-600 hover:bg-red-700
-                        dark:bg-red-600/90 dark:hover:bg-red-500
-                        dark:hover:shadow-[0_0_8px_rgba(239,68,68,0.35)]
-                        text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md
-                        text-sm font-medium transition-all duration-150"
-                    >
-                      <span className="lg:hidden">Delete</span>
-                      <Trash2 size={17} className="hidden lg:inline" />
-                    </button>
+                        {/* Delete */}
+                        <button
+                          onClick={() => handleDelete(project.id)}
+                          title="Delete"
+                          className="flex-1 lg:flex-none cursor-pointer
+                            bg-red-600 hover:bg-red-700
+                            dark:bg-red-600/90 dark:hover:bg-red-500
+                            dark:hover:shadow-[0_0_8px_rgba(239,68,68,0.35)]
+                            text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md
+                            text-sm font-medium transition-all duration-150"
+                        >
+                          <span className="lg:hidden">Delete</span>
+                          <Trash2 size={17} className="hidden lg:inline" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
