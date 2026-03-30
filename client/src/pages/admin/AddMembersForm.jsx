@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { Loader, Plus, XCircle } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -54,6 +54,10 @@ const GET_PROJECT = gql`
   query Project($projectId: ID!) {
     project(id: $projectId) {
       id
+      department {
+        id
+        name
+      }
       users {
         id
         role
@@ -121,15 +125,18 @@ function AddMembersForm() {
     department: "",
   });
 
+  useEffect(() => {
+    if (projectData?.project?.department?.id) {
+      setFormData({ department: projectData.project.department.id });
+    }
+  }, [projectData]);
+
   const selectedDept = dataDepartments?.departments?.find(
-    (d) => d.id === formData.department || d.name === formData.department,
+    (d) => d.id === formData.department,
   );
 
   const teamUsers = selectedDept?.users || [];
   const [selectedEmployees, setSelectedEmployees] = useState([]);
-  const [departmentSearch, setDepartmentSearch] = useState("");
-  const departmentRef = useRef(null);
-  const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false);
   const [teamMemberSearch, setTeamMemberSearch] = useState("");
 
   const handleInputChange = (name, value) => {
@@ -138,14 +145,6 @@ function AddMembersForm() {
       [name]: value,
     }));
   };
-
-  //query
-  const filteredDepartments = (dataDepartments?.departments || []).filter(
-    (dept) =>
-      (dept.name || "")
-        .toLowerCase()
-        .includes((departmentSearch || "").toLowerCase()),
-  );
 
   const handleAddTask = (e) => {
     e.preventDefault();
@@ -242,49 +241,17 @@ function AddMembersForm() {
               <div className="space-y-4">
                 <div className="flex flex-col gap-4">
 
-                  {/* Department Search */}
-                  <div className="space-y-2 relative" ref={departmentRef}>
+                  {/* Department (Fixed to Project's Department) */}
+                  <div className="space-y-2">
                     <label className={labelCls}>
                       Department
                     </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="Search department..."
-                        value={departmentSearch}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          setDepartmentSearch(v);
-                          setShowDepartmentDropdown(true);
-                        }}
-                        onFocus={() => setShowDepartmentDropdown(true)}
-                        className={inputCls}
-                      />
-                      {showDepartmentDropdown && (
-                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#1a1f2b] border border-gray-300 dark:border-[#2a3040] rounded-lg shadow-lg dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)] max-h-48 overflow-auto">
-                          {filteredDepartments.length > 0 ? (
-                            filteredDepartments.map((dept) => (
-                              <div
-                                key={dept.id}
-                                onClick={() => {
-                                  // store department id for form submission, but keep name visible in the input
-                                  handleInputChange("department", dept.id);
-                                  setDepartmentSearch(dept.name);
-                                  setShowDepartmentDropdown(false);
-                                }}
-                                className="px-3 py-2 hover:bg-blue-50 dark:hover:bg-[#252d3d] cursor-pointer text-sm text-gray-800 dark:text-slate-200"
-                              >
-                                {dept.name}
-                              </div>
-                            ))
-                          ) : (
-                            <div className="px-3 py-2 text-sm text-gray-500 dark:text-slate-500">
-                              No departments found
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <input
+                      type="text"
+                      value={projectData?.project?.department?.name || "No Department"}
+                      disabled
+                      className={inputCls + " bg-gray-100 dark:bg-gray-700 cursor-not-allowed"}
+                    />
                   </div>
 
                   {/* Team Members */}

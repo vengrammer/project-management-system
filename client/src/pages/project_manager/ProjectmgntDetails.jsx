@@ -12,6 +12,7 @@ import {
   TrendingUp,
   User,
   Users,
+  Users2,
 } from "lucide-react";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
@@ -172,7 +173,9 @@ function ProjectmgntDetails() {
     return Math.round((projectCompleted / projectLength) * 100);
   };
 
-  const calculateProgressProject = (taskLength, taskComplete) => {
+  const calculateProgressProject = (taskLength, taskComplete, projectStatus) => {
+    if (projectStatus === "not started") return 0;
+    if (projectStatus === "completed") return 100;
     if (taskLength === 0) return 0;
     return Math.round((taskComplete / taskLength) * 100);
   };
@@ -181,6 +184,21 @@ function ProjectmgntDetails() {
   const completedTaskCount = tasksByProjects.filter(
     (t) => t.status === "completed",
   ).length;
+
+  // Calculate project status counts
+  const totalProjects = projectsByProjectMgnt.length;
+  const notStartedProjects = projectsByProjectMgnt.filter((p) => {
+    const normalized = String(p.status).toLowerCase().replace(/[_\s]/g, "");
+    return normalized === "notstarted" || normalized === "todo";
+  }).length;
+  const inProgressProjects = projectsByProjectMgnt.filter((p) => {
+    const normalized = String(p.status).toLowerCase().replace(/[_\s]/g, "");
+    return normalized === "inprogress";
+  }).length;
+  const completedProjects = projectsByProjectMgnt.filter((p) => {
+    const normalized = String(p.status).toLowerCase().replace(/[_\s]/g, "");
+    return normalized === "completed";
+  }).length;
 
   if (
     loadingProjectMgnt ||
@@ -199,7 +217,7 @@ function ProjectmgntDetails() {
     );
   }
   return (
-    <div className="h-screen flex flex-col w-flow sm:overflow-hidden overflow-auto bg-gray-200 dark:bg-[#181d28] p-3 lg:px-10 lg:py-5">
+    <div className="h-screen flex flex-col w-flow  overflow-auto bg-gray-200 dark:bg-[#181d28] p-3 lg:px-10 lg:py-5">
       <div className="flex flex-col h-full min-h-0">
         <div
           key={projectmgnt?.id}
@@ -240,7 +258,7 @@ function ProjectmgntDetails() {
                   {projectmgnt?.departments.map((item) => (
                     <div
                       key={item._id}
-                      className=" bg-[rgb(29,122,1)] px-5 flex items-center justify-center  rounded-2xl "
+                      className=" bg-[rgb(29,122,1)] text-white px-5 flex items-center justify-center  rounded-2xl "
                     >
                       {item.name}
                     </div>
@@ -291,11 +309,10 @@ function ProjectmgntDetails() {
                     <div>
                       <button
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
-                      ${
-                        projectmgnt?.status === "completed"
-                          ? "bg-amber-600 hover:bg-amber-700 dark:bg-amber-500/90 dark:hover:bg-amber-500"
-                          : "bg-green-600 hover:bg-green-700 dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]"
-                      }`}
+                      ${projectmgnt?.status === "completed"
+                            ? "bg-amber-600 hover:bg-amber-700 dark:bg-amber-500/90 dark:hover:bg-amber-500"
+                            : "bg-green-600 hover:bg-green-700 dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]"
+                          }`}
                       >
                         {projectmgnt?.status}
                       </button>
@@ -340,7 +357,7 @@ function ProjectmgntDetails() {
                   />
                 </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">
-                  {projectmgnt?.projects?.length || 0}
+                  {totalProjects}
                 </p>
                 <p className="text-xs text-gray-600 dark:text-slate-400">
                   Total Projects
@@ -355,7 +372,7 @@ function ProjectmgntDetails() {
                   />
                 </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">
-                  0
+                  {notStartedProjects}
                 </p>
                 <p className="text-xs text-gray-600 dark:text-slate-400">
                   Not Started
@@ -370,7 +387,7 @@ function ProjectmgntDetails() {
                   />
                 </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">
-                  0
+                  {inProgressProjects}
                 </p>
                 <p className="text-xs text-gray-600 dark:text-slate-400">
                   In Progress
@@ -385,7 +402,7 @@ function ProjectmgntDetails() {
                   />
                 </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">
-                  0
+                  {completedProjects}
                 </p>
                 <p className="text-xs text-gray-600 dark:text-slate-400">
                   Completed
@@ -395,8 +412,8 @@ function ProjectmgntDetails() {
           </header>
         </div>
         <main className="flex flex-col rounded-lg shadow-sm  p-2 sm:p-0 h-full">
-          <div className="flex flex-col lg:flex-row gap-5 w-full h-full overflow-auto">
-            <div className="flex-1 border-3 min-h-0 bg-white dark:bg-[#222732] rounded-lg shadow-sm flex flex-col max-h-[64vh] overflow-hidden">
+          <div className="flex flex-col lg:flex-row gap-5 w-full h-full overflow-hidden">
+            <div className="flex-1 border-3 min-h-100 bg-white dark:bg-[#222732] rounded-lg shadow-sm flex flex-col max-h-[64vh] overflow-hidden">
               <header className="flex justify-between w-full min-w-0 p-4 rounded-t-xl border-b-2 ">
                 <div className="flex flex-col gap-1">
                   <h1 className="font-bold text-xl">Projects</h1>
@@ -416,7 +433,7 @@ function ProjectmgntDetails() {
                 </div>
               </header>
               {/* Projects list */}
-              <main className="flex flex-col h-full min-h-0 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-gray-200 dark:scrollbar-thumb-[#31f64b] dark:scrollbar-track-[#1a1f2b]">
+              <main className="flex flex-col   flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-gray-200 dark:scrollbar-thumb-[#31f64b] dark:scrollbar-track-[#1a1f2b]">
                 {projectsByProjectMgnt?.map((project) => (
                   <div
                     key={project.id}
@@ -468,8 +485,11 @@ function ProjectmgntDetails() {
                           <Trash2 size={18} />
                         </button>
                       </div>
-                    </div>
 
+                    </div>
+                    <div className="w-full flex">
+                      <p className="bg-[rgb(29,122,1)] text-white   px-5 flex items-center justify-center  rounded-2xl ">{project?.department?.name || "No Department"}</p>
+                    </div>
                     <div className="flex gap-2 text-sm text-gray-600 dark:text-slate-300">
                       <span className="inline-flex items-center gap-1 truncate">
                         <User size={14} />
@@ -481,26 +501,15 @@ function ProjectmgntDetails() {
                       <span className="inline-flex items-center gap-1 truncate">
                         <Users size={14} />
                         <strong>Member:</strong>
-                        <span>{project?.users?.length || 0}</span>
+                        <span>{project?.users?.length || 0} employees</span>
                       </span>
 
                       <span className="inline-flex items-center gap-1 truncate">
-                        <strong>Start:</strong>
-                        <span>{project?.startDate || "N/A"}</span>
+                        <Calendar size={14} />
+                        <span>{project?.startDate || "N/A"} -</span>
                       </span>
                       <span className="inline-flex items-center gap-1 truncate">
-                        <strong>End:</strong>
                         <span>{project?.endDate || "N/A"}</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1 truncate">
-                        <strong>Priority:</strong>
-                        <span>{project?.priority || "N/A"}</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1 truncate col-span-1 sm:col-span-2 lg:col-span-3">
-                        <strong>Department:</strong>
-                        <span className="min-w-0 truncate">
-                          {project?.department?.name || "No Department"}
-                        </span>
                       </span>
                     </div>
                     {/* for the progress*/}
@@ -522,6 +531,7 @@ function ProjectmgntDetails() {
                             return calculateProgressProject(
                               projectTasks.length,
                               projectCompleted,
+                              project?.status
                             );
                           })()}
                           %
@@ -543,6 +553,7 @@ function ProjectmgntDetails() {
                               return calculateProgressProject(
                                 projectTasks.length,
                                 projectCompleted,
+                                project?.status
                               );
                             })()}%`,
                           }}
@@ -553,10 +564,9 @@ function ProjectmgntDetails() {
                 ))}
               </main>
             </div>
-
             {/*department*/}
             <div
-              className="flex-1 min-h-100 bg-white max-w-150 border-3 dark:bg-[#222732] rounded-lg shadow-sm 
+              className="flex-1 min-h-100 lg:max-w-150 lg:w-full bg-white  border-3 dark:bg-[#222732] rounded-lg shadow-sm 
                     max-h-[58vh] overflow-y-auto"
             >
               <header className="flex justify-between w-full min-w-0 p-4 rounded-t-xl border-b-2 ">
@@ -568,27 +578,39 @@ function ProjectmgntDetails() {
                 </div>
                 <div>
                   <div className="flex gap-3 flex-wrap">
-                    <div className="">
-                      <button className="bg-green-400 ">
-                        Add new department
-                      </button>
-                    </div>
+                    <button
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150
+            bg-blue-600 hover:bg-blue-700 text-white
+            dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
+            dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]"
+                    >
+                      <Plus size={18} />
+                      Add New Department
+                    </button>
                   </div>
                 </div>
               </header>
               {projectmgnt?.departments?.map((department) => (
-                <div className="w-full border-b border-gray-200 dark:border-gray-600 p-3 sm:p-4 flex flex-col gap-3">
+                <div className="flex flex-col w-full max-w-full border-b border-gray-200 dark:border-gray-600 p-3  gap-3">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div>
                       <p>{department.name}</p>
                     </div>
                     <div className="flex items-start gap-2">
+                     
                       <button
                         type="button"
                         className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700"
                         title="View"
                       >
                         <Eye size={18} />
+                      </button>
+                       <button
+                        type="button"
+                        className="p-2 rounded-md bg-green-200 text-gray-700 hover:bg-green-300 dark:bg-[#0a7f19] dark:text-green-200 dark:hover:bg-[#06a31b]"
+                        title="View Managers"
+                      >
+                        <Users2 size={18} />
                       </button>
                       <button
                         type="button"

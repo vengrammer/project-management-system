@@ -49,6 +49,20 @@ export const projectResolvers = {
               preserveNullAndEmptyArrays: true,
             },
           },
+          {
+            $lookup: {
+              from: "projectmgnts",
+              localField: "_id",
+              foreignField: "projects",
+              as: "projectMgnt",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectMgnt",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
         ]);
 
         return reusableReturnmap(projects);
@@ -95,6 +109,20 @@ export const projectResolvers = {
           {
             $unwind: {
               path: "$projectManager",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "projectmgnts",
+              localField: "_id",
+              foreignField: "projects",
+              as: "projectMgnt",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectMgnt",
               preserveNullAndEmptyArrays: true,
             },
           },
@@ -155,6 +183,20 @@ export const projectResolvers = {
               preserveNullAndEmptyArrays: true,
             },
           },
+          {
+            $lookup: {
+              from: "projectmgnts",
+              localField: "_id",
+              foreignField: "projects",
+              as: "projectMgnt",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectMgnt",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
         ]);
 
         if (project.length === 0) {
@@ -211,6 +253,20 @@ export const projectResolvers = {
           {
             $unwind: {
               path: "$projectManager",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "projectmgnts",
+              localField: "_id",
+              foreignField: "projects",
+              as: "projectMgnt",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectMgnt",
               preserveNullAndEmptyArrays: true,
             },
           },
@@ -291,6 +347,20 @@ export const projectResolvers = {
             preserveNullAndEmptyArrays: true,
           },
         },
+        {
+          $lookup: {
+            from: "projectmgnts",
+            localField: "_id",
+            foreignField: "projects",
+            as: "projectMgnt",
+          },
+        },
+        {
+          $unwind: {
+            path: "$projectMgnt",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
       ]);
 
       if (projects.length === 0) {
@@ -340,6 +410,20 @@ export const projectResolvers = {
           {
             $unwind: {
               path: "$projectManager",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "projectmgnts",
+              localField: "_id",
+              foreignField: "projects",
+              as: "projectMgnt",
+            },
+          },
+          {
+            $unwind: {
+              path: "$projectMgnt",
               preserveNullAndEmptyArrays: true,
             },
           },
@@ -619,6 +703,14 @@ const reusableReturnmap = (projects) => {
       ? {
           ...project.projectManager,
           id: project.projectManager._id.toString(),
+        }
+      : null,
+
+    // Add id for projectMgnt
+    projectMgnt: project.projectMgnt
+      ? {
+          ...project.projectMgnt,
+          _id: project.projectMgnt._id.toString(),
         }
       : null,
 

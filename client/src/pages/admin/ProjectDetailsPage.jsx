@@ -56,6 +56,10 @@ const GET_PROJECTS = gql`
         id
         fullname
       }
+      projectMgnt {
+        _id
+        title
+      }
       users {
         id
         fullname
@@ -301,6 +305,46 @@ const ProjectDetailsPage = () => {
     });
   };
 
+  const handleMarkAsNotStarted = () => {
+    Swal.fire({
+      title: "Mark this project as not started?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        updateProjectStatus({
+          variables: {
+            updateProjectId: id,
+            status: "not started",
+          },
+        });
+      }
+    });
+  };
+
+  const handleMarkAsInProgress = () => {
+    Swal.fire({
+      title: "Mark this project as in progress?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        updateProjectStatus({
+          variables: {
+            updateProjectId: id,
+            status: "in progress",
+          },
+        });
+      }
+    });
+  };
+
   const handleRemoveMember = (userId, assignedTasksCount) => {
     if (assignedTasksCount > 0) {
       Swal.fire({
@@ -341,7 +385,9 @@ const ProjectDetailsPage = () => {
     });
   };
 
-  const calculateProgress = (taskLength, taskComplete) => {
+  const calculateProgress = (taskLength, taskComplete, projectStatus) => {
+    if (projectStatus === "not started") return 0;
+    if (projectStatus === "completed") return 100;
     if (taskLength === 0) return 0;
     return Math.round((taskComplete / taskLength) * 100);
   };
@@ -385,17 +431,25 @@ const ProjectDetailsPage = () => {
       <div className="w-full p-2 sm:p-6 lg:py-8 h-full">
 
         {/* ── Back Button ── */}
-        <button
-          onClick={() =>
-            navigate(
-              `/${isEmployee ? "employee" : isManager ? "manager" : "admin"}/${isArchive ? "archive" : "projects"}`,
-            )
-          }
-          className="flex items-center gap-2 text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-[#31f64b] mb-6 transition-colors duration-150"
-        >
-          <ArrowLeft size={20} />
-          <span>Back to Projects</span>
-        </button>
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() =>
+              navigate(
+                `/${isEmployee ? "employee" : isManager ? "manager" : "admin"}/${isArchive ? "archive" : "projects"}`,
+              )
+            }
+            className="flex items-center gap-2 text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-[#31f64b] transition-colors duration-150"
+          >
+            <ArrowLeft size={20} />
+            <span>Back to Projects</span>
+          </button>
+          {project?.projectMgnt && (
+            <div className="flex items-center gap-2 text-lg text-gray-600 dark:text-slate-400">
+              <span className="text-gray-400 dark:text-slate-500">Project Management:</span>
+              <span className="font-semibold text-gray-800 dark:text-slate-200">{project.projectMgnt.title}</span>
+            </div>
+          )}
+        </div>
 
         {/* ── Project Header Card ── */}
         <motion.div
@@ -448,7 +502,7 @@ const ProjectDetailsPage = () => {
 
             {/* Action buttons */}
             <div className="flex gap-3 flex-wrap">
-              <div>{!isEmployee && !isArchive && <FormEditProject />}</div>
+              <div>{!isEmployee && !isArchive && !project?.projectMgnt && <FormEditProject />}</div>
               <div>
                 {!isEmployee && !isArchive && (
                   <button
@@ -464,6 +518,32 @@ const ProjectDetailsPage = () => {
                   </button>
                 )}
               </div>
+              <div>
+                {!isEmployee && !isArchive && (project.status === "not started") && (
+                  <button
+                    onClick={() => handleMarkAsInProgress()}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
+                      bg-blue-600 hover:bg-blue-700 dark:bg-blue-500/90 dark:hover:bg-blue-500
+                      dark:hover:shadow-[0_0_8px_rgba(59,130,246,0.35)]"
+                  >
+                    <TrendingUp size={18} />
+                    Mark As In Progress
+                  </button>
+                )}
+              </div>
+              <div>
+                {!isEmployee && !isArchive && (project.status === "completed" || project.status === "in_progress" || project.status === "inprogress" || project.status === "in progress") && (
+                  <button
+                    onClick={() => handleMarkAsNotStarted()}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
+                      bg-gray-600 hover:bg-gray-700 dark:bg-gray-500/90 dark:hover:bg-gray-500
+                      dark:hover:shadow-[0_0_8px_rgba(107,114,128,0.35)]"
+                  >
+                    <ArrowLeft size={18} />
+                    Mark As Not Started
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -472,14 +552,14 @@ const ProjectDetailsPage = () => {
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Overall Progress</span>
               <span className="text-sm font-bold text-gray-900 dark:text-slate-100">
-                {calculateProgress(tasks.length, tasks.filter((t) => t.status === "completed").length)}%
+                {calculateProgress(tasks.length, tasks.filter((t) => t.status === "completed").length, project?.status)}%
               </span>
             </div>
             <div className="h-3 bg-gray-200 dark:bg-[#2a3040] rounded-full overflow-hidden">
               <div
                 className="h-full bg-linear-to-r from-blue-500 to-blue-600 dark:from-[#31f64b] dark:to-[#28d940] transition-all duration-500"
                 style={{
-                  width: `${calculateProgress(tasks.length, tasks.filter((t) => t.status === "completed").length)}%`,
+                  width: `${calculateProgress(tasks.length, tasks.filter((t) => t.status === "completed").length, project?.status)}%`,
                 }}
               />
             </div>

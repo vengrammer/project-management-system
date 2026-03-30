@@ -272,9 +272,10 @@ export default function FormEditProject() {
 
                       {/* Department searchable dropdown */}
                       <div className="space-y-2 relative" ref={departmentRef}>
-                        <label className={labelCls}>Department <span className="text-red-500">*</span></label>
+                        <label className={labelCls}>Department  (Not Editable)</label>
                         <div className="relative">
-                          <input type="text" placeholder="Search department..." value={departmentSearch}
+                         
+                          <input  disabled={true} type="text" placeholder="Search department..." value={departmentSearch}
                             onChange={(e) => { setDepartmentSearch(e.target.value); setShowDepartmentDropdown(true); handleInputChange("department", ""); }}
                             onFocus={() => setShowDepartmentDropdown(true)} required className={inputCls} />
                           {showDepartmentDropdown && (
