@@ -15,9 +15,11 @@ import {
   Users2,
 } from "lucide-react";
 import { gql } from "@apollo/client";
-import { useQuery } from "@apollo/client/react";
+import { useQuery, useMutation } from "@apollo/client/react";
 import { useParams } from "react-router-dom";
 import PmFormAddProjectModal from "./PmFormAddProjectModal";
+import Swal from "sweetalert2";
+import { toast } from "react-toastify";
 
 export const GET_THE_PROJECTMGNT = gql`
   query ProjectMgnt($projectMgntId: ID!) {
@@ -31,6 +33,9 @@ export const GET_THE_PROJECTMGNT = gql`
       endDate
       projects {
         id
+        department {
+          id
+        }
       }
       departments {
         id
@@ -43,6 +48,9 @@ export const GET_THE_PROJECTMGNT = gql`
       managers {
         id
         fullname
+        department {
+          id
+        }
       }
     }
   }
@@ -105,6 +113,29 @@ export const GET_TASKS_BY_PROJECTS = gql`
   }
 `;
 
+export const DELETE_DEPARTMENT = gql`
+  mutation DeleteDepartment($id: ID!) {
+    deleteDepartment(id: $id) {
+      message
+      department {
+        id
+        name
+      }
+    }
+  }
+`;
+
+  const DELETE_PROJECT = gql`
+    mutation DeleteProject($id: ID!) {
+      deleteProject(id: $id) {
+        message
+        project {
+          id
+        }
+      }
+    }
+  `;
+
 function ProjectmgntDetails() {
   const { id } = useParams();
   //get the project management details
@@ -130,6 +161,74 @@ function ProjectmgntDetails() {
   });
   const projectsByProjectMgnt =
     dataProjectsByProjectMgnt?.projectsByProjectMgnt || [];
+
+  const [deleteDepartment] = useMutation(DELETE_DEPARTMENT);
+
+  const handleDeleteDepartment = async (departmentId, departmentName) => {
+    // Check if department is used by any project in this projectmgnt
+    const projectsInDept = projectsByProjectMgnt.filter(
+      (project) => project.department?.id === departmentId
+    );
+    if (projectsInDept.length > 0) {
+      Swal.fire({
+        title: "Cannot Delete Department",
+        text: `This department "${departmentName}" is currently enrolled in ${projectsInDept.length} project(s) within this project management. Please delete the projects first.`,
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    // Confirm deletion
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you want to delete the department "${departmentName}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteDepartment({
+          variables: { id: departmentId },
+        });
+        Swal.fire("Deleted!", "The department has been deleted.", "success");
+        refetchProjectMgnt(); // Refetch to update the list
+      } catch (error) {
+        Swal.fire("Error!", error.message, "error");
+      }
+    }
+  };
+
+  
+   const [deleteProject] = useMutation(DELETE_PROJECT);
+
+    const handleDelete = async (id) => {
+       Swal.fire({
+         title: "Are you sure you want to delete this project?",
+         text: "You won't be able to revert this!",
+         icon: "warning",
+         showCancelButton: true,
+         confirmButtonColor: "#3085d6",
+         cancelButtonColor: "#d33",
+         confirmButtonText: "Yes, delete it!",
+       }).then(async (result) => {
+         if (result.isConfirmed) {
+           try {
+             const { data } = await deleteProject({ variables: { id } });
+             if (data.deleteProject) {
+               toast.success("Project deleted successfully");
+               await refetchProjectMgnt();
+             }
+           } catch (error) {
+             toast.error(`Error deleting project: ${error.message}`);
+           }
+         }
+       });
+     };
 
   const { data: tasksByProjectData, loading: loadingTasksByProjects } =
     useQuery(GET_TASKS_BY_PROJECTS, {
@@ -216,6 +315,8 @@ function ProjectmgntDetails() {
       </div>
     );
   }
+
+
   return (
     <div className="h-screen flex flex-col w-flow  overflow-auto bg-gray-200 dark:bg-[#181d28] p-3 lg:px-10 lg:py-5">
       <div className="flex flex-col h-full min-h-0">
@@ -478,6 +579,7 @@ function ProjectmgntDetails() {
                           <Pen size={18} />
                         </button>
                         <button
+                          onClick={() => handleDelete(project.id)}
                           type="button"
                           className="p-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-800"
                           title="Delete"
@@ -596,6 +698,7 @@ function ProjectmgntDetails() {
                     <div>
                       <p>{department.name}</p>
                     </div>
+                    
                     <div className="flex items-start gap-2">
                      
                       <button
@@ -614,12 +717,25 @@ function ProjectmgntDetails() {
                       </button>
                       <button
                         type="button"
+                        onClick={() => handleDeleteDepartment(department.id, department.name)}
                         className="p-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-800"
                         title="Delete"
                       >
                         <Trash2 size={18} />
                       </button>
                     </div>
+                  </div>
+                  {/* for the managers and projects count*/}
+                  <div className="flex flex-1 flex-row items-center gap-4">
+                    <div className="flex  items-center justify-center gap-1">
+                       <Users2 size={15}/>
+                      <p>{projectmgnt?.managers?.filter(manager => manager.department?.id === department.id).length || 0} <span>managers</span></p>
+                    </div>
+                    <div className="flex gap-2 items-center ">
+                      <Target size={15}/>
+                      <p>{projectsByProjectMgnt?.filter(project => project.department?.id === department.id).length || 0} <span>projects</span></p>
+                    </div>
+                     
                   </div>
                 </div>
               ))}

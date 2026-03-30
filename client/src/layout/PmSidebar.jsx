@@ -245,19 +245,6 @@ export default function PmSideBar() {
 
             <li>
               <Link
-                to="/projectmanager/managers"
-                className={` ${linkDesign} ${
-                  isActive("/projectmanager/managers") ? `${active}` : ""
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <UserCheck size={20} />
-                <span>Managers</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link
                 to="/projectmanager/archive"
                 className={` ${linkDesign} ${
                   isActive("/projectmanager/archive") ? `${active}` : ""

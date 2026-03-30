@@ -249,11 +249,6 @@ export default function ManagerSideBar() {
               >
                 <CalendarClock size={20} />
                 <span>Calendar Mentions</span>{" "}
-                {filterUnReadCount.length > 0 && (
-                  <span className="absolute right-0 bg-red-600 bold text-white px-2 rounded-4xl">
-                    {filterUnReadCount.length}
-                  </span>
-                )}
               </Link>
             </li>
  

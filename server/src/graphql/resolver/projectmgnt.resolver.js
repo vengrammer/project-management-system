@@ -18,16 +18,6 @@ export const projectMgntResolver = {
             preserveNullAndEmptyArrays: true,
           },
         },
-
-        {
-          $lookup: {
-            from: "users",
-            localField: "managers",
-            foreignField: "_id",
-            as: "managers",
-          },
-        },
-
         {
           $lookup: {
             from: "departments",
@@ -39,9 +29,57 @@ export const projectMgntResolver = {
         {
           $lookup: {
             from: "projects",
-            localField: "projects",
-            foreignField: "_id",
+            let: { projectIds: "$projects" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$projectIds"] },
+                },
+              },
+              {
+                $lookup: {
+                  from: "departments",
+                  localField: "department",
+                  foreignField: "_id",
+                  as: "department",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$department",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+            ],
             as: "projects",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: { managerIds: "$managers" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$managerIds"] },
+                },
+              },
+              {
+                $lookup: {
+                  from: "departments",
+                  localField: "department",
+                  foreignField: "_id",
+                  as: "department",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$department",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+            ],
+            as: "managers",
           },
         },
       ]);
@@ -68,14 +106,6 @@ export const projectMgntResolver = {
         },
         {
           $lookup: {
-            from: "users",
-            localField: "managers",
-            foreignField: "_id",
-            as: "managers",
-          },
-        },
-        {
-          $lookup: {
             from: "departments",
             localField: "departments",
             foreignField: "_id",
@@ -85,11 +115,60 @@ export const projectMgntResolver = {
         {
           $lookup: {
             from: "projects",
-            localField: "projects",
-            foreignField: "_id",
+            let: { projectIds: "$projects" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$projectIds"] },
+                },
+              },
+              {
+                $lookup: {
+                  from: "departments",
+                  localField: "department",
+                  foreignField: "_id",
+                  as: "department",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$department",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+            ],
             as: "projects",
           },
         },
+        {
+          $lookup: {
+            from: "users",
+            let: { managerIds: "$managers" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$managerIds"] },
+                },
+              },
+              {
+                $lookup: {
+                  from: "departments",
+                  localField: "department",
+                  foreignField: "_id",
+                  as: "department",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$department",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+            ],
+            as: "managers",
+          },
+        },
+
       ]);
       return reusableReturnmap(projectMgnt)[0] || null;
     },
@@ -252,10 +331,16 @@ const reusableReturnmap = (projectMgnts) => {
 
     //Managers (array)
     managers:
-      projectMgnt.managers?.map((m) => ({
+      (projectMgnt.managers || []).map((m) => ({
         ...m,
         id: m._id.toString(),
-      })) || [],
+        department: m.department
+          ? {
+              ...m.department,
+              id: m.department._id.toString(),
+            }
+          : null,
+      })),
 
     //Departments (array)
     departments:
@@ -266,9 +351,15 @@ const reusableReturnmap = (projectMgnts) => {
 
     //Projects (array)
     projects:
-      projectMgnt.projects?.map((p) => ({
+      (projectMgnt.projects || []).map((p) => ({
         ...p,
         id: p._id.toString(),
-      })) || [],
+        department: p.department
+          ? {
+              ...p.department,
+              id: p.department._id.toString(),
+            }
+          : null,
+      })),
   }));
 };

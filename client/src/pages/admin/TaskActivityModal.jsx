@@ -13,6 +13,7 @@ import {
   Users,
   ChevronDown,
   Loader,
+  ArrowLeft,
 } from "lucide-react";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
@@ -202,6 +203,39 @@ export default function TaskActivityModal({ id: taskId }) {
             entity: { id: projectData.project.id, type: "Task" },
             isRead: false,
             message: `The task "${taskData.task.title || "Unknown Task"}" has been marked as ${currentStatus === "in_progress" ? "completed" : "in progress"}.`,
+            recipients: [...(taskData?.task?.users?.map((u) => u.id) || []), projectData?.project?.projectManager?.id],
+            sender: userId,
+            title: "Task updated",
+            type: "info",
+          },
+        },
+      });
+    });
+  };
+
+  const handleMarkAsNotStarted = (tId) => {
+    Swal.fire({
+      title: "Mark this task as not started?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#6b7280",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Mark as not started",
+    }).then((result) => {
+      if (result.isConfirmed)
+        updateTaskCompleted({
+          variables: {
+            updateTaskId: tId,
+            status: "todo",
+            completedDate: null,
+          },
+        });
+      createNotif({
+        variables: {
+          input: {
+            entity: { id: projectData.project.id, type: "Task" },
+            isRead: false,
+            message: `The task "${taskData.task.title || "Unknown Task"}" has been marked as not started.`,
             recipients: [...(taskData?.task?.users?.map((u) => u.id) || []), projectData?.project?.projectManager?.id],
             sender: userId,
             title: "Task updated",
@@ -579,7 +613,7 @@ export default function TaskActivityModal({ id: taskId }) {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-0 sm:p-4">
-          <div className="bg-white dark:bg-[#222732] w-full sm:rounded-2xl sm:max-w-7xl sm:max-h-screen h-full sm:h-auto flex flex-col rounded-t-2xl
+          <div className="bg-white dark:bg-[#222732] w-full sm:rounded-2xl sm:max-w-7xl sm:max-h-[90vh] h-full sm:h-auto flex flex-col rounded-t-2xl
             dark:shadow-[0_-4px_40px_rgba(0,0,0,0.6)]">
 
             {/* ── Header ── */}
@@ -628,10 +662,10 @@ export default function TaskActivityModal({ id: taskId }) {
                       })}
                     </div>
 
-                    {!isArchive && (isIncluded || isManager || isAdmin) && (
+                    {!isArchive && (isManager || isIncluded) && (
                       <button
                         onClick={() => handleMarkAsDone(taskData?.task?.id, taskData?.task?.status)}
-                        disabled={!isIncluded && !isManager && !isAdmin}
+                        disabled={!(isManager || isIncluded)}
                         className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed
                           ${taskData?.task?.status === "in_progress"
                             ? "bg-green-600 hover:bg-green-700 text-white dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]"
@@ -643,6 +677,19 @@ export default function TaskActivityModal({ id: taskId }) {
                         ) : (
                           <><Loader size={13} /><span className="text-xs">Mark as In Progress</span></>
                         )}
+                      </button>
+                    )}
+
+                    {!isArchive && (isManager || isIncluded) && (taskData?.task?.status === "done" || taskData?.task?.status === "in_progress") && (
+                      <button
+                        onClick={() => handleMarkAsNotStarted(taskData?.task?.id)}
+                        disabled={!(isManager || isIncluded)}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed
+                          bg-gray-600 hover:bg-gray-700 text-white dark:bg-gray-500/90 dark:hover:bg-gray-500
+                          dark:hover:shadow-[0_0_8px_rgba(107,114,128,0.35)]"
+                      >
+                        <ArrowLeft size={13} />
+                        <span className="text-xs">Mark as Not Started</span>
                       </button>
                     )}
                   </div>
