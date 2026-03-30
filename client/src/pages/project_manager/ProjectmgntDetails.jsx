@@ -13,13 +13,17 @@ import {
   User,
   Users,
   Users2,
+  UserPlus,
 } from "lucide-react";
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import PmFormAddProjectModal from "./PmFormAddProjectModal";
+import AddTheManagerFromDepartment from "./AddTheManagerFromDepartment";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
+import ViewCurrentManager from "./ViewCurrentManager";
+import { useState } from "react";
 
 export const GET_THE_PROJECTMGNT = gql`
   query ProjectMgnt($projectMgntId: ID!) {
@@ -113,6 +117,32 @@ export const GET_TASKS_BY_PROJECTS = gql`
   }
 `;
 
+export const GET_ALL_MANAGERS = gql`
+  query UserRoleManager {
+    userRoleManager {
+      id
+      fullname
+      position
+      role
+      department {
+        id
+        name
+      }
+    }
+  }
+`;
+
+export const UPDATE_PROJECTMGNT_MANAGERS = gql`
+  mutation UpdateProjectMgnt($updateProjectMgntId: ID!, $addManagers: [ID!]) {
+    updateProjectMgnt(id: $updateProjectMgntId, addManagers: $addManagers) {
+      message
+      projectMgnt {
+        _id
+      }
+    }
+  }
+`;
+
 export const DELETE_DEPARTMENT = gql`
   mutation DeleteDepartment($id: ID!) {
     deleteDepartment(id: $id) {
@@ -137,7 +167,15 @@ export const DELETE_DEPARTMENT = gql`
   `;
 
 function ProjectmgntDetails() {
+
+  const [openCurrentManager, setOpenCurrentManager] = useState(false);
   const { id } = useParams();
+
+  const navigate = useNavigate();
+
+  const handelBack = () => {
+    navigate("/projectmanager/projectmgnt")
+  }
   //get the project management details
   const {
     data: dataProjectMgnt,
@@ -150,6 +188,20 @@ function ProjectmgntDetails() {
 
   const projectMgntProjectIds =
     projectmgnt?.projects?.map((p) => p?.id).filter(Boolean) || [];
+
+  const { data: allManagersData, loading: loadingAllManagers } = useQuery(GET_ALL_MANAGERS);
+
+  const [updateProjectMgntManagers] = useMutation(UPDATE_PROJECTMGNT_MANAGERS, {
+    onError: (error) => toast.error(`Could not add manager: ${error.message}`),
+    onCompleted: () => toast.success("Manager added to this project management"),
+    refetchQueries: [
+      {
+        query: GET_THE_PROJECTMGNT,
+        variables: { projectMgntId: id },
+      },
+    ],
+    awaitRefetchQueries: true,
+  });
 
   // get the projects by project management id
   const {
@@ -205,8 +257,50 @@ function ProjectmgntDetails() {
 
   
    const [deleteProject] = useMutation(DELETE_PROJECT);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [departmentManagers, setDepartmentManagers] = useState([]);
+  const [openAddManager, setOpenAddManager] = useState(false);
+  const [availableManagers, setAvailableManagers] = useState([]);
 
-    const handleDelete = async (id) => {
+  const handleViewManagers = (department) => {
+    if (!department) return;
+    const managersInDept = projectmgnt?.managers?.filter(
+      (m) => m?.department?.id === department.id || m?.department?.id === department._id,
+    );
+    setSelectedDepartment(department);
+    setDepartmentManagers(managersInDept || []);
+    setOpenCurrentManager(true);
+  };
+
+  const handleOpenAddManagers = (department) => {
+    if (!department) return;
+
+    const assignedIds = new Set(projectmgnt?.managers?.map((m) => m.id));
+    const allManagers = allManagersData?.userRoleManager || [];
+
+    const eligible = allManagers.filter(
+      (m) => !assignedIds.has(m.id) && (m.department?.id === department.id || true),
+    );
+
+    setSelectedDepartment(department);
+    setAvailableManagers(eligible);
+    setOpenAddManager(true);
+  };
+
+  const onAddManager = async (managerId) => {
+    if (!id || !managerId) return;
+
+    await updateProjectMgntManagers({
+      variables: {
+        updateProjectMgntId: id,
+        addManagers: [managerId],
+      },
+    });
+
+    setAvailableManagers((prev) => prev.filter((m) => m.id !== managerId));
+  };
+
+  const handleDelete = async (id) => {
        Swal.fire({
          title: "Are you sure you want to delete this project?",
          text: "You won't be able to revert this!",
@@ -299,6 +393,8 @@ function ProjectmgntDetails() {
     return normalized === "completed";
   }).length;
 
+
+
   if (
     loadingProjectMgnt ||
     loadingProjectsByProjectMgnt ||
@@ -316,6 +412,8 @@ function ProjectmgntDetails() {
     );
   }
 
+  
+
 
   return (
     <div className="h-screen flex flex-col w-flow  overflow-auto bg-gray-200 dark:bg-[#181d28] p-3 lg:px-10 lg:py-5">
@@ -324,9 +422,11 @@ function ProjectmgntDetails() {
           key={projectmgnt?.id}
           className="flex flex-col flex-1 w-full h-full"
         >
-          <button className="flex items-center gap-2 text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-[#31f64b] mb-6 transition-colors duration-150">
+          <button
+          onClick={() => handelBack()}
+           className="flex items-center gap-2 text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-[#31f64b] mb-6 transition-colors duration-150">
             <ArrowLeft size={20} />
-            <span>Back to Projects</span>
+            <span>Back</span>
           </button>
 
           <header className="bg-white dark:bg-[#222732] flex flex-col rounded-lg shadow-sm border p-6 mb-2">
@@ -700,21 +800,23 @@ function ProjectmgntDetails() {
                     </div>
                     
                     <div className="flex items-start gap-2">
-                     
                       <button
+                        onClick={() => handleViewManagers(department)}
                         type="button"
-                        className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700"
-                        title="View"
+                        className="p-2 rounded-md bg-green-200 text-gray-700 hover:bg-green-300 dark:bg-[#074ccc] dark:text-green-200 dark:hover:bg-[#144cf3]"
+                        title="View Managers"
                       >
-                        <Eye size={18} />
+                        <Users size={18} />
                       </button>
                        <button
                         type="button"
+                        onClick={() => handleOpenAddManagers(department)}
                         className="p-2 rounded-md bg-green-200 text-gray-700 hover:bg-green-300 dark:bg-[#0a7f19] dark:text-green-200 dark:hover:bg-[#06a31b]"
-                        title="View Managers"
+                        title="Add Managers"
                       >
-                        <Users2 size={18} />
+                        <UserPlus size={18} />
                       </button>
+
                       <button
                         type="button"
                         onClick={() => handleDeleteDepartment(department.id, department.name)}
@@ -743,6 +845,19 @@ function ProjectmgntDetails() {
           </div>
         </main>
       </div>
+      <ViewCurrentManager
+        open={openCurrentManager}
+        setOpen={setOpenCurrentManager}
+        department={selectedDepartment}
+        managers={departmentManagers}
+      />
+      <AddTheManagerFromDepartment
+        open={openAddManager}
+        setOpen={setOpenAddManager}
+        department={selectedDepartment}
+        managers={availableManagers}
+        onAddManager={onAddManager}
+      />
     </div>
   );
 }
