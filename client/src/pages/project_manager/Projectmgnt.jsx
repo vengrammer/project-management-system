@@ -1,0 +1,320 @@
+import { motion } from "framer-motion";
+import { Archive, Eye, Trash2, CalendarArrowUp, CalendarArrowDown, Plus, ChevronDown, Loader } from "lucide-react";
+import { useState } from "react";
+import AddNewProgram from "./AddNewProgram";
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+export const GET_THE_PROJECTMGNT = gql`
+    query ProjectMgnts {
+        projectMgnts {
+            _id
+            title
+            status
+            startDate
+            priority
+            isArchive
+            endDate
+            departments {
+                id
+                name
+            }
+            managers {
+                id
+                fullname
+            }
+            pm {
+                id
+                fullname    
+            }
+        }
+    }
+`
+
+function Projectmgnt() {
+    const [openAddProgram, setOpenAddProgram] = useState(false)
+    const navigate = useNavigate();
+    // const toggle = () => setOpen(!open);
+    const overdue = (project) => {
+        if (!project.endDate) return false;
+        return new Date(project.endDate) < new Date();
+    };
+    const getStatusColor = (status) => {
+        switch (status) {
+            case "Completed":
+                return "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400";
+            case "In Progress":
+                return "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400";
+            case "Pending":
+                return "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400";
+            case "Overdue":
+                return "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400";
+            default:
+                return "bg-gray-100 text-gray-600 dark:bg-gray-500/10 dark:text-gray-400";
+        }
+    };
+
+    const getPriorityColor = (priority) => {
+        switch (priority) {
+            case "High":
+                return "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400";
+            case "Medium":
+                return "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400";
+            case "Low":
+                return "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400";
+            default:
+                return "bg-gray-100 text-gray-600 dark:bg-gray-500/10 dark:text-gray-400";
+        }
+    };
+
+    const {
+        loading: loadingProjectMgnt,
+        error: errorProjectMgnt,
+        data: dataProjectMgnt,
+    } = useQuery(GET_THE_PROJECTMGNT);
+
+    //data of the projectmgnt
+    const projectMgnts = dataProjectMgnt?.projectMgnts || [];
+
+    //dropdown for the managers and departments
+    function Dropdown({ items, defaultLabel }) {
+        const [open, setOpen] = useState(false);
+        const toggle = () => setOpen(!open);
+
+        return (
+            <div className="relative w-full flex flex-col">
+                <button
+                    onClick={toggle}
+                    className="inline-flex justify-between rounded-md border py-1 px-2 border-gray-300 dark:border-[#3a3f50] shadow-sm text-sm font-medium text-gray-700 dark:text-slate-200 bg-white dark:bg-[#1e2233] hover:bg-gray-50 dark:hover:bg-[#2a3040] focus:outline-none"
+                >
+                    {defaultLabel}
+                    <ChevronDown size={16} className="ml-2" />
+                </button>
+
+                {open && (
+                    <div className="absolute z-10 mt-8 w-full bg-white dark:bg-[#1e2233]  border border-gray-200 dark:border-[#3a3f50] shadow-lg rounded-md max-h-60 overflow-auto">
+                        {items.map((item) => (
+                            <div
+                                key={item.id || item.fullname || item.name}
+                                className="cursor-pointer px-3 py-2 text-sm text-gray-700 w-full dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-[#252d3d] rounded-md"
+                            >
+                                {item.name || item.fullname}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>)
+    }
+
+    if (errorProjectMgnt) {
+        toast.error("Something went wrong on the server. Try again.")
+    }
+
+     if (loadingProjectMgnt) {
+        return (
+          <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+            <div className="flex flex-col items-center gap-3">
+              <Loader
+                size={70}
+                className="animate-spin text-blue-500 dark:text-[#31f64b]"
+              />
+            </div>
+          </div>
+        );
+      }
+
+    //handel view 
+    function handleView(projectmgnt) {
+        navigate(`/projectmanager/projectmgntdetails/${projectmgnt}`);
+    }
+    
+    return (
+        <>
+            <motion.div
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="bg-white border-2 dark:bg-[#222732] rounded-lg shadow dark:shadow-[0_2px_20px_rgba(0,0,0,0.5)] w-full h-full flex flex-col">
+                {/*This is the add new program model*/}
+               {openAddProgram && <AddNewProgram open={openAddProgram} setOpen={setOpenAddProgram} />}
+
+                <div className="flex flex-col flex-1 gap-3">
+                    <header className="flex flex-row justify-between py-4 px-4">
+                        <div className="p-3  dark:text-green-400 text-blue-600 text-2xl font-extrabold rounded-4xl">| <span className="dark:text-white text-black">Project management</span></div>
+                        <div className="flex justify-center items-center  pr-8">
+                            <button
+                                onClick={() => setOpenAddProgram(true)}
+                                className="bg-[#03c01c] text-white cursor-pointer hover:scale-120 duration-200 px-4 p-2 rounded-lg flex gap-2"><Plus /> Project/mgnt</button>
+                        </div>
+                    </header>
+                    <div className="flex mx-4">
+                        <input
+                            type="text"
+                            placeholder="Search by title or department..."
+                            className="w-full px-4 py-2 rounded-lg text-sm
+                            border border-gray-300 dark:border-[#2a3040]
+                            bg-white dark:bg-[#1a1f2b]
+                            text-gray-800 dark:text-slate-200
+                            placeholder-gray-400 dark:placeholder-slate-600
+                            focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#31f64b]/40
+                            transition-colors duration-150"
+                        />
+                    </div>
+                    {/*Main */}
+                    <main className="flex flex-col flex-1 min-h-0">
+                        {/* ── Column Headers ── */}
+                        <div className="hidden lg:grid lg:grid-cols-8 gap-4 px-6 py-3 
+                                    bg-gray-50 dark:bg-[#1a1f2b]
+                                    border-b border-gray-200 dark:border-[#2a3040]
+                                    text-xs font-bold text-gray-600 dark:text-[#31f64b]/60 uppercase tracking-wider">
+                            <div className="flex flex-col flex-1 items-start justify-center ">Title</div>
+                            <div className="flex flex-col flex-1 items-start justify-center">Departments</div>
+                            <div className="flex flex-col flex-1 items-start justify-center">Status</div>
+                            <div className="flex flex-col flex-1 items-start justify-center">Priority</div>
+                            <div className="flex flex-col flex-1 items-start justify-center">Managers</div>
+                            <div className="flex flex-col flex-1 items-start justify-center">Start Date</div>
+                            <div className="flex flex-col flex-1 items-start justify-center">End Date</div>
+                            <div className="flex flex-col flex-1 items-start justify-center">Actions</div>
+                        </div>
+
+                        {/* ── Rows ── */}
+                        <div className="divide-y divide-gray-200 dark:divide-[#2a3040] max-h-full overflow-hidde">
+                            {projectMgnts.length === 0 ? (
+                                <div className="px-6 py-8 text-center  text-gray-500 dark:text-slate-500">
+                                    No projects found
+                                </div>
+                            ) : (
+                                projectMgnts.map((project) => (
+                                    <div
+                                        key={project._id}
+                                        className={`transition-colors p-4 lg:px-6 lg:py-4 border
+          hover:bg-gray-50 dark:hover:bg-[#252d3d]
+          ${overdue(project) ? "border-red-500 border-2 dark:border-red-500/60" : "border-transparent"}
+        `}
+                                    >
+                                        <div className="lg:grid lg:grid-cols-8 lg:gap-4 lg:items-center space-y-3 lg:space-y-0">
+
+                                            {/* Title */}
+                                            <div className="flex flex-row items-start justify-between lg:justify-start lg:block">
+                                                <div className="flex-1">
+                                                    <div className="font-semibold text-gray-900 dark:text-slate-100 wrap-break-word">
+                                                        {project?.title || "No project title"}
+                                                    </div>
+                                                    {overdue(project) && (
+                                                        <span className="text-[10px] font-bold text-red-500 dark:text-red-400 uppercase tracking-wide">
+                                                            ⚠ Overdue
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Departments Dropdown */}
+                                            <div className="relative text-sm text-gray-700 dark:text-slate-300">
+                                                <span className="text-gray-500 dark:text-slate-500 lg:hidden">Department: </span>
+                                                <Dropdown
+                                                    items={project.departments || []}
+                                                    defaultLabel={project.departments?.[0]?.name || "No department"}
+                                                />
+                                            </div>
+
+                                            {/* Status — desktop */}
+                                            <div className="hidden lg:block">
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(
+                                                    project.status
+                                                        ? project.status.toLowerCase() === "completed"
+                                                            ? "Completed"
+                                                            : project.status.toLowerCase() === "in progress"
+                                                                ? "In Progress"
+                                                                : project.status.toLowerCase() === "not started"
+                                                                    ? "Pending"
+                                                                    : project.status
+                                                        : ""
+                                                )}`}>
+                                                    {project.status || "No status"}
+                                                </span>
+                                            </div>
+
+                                            {/* Priority — desktop */}
+                                            <div className="hidden lg:block">
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
+                                                    project.priority
+                                                        ? project.priority.charAt(0).toUpperCase() + project.priority.slice(1)
+                                                        : ""
+                                                )}`}>
+                                                    {project.priority || "No priority"}
+                                                </span>
+                                            </div>
+
+                                            {/* Status + Priority — mobile */}
+                                            <div className="flex gap-2 lg:hidden">
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(project.status || "")}`}>
+                                                    {project.status || "No status"}
+                                                </span>
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(project.priority || "")}`}>
+                                                    {project.priority || "No priority"}
+                                                </span>
+                                            </div>
+
+                                            {/* Managers Dropdown */}
+                                            <div className="text-sm text-gray-700 w-full dark:text-slate-300">
+                                                <span className="text-gray-500 dark:text-slate-500 lg:hidden">Manager: </span>
+                                                <Dropdown
+                                                    items={project.managers || []}
+                                                    defaultLabel={project.managers?.[0]?.fullname || "No manager"}
+                                                />
+                                            </div>
+
+                                            {/* Start Date — desktop */}
+                                            <div className="hidden lg:block text-sm text-gray-700 dark:text-slate-400">
+                                                {project?.startDate || "No start date"}
+                                            </div>
+
+                                            {/* End Date — desktop */}
+                                            <div className="hidden lg:block text-sm text-gray-700 dark:text-slate-400">
+                                                {project?.endDate || "No end date"}
+                                            </div>
+
+                                            {/* Actions */}
+                                            <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-[#2a3040] lg:border-t-0 lg:pt-0 lg:gap-1">
+                                                <button
+                                                    onClick={() => handleView(project?._id)}
+                                                    title="View"
+                                                    className="flex-1 lg:flex-none cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-600/90 dark:hover:bg-blue-500 text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
+                                                >
+                                                    <span className="lg:hidden">View</span>
+                                                    <Eye size={18} className="hidden lg:inline" />
+                                                </button>
+
+                                                <button
+                                                    title="Archive"
+                                                    onClick={() => handleArchive(project._id)}
+                                                    className="flex-1 lg:flex-none cursor-pointer bg-gray-500 hover:bg-gray-600 text-white dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
+                                                >
+                                                    <span className="lg:hidden">Archive</span>
+                                                    <Archive size={18} className="hidden lg:inline" />
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleDelete(project._id)}
+                                                    title="Delete"
+                                                    className="flex-1 lg:flex-none cursor-pointer bg-red-600 hover:bg-red-700 dark:bg-red-600/90 dark:hover:bg-red-500 text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
+                                                >
+                                                    <span className="lg:hidden">Delete</span>
+                                                    <Trash2 size={17} className="hidden lg:inline" />
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </main>
+
+                </div>
+            </motion.div>
+        </>
+    )
+}
+export default Projectmgnt;

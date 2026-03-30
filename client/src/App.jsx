@@ -15,6 +15,7 @@ import { useQuery } from "@apollo/client/react";
 import { useSelector } from "react-redux";
 import { Loader } from "lucide-react";
 import DarkModeProvider from "./hooks/DarkModeProvider";
+import ProjectManagerRoute from "./Router/ProjectManagerRoute";
 const CURRENT_USER = gql`
   query CurrentUser {
     currentUser {
@@ -85,6 +86,7 @@ function App() {
           <Route path="admin/*" element={<AdminRoute />} />
           <Route path="employee/*" element={<EmployeeRoute />} />
           <Route path="manager/*" element={<ManagerRoute />} />
+          <Route path="projectmanager/*" element={<ProjectManagerRoute />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
 

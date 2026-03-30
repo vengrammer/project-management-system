@@ -18,6 +18,8 @@ import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 
+////-----------------THIS PAGE IS SHARED BY TYPE OF USERS-----------------////
+
 /*QUERIES & MUTATION */
 const GET_DEPARTMENTS = gql`
   query GetDepartments {
@@ -347,6 +349,7 @@ function Profile() {
                     <option value="admin">Admin</option>
                     <option value="manager">Manager</option>
                     <option value="user">Employee</option>
+                    <option value="pm">Project Manager</option>
                   </select>
                 </Field>
               </div>

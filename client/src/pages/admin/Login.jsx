@@ -55,6 +55,8 @@ export default function LoginUI() {
         navigate("/manager/dashboard");
       } else if (userRole === "user") {
         navigate("/employee/dashboard");
+      }else if (userRole === "pm"){
+        navigate("/projectmanager/dashboard")
       } else {
         navigate("/");
       }

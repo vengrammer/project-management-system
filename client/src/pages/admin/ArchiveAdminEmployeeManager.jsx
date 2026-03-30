@@ -14,6 +14,8 @@ import { gql } from "@apollo/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 
+//////// ----------------THIS IS SHARDED BY ALL TYPE OF USERS --------------////////////
+
 export default function ArchiveAdminEmployeeManager() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,6 +35,10 @@ export default function ArchiveAdminEmployeeManager() {
         projectManager {
           id
           fullname
+        }
+        projectMgnt {
+          _id
+          title
         }
         budget
         startDate
@@ -191,7 +197,7 @@ export default function ArchiveAdminEmployeeManager() {
           <div>Department</div>
           <div>Status</div>
           <div>Priority</div>
-          <div>Project Manager</div>
+          <div>{isEmployee ? "Manager" : "Project Management"}</div>
           <div>Budget</div>
           <div>Start Date</div>
           <div>End Date</div>
@@ -257,11 +263,14 @@ export default function ArchiveAdminEmployeeManager() {
                     </span>
                   </div>
 
-                  {/* PM */}
+                  {/* PM / Project Management */}
                   <div className="text-sm text-gray-700 dark:text-slate-300">
-                    <span className="text-gray-500 dark:text-slate-500 lg:hidden">PM: </span>
+                    <span className="text-gray-500 dark:text-slate-500 lg:hidden">{isEmployee ? "Manager: " : "Project Management: "}</span>
                     <span className="font-medium lg:font-normal">
-                      {project?.projectManager?.fullname ? project?.projectManager.fullname : "No PM"}
+                      {isEmployee
+                        ? (project?.projectManager?.fullname ? project?.projectManager.fullname : "No Manager")
+                        : (project?.projectMgnt?.title ? project?.projectMgnt.title : "No Project Management")
+                      }
                     </span>
                   </div>
 
@@ -314,7 +323,7 @@ export default function ArchiveAdminEmployeeManager() {
                     </button>
 
                     {/* Restore — green in dark mode */}
-                    {!isEmployee && (
+                    {!isEmployee && !project?.projectMgnt && (
                       <button
                         onClick={() => handleRestore(project.id)}
                         title="Restore Archive"

@@ -3,23 +3,28 @@ import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { gql } from "@apollo/client";
 import { useQuery, useSubscription } from "@apollo/client/react";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { logout } from "@/middleware/authSlice";
 import { persistor } from "@/middleware/store";
 import { useApolloClient } from "@apollo/client/react";
+import notificationSound from "../assets/notification.wav";
+import { useRef } from "react";
+import DarkModeSwitch from "@/hooks/DarkModeSwitch";
+
 import {
   Menu,
   X,
   FolderOpenDot,
+  UserCheck,
   LogOut,
   User,
   LayoutDashboard,
+  Building2,
   Archive,
   Bell,
-  CalendarClock,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useSelector, useDispatch } from "react-redux";
-import { logout } from "@/middleware/authSlice";
-import DarkModeSwitch from "@/hooks/DarkModeSwitch";
 
 const GET_USER = gql`
   query User($userId: ID!) {
@@ -58,15 +63,17 @@ const NOTIFICATION_MARK_AS_READ_SUB = gql`
   }
 `;
 
-export default function ManagerSideBar() {
-  const auth = useSelector((state) => state.auth);
+export default function PmSideBar() {
   const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
   const client = useApolloClient();
-  const userId = auth.user?.id;
+  const userId = auth.user?.id; // may be undefined initially
+
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [notifications, setNotifications] = useState([]);
+  const audioRef = useRef(null);
 
   const getInitials = (name) => {
     if (!name) return "";
@@ -92,9 +99,8 @@ export default function ManagerSideBar() {
 
   const { error: userError, data: userData } = useQuery(GET_USER, {
     variables: { userId },
-    skip: !userId,
+    skip: !userId, // don't run until we have id
   });
-
   //get the noticatios count
   const { data } = useQuery(COUNT_UNREAD_NOTIFICATIOS);
   const { data: subData } = useSubscription(NOTIFICATION_SUB, {
@@ -119,8 +125,15 @@ export default function ManagerSideBar() {
 
   useEffect(() => {
     function isAddNotification() {
-      if (subData?.notificationAdded)
+      if (subData?.notificationAdded) {
         setNotifications((prev) => [subData.notificationAdded, ...prev]);
+        // Play notification sound
+        if (audioRef.current) {
+          audioRef.current
+            .play()
+            .catch((err) => toast.error("Audio play error:", err));
+        }
+      }
     }
     isAddNotification();
   }, [subData]);
@@ -139,6 +152,8 @@ export default function ManagerSideBar() {
     isMarkAsReadNotification();
   }, [markAsReadSubData]);
 
+
+
   const filterUnReadCount = notifications.filter((n) => {
     return n.isRead === false;
   });
@@ -146,18 +161,17 @@ export default function ManagerSideBar() {
   if (userError) {
     toast.error("Failed to load user data");
   }
+  //TESTING COMMIT
+  // show placeholder while loading
+  const fullname = userData?.user.fullname || "";
+  const email = userData?.user.email || "";
 
-  const fullnameMgr = userData?.user.fullname || "";
-  const emailMgr = userData?.user.email || "";
-
-  const linkDesign =
-    "flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-[#252d3d] hover:text-blue-600 dark:hover:text-[#b8ed06] transition-colors";
-  const active =
-    "bg-blue-100 dark:bg-[#049417] dark:text-[#b8ed06] text-blue-600";
+  const linkDesign = "flex items-center gap-3 px-4 py-3   rounded-lg hover:bg-blue-50 hover:text-blue-600  transition-colors"
+  const active = "bg-blue-100 dark:bg-[#049417] dark:text-[#b8ed06] text-blue-600"
 
   return (
     <div className="flex h-screen dark:bg-[#202120] dark:text-white bg-gray-100">
-      {/* Mobile Menu Button */}
+      <audio ref={audioRef} src={notificationSound} preload="auto" />
       <button
         onClick={toggleSidebar}
         className="fixed top-4 right-4 z-50 p-2 bg-blue-600 text-white rounded-lg md:hidden"
@@ -165,7 +179,6 @@ export default function ManagerSideBar() {
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      {/* Sidebar */}
       <aside
         className={`
           fixed md:static inset-y-0 left-0 z-40
@@ -177,35 +190,38 @@ export default function ManagerSideBar() {
         `}
       >
         {/* Logo/Header */}
-        <div className="p-6 border-b dark:border-[#2a3040] flex items-center gap-3 bg-white dark:bg-[#222732]">
-          <div className="flex size-14 shrink-0 items-center justify-center rounded-full border border-gray-200 dark:border-[#2a3040]">
+        <div className="p-6 border-b flex items-center gap-3 dark:bg-[#222732] bg-white ">
+          <div className="flex size-14 shrink-0 items-center justify-center rounded-full border border-gray-200">
             <img
               src={logo}
               alt="Logo"
               className="h-12 w-12 object-contain rounded-full"
             />
           </div>
-          <h1 className="text-xl font-bold text-gray-800 dark:text-slate-100">
+          <h1 className="text-xl font-bold dark ">
             Project Management
           </h1>
         </div>
 
         {/* Navigation Links */}
         <nav className="flex-1 p-4 overflow-y-auto bg-white dark:bg-[#222732]">
-          <div className="px-4 py-2 mb-4 rounded-2xl border dark:border-[#2a3040] shadow-blue-800 shadow-2xs">
-            <h1 className="font-semibold text-gray-800 dark:text-slate-200">
-              Welcome, <span className="text-blue-600 dark:text-[#31f64b]">Manager</span>
+          <div className="px-4 py-2 mb-4 rounded-2xl border shadow-blue-800 shadow-2xs">
+            <h1 className="relative flex flex-row font-semibold text-2xl">
+              Welcome, <span className="text-blue-600">PM</span>
             </h1>
             <div className="flex items-center justify-center p-2">
-              <DarkModeSwitch />
+              <DarkModeSwitch/>
             </div>
+            
           </div>
           <ul className="space-y-2">
             <li>
               <Link
-                to="/manager/dashboard"
+                to="/projectmanager/dashboard"
                 className={`${linkDesign} ${
-                  isActive("/manager/dashboard") ? active : ""
+                  isActive("/projectmanager/dashboard")
+                    ? `${active}`
+                    : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
@@ -213,23 +229,25 @@ export default function ManagerSideBar() {
                 <span>Dashboard</span>
               </Link>
             </li>
+
             <li>
               <Link
-                to="/manager/projects"
+                to="/projectmanager/projectmgnt"
                 className={`${linkDesign} ${
-                  isActive("/manager/projects") ? active : ""
+                  isActive("/projectmanager/projectmgnt") ? `${active}` : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
                 <FolderOpenDot size={20} />
-                <span>Project</span>
+                <span>Project/mgnt</span>
               </Link>
             </li>
+
             <li>
               <Link
-                to="/manager/archive"
-                className={`${linkDesign} ${
-                  isActive("/manager/archive") ? active : ""
+                to="/projectmanager/archive"
+                className={` ${linkDesign} ${
+                  isActive("/projectmanager/archive") ? `${active}` : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
@@ -237,63 +255,48 @@ export default function ManagerSideBar() {
                 <span>Archive</span>
               </Link>
             </li>
-
-            {/* calendar mentions  */}
-             <li>
-              <Link
-                to="/manager/calendarmentions"
-                className={`flex relative ${linkDesign} ${
-                  isActive("/manager/calendarmentions") ? active : ""
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <CalendarClock size={20} />
-                <span>Calendar Mentions</span>{" "}
-              </Link>
-            </li>
- 
-            <li>
-              <Link
-                to="/manager/notification"
-                className={`flex relative ${linkDesign} ${
-                  isActive("/manager/notification") ? active : ""
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <Bell size={20} />
-                <span>Notifications</span>{" "}
-                {filterUnReadCount.length > 0 && (
-                  <span className="absolute right-0 bg-red-600 bold text-white px-2 rounded-4xl">
-                    {filterUnReadCount.length}
-                  </span>
-                )}
-              </Link>
-            </li>
           </ul>
-        </nav>
 
+          <li>
+            <Link
+              to="/projectmanager/notification"
+              className={`${linkDesign} mt-2 ${
+                isActive("/projectmanager/notification")
+                  ? `${active}`
+                  : ""
+              }`}
+              onClick={() => setIsOpen(false)}
+            >
+              <Bell size={20} />
+              <span>Notifications</span>{" "}
+              {filterUnReadCount.length > 0 && (
+                <span className="absolute right-0 bg-red-600 bold text-white px-2  rounded-4xl">
+                  {filterUnReadCount.length}
+                </span>
+              )}
+            </Link>
+          </li>
+        </nav>
         {/* Account Section at Bottom */}
-        <div className="p-4 border-t dark:border-[#2a3040] bg-white dark:bg-[#222732]">
+        <div className="p-4 border-t">
           {/* User Info */}
-          <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-gray-50 dark:bg-[#0e0698] rounded-lg">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-              {getInitials(fullnameMgr || "U")}
+          <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-gray-50 dark:bg-[#0e0698]  rounded-lg">
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-semibold">
+              {getInitials(fullname || "U")}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">
-                {fullnameMgr || "Unknown user"}{" "}
+              <p className="text-sm font-semibold ">
+                {fullname || "Unknown user"}{" "}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-200">
-                {emailMgr || "no email"}
-              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-200">{email || "no email"}</p>
             </div>
           </div>
 
-          {/* Profile Link */}
+          {/* Account */}
           <Link
-            to="/manager/profile"
-            className={`${linkDesign} mb-1 ${
-              isActive("/manager/profile") ? active : ""
+            to="/projectmanager/profile"
+            className={`${linkDesign} ${
+              isActive("/projectmanager/profile") ? `${active}` : ""
             }`}
             onClick={() => setIsOpen(false)}
           >
@@ -303,12 +306,12 @@ export default function ManagerSideBar() {
 
           <button
             onClick={() => {
-              dispatch(logout());
+              dispatch(logout()); 
               persistor.purge();
               client.resetStore();
               navigate("/");
             }}
-            className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-2 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
           >
             <LogOut size={18} />
             <span className="text-sm">Logout</span>
@@ -323,9 +326,10 @@ export default function ManagerSideBar() {
           onClick={toggleSidebar}
         ></div>
       )}
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex overflow-hidden p-2">
+      {/* Main */}
+      <main
+        className="flex-1 flex overflow-hidden p-2"
+      >
         <Outlet />
       </main>
     </div>

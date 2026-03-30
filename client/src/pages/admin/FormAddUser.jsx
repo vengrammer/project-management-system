@@ -228,6 +228,7 @@ export default function FormAddUser() {
                     <option value="admin">Admin</option>
                     <option value="manager">Manager</option>
                     <option value="user">Employee</option>
+                    <option value="pm">Project Manager</option>
                   </select>
                 </div>
               </div>

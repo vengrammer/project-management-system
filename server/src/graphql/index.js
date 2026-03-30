@@ -7,7 +7,7 @@ import departmentSchema from "./schema/department.schema.js";
 import taskSchema from "./schema/task.schema.js";
 import taskLogSchema from "./schema/taskLog.schema.js";
 import { notificationSchema } from "./schema/notification.schema.js";
-
+import  {projectMgntSchema} from "./schema/projectmgnt.schema.js";
 
 //import for the resolver
 import { userResolvers } from "./resolver/user.resolver.js";
@@ -16,6 +16,7 @@ import { departmentResolver } from "./resolver/department.resolver.js";
 import taskResolver from "./resolver/task.resolver.js";
 import taskLogResolver from "./resolver/tasklog.resolver.js";
 import { notificationResolvers } from "./resolver/notification.resolver.js";
+import { projectMgntResolver } from "./resolver/projectmgnt.resolver.js";
 
 const rootSchema = `
   type Query{
@@ -33,6 +34,7 @@ const typeDefs = mergeTypeDefs([
   taskSchema,
   taskLogSchema,
   notificationSchema,
+  projectMgntSchema
 ]);
 const resolvers = mergeResolvers([
   userResolvers,
@@ -41,6 +43,7 @@ const resolvers = mergeResolvers([
   taskResolver,
   taskLogResolver,
   notificationResolvers,
+  projectMgntResolver
 ]);
  
 export { typeDefs, resolvers };

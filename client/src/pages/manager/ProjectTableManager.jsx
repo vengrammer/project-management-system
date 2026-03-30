@@ -49,6 +49,10 @@ export default function ProjectTableManager() {
           id
           fullname
         }
+        projectMgnt {
+          _id
+          title
+        }
         budget
         startDate
         endDate
@@ -224,7 +228,7 @@ export default function ProjectTableManager() {
           <div>Department</div>
           <div>Status</div>
           <div>Priority</div>
-          <div>Project Manager</div>
+          <div>Project Management</div>
           <div>Budget</div>
           <div>Start Date</div>
           <div>End Date</div>
@@ -290,11 +294,11 @@ export default function ProjectTableManager() {
                     </span>
                   </div>
 
-                  {/* Project Manager */}
+                  {/* Project Management */}
                   <div className="text-sm text-gray-700 dark:text-slate-300">
-                    <span className="text-gray-500 dark:text-slate-500 lg:hidden">PM: </span>
+                    <span className="text-gray-500 dark:text-slate-500 lg:hidden">Project Mgmt: </span>
                     <span className="font-medium lg:font-normal">
-                      {project?.projectManager?.fullname ? project?.projectManager.fullname : "No PM"}
+                      {project?.projectMgnt?.title ? project?.projectMgnt.title : "No Project Management"}
                     </span>
                   </div>
 
@@ -344,31 +348,35 @@ export default function ProjectTableManager() {
                       <Eye size={20} className="hidden lg:inline" />
                     </button>
 
-                    <button
-                      onClick={() => handleArchive(project.id)}
-                      className="flex-1 cursor-pointer lg:flex-none
-                        bg-gray-500 hover:bg-gray-600
-                        dark:bg-[#31f64b] dark:hover:bg-[#28d940] dark:text-black
-                        text-white py-2 lg:py-1 lg:px-1 rounded text-sm font-medium
-                        transition-colors"
-                      title="Archive"
-                    >
-                      <span className="lg:hidden">Archive</span>
-                      <Archive size={20} className="hidden lg:inline" />
-                    </button>
+                    {!project?.projectMgnt && (
+                      <>
+                        <button
+                          onClick={() => handleArchive(project.id)}
+                          className="flex-1 cursor-pointer lg:flex-none
+                            bg-gray-500 hover:bg-gray-600
+                            dark:bg-[#31f64b] dark:hover:bg-[#28d940] dark:text-black
+                            text-white py-2 lg:py-1 lg:px-1 rounded text-sm font-medium
+                            transition-colors"
+                          title="Archive"
+                        >
+                          <span className="lg:hidden">Archive</span>
+                          <Archive size={20} className="hidden lg:inline" />
+                        </button>
 
-                    <button
-                      onClick={() => handleDelete(project.id)}
-                      className="flex-1 cursor-pointer lg:flex-none
-                        bg-red-600 hover:bg-red-700
-                        dark:bg-red-700 dark:hover:bg-red-800
-                        text-white py-2 lg:py-1 lg:px-1 rounded text-sm font-medium
-                        transition-colors"
-                      title="Delete"
-                    >
-                      <span className="lg:hidden">Delete</span>
-                      <Trash2 size={18} className="hidden lg:inline text-white" />
-                    </button>
+                        <button
+                          onClick={() => handleDelete(project.id)}
+                          className="flex-1 cursor-pointer lg:flex-none
+                            bg-red-600 hover:bg-red-700
+                            dark:bg-red-700 dark:hover:bg-red-800
+                            text-white py-2 lg:py-1 lg:px-1 rounded text-sm font-medium
+                            transition-colors"
+                          title="Delete"
+                        >
+                          <span className="lg:hidden">Delete</span>
+                          <Trash2 size={18} className="hidden lg:inline text-white" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

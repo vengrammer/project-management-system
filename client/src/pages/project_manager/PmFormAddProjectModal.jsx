@@ -1,23 +1,28 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Loader } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
+import {
+  GET_PROJECTS_BY_PROJECTMGNT,
+  GET_THE_PROJECTMGNT,
+} from "./ProjectmgntDetails";
+
 const GET_DEPARTMENTS = gql`
-  query Departments {
-    departments {
-      id
-      name
-      users {
+  query ProjectMgnt($projectMgntId: ID!) {
+    projectMgnt(id: $projectMgntId) {
+      departments {
+        id
+        name
+      }
+      managers {
         id
         fullname
-        position
-        role
       }
     }
   }
@@ -31,7 +36,6 @@ const GET_USER_MANAGER = gql`
       position
       department {
         id
-        name
       }
     }
   }
@@ -79,6 +83,17 @@ const CREATE_PROJECT = gql`
   }
 `;
 
+const UPDATE_PROJECTMGNT_PROJECTS = gql`
+  mutation Mutation($updateProjectMgntId: ID!, $addProjects: [ID!]) {
+    updateProjectMgnt(id: $updateProjectMgntId, addProjects: $addProjects) {
+      message
+      projectMgnt {
+        _id
+      }
+    }
+  }
+`;
+
 const CREATE_NOTIF_FOR_ADMIN = gql`
   mutation CreateNotif($input: AddNotifInput!) {
     createNotif(input: $input) {
@@ -107,17 +122,16 @@ const inputCls =
   "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#31f64b]/40 " +
   "disabled:opacity-50 disabled:cursor-not-allowed";
 
-export default function FormAddProjectModal({ refechProjects }) {
-  const location = useLocation();
-  const isManager = location.pathname.includes("manager");
-  const isAdmin = location.pathname.includes("admin");
-
+export default function PmFormAddProjectModal({
+  onProjectAdded,
+  projectMgntId,
+}) {
+  const { id } = useParams();
   const auth = useSelector((state) => state.auth);
   const managerId = auth.user?.id;
   const userId = auth.user?.id;
 
   const [selectedEmployees, setSelectedEmployees] = useState([]);
-  const managerRef = useRef(null);
   const departmentRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -133,27 +147,10 @@ export default function FormAddProjectModal({ refechProjects }) {
     endDate: "",
   });
 
-  const [showManagerDropdown, setShowManagerDropdown] = useState(false);
   const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false);
-  const [managerSearch, setManagerSearch] = useState("");
   const [departmentSearch, setDepartmentSearch] = useState("");
-  const [teamMemberSearch, setTeamMemberSearch] = useState("");
 
   const handleClose = () => setIsOpen(false);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (managerRef.current && !managerRef.current.contains(event.target))
-        setShowManagerDropdown(false);
-      if (
-        departmentRef.current &&
-        !departmentRef.current.contains(event.target)
-      )
-        setShowDepartmentDropdown(false);
-    };
-    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
 
   const [createNotif] = useMutation(CREATE_NOTIF_FOR_ADMIN);
   const { data: AdminData } = useQuery(GET_ALL_ADMIN);
@@ -163,7 +160,10 @@ export default function FormAddProjectModal({ refechProjects }) {
     error: errorDepartments,
     data: dataDepartments,
     refetch: refetchDepartments,
-  } = useQuery(GET_DEPARTMENTS, { notifyOnNetworkStatusChange: true });
+  } = useQuery(GET_DEPARTMENTS, {
+    variables: { projectMgntId: id },
+    notifyOnNetworkStatusChange: true,
+  });
 
   const {
     loading: loadingUserManager,
@@ -178,13 +178,36 @@ export default function FormAddProjectModal({ refechProjects }) {
       await refetchDepartments();
     };
     refetching();
-  }, [refetchDepartments, refetchUserManager]);
+  }, [refetchUserManager, refetchDepartments]);
+
+  const [updateProjectMgnt, { loading: loadingUpdateProjectMgnt }] =
+    useMutation(UPDATE_PROJECTMGNT_PROJECTS, {
+      onError: () => toast.error("Failed to add the project in projectMgnt"),
+      refetchQueries: [
+        {
+          query: GET_THE_PROJECTMGNT,
+          variables: { projectMgntId: projectMgntId || id },
+        },
+      ],
+      awaitRefetchQueries: true,
+    });
 
   const [createProject, { loading: loadingCreateProject }] = useMutation(
     CREATE_PROJECT,
     {
       onCompleted: async (data) => {
         toast.success("Project created successfully");
+        const projectId = data?.createProject?.project?.id;
+        if (!projectId) return;
+
+        if (!id) throw new Error("Project Management ID is missing");
+
+        await updateProjectMgnt({
+          variables: {
+            updateProjectMgntId: projectMgntId || id,
+            addProjects: [projectId],
+          },
+        });
         setFormData({
           projectName: "",
           description: "",
@@ -197,40 +220,43 @@ export default function FormAddProjectModal({ refechProjects }) {
           startDate: "",
           endDate: "",
         });
-        await refechProjects();
+        if (onProjectAdded) {
+          await onProjectAdded();
+        }
         setSelectedEmployees([]);
-        setManagerSearch("");
         setDepartmentSearch("");
         setIsOpen(false);
 
-        const projectId = data?.createProject?.project?.id;
         if (projectId && AdminData?.userRoleAdmin) {
           createNotif({
             variables: {
               input: {
                 entity: { id: projectId, type: "Project" },
                 isRead: false,
-                message: `A new project "${data?.createProject?.project?.title}" has been created.`,
+                message: `A new project management "${data?.createProject?.project?.title}" has been created.`,
                 recipients: AdminData.userRoleAdmin.map((admin) => admin.id),
                 sender: userId,
-                title: "New Project Created",
-                type: "New Project",
+                title: "New Project Management Created",
+                type: "New Project management",
               },
             },
           });
         }
 
-        const managerAssigned = data.createProject?.project.projectManager.id;
-        if (managerAssigned) {
+        const selectedManagerId =
+          formData.projectManager ||
+          data.createProject?.project.projectManager?.id;
+
+        if (selectedManagerId) {
           createNotif({
             variables: {
               input: {
                 entity: { id: projectId, type: "Project" },
                 isRead: false,
-                message: `You have been assigned as the project manager for "${data?.createProject?.project?.title}".`,
-                recipients: managerAssigned,
+                message: `You have been assigned as the manager for "${data?.createProject?.project?.title}".`,
+                recipients: selectedManagerId,
                 sender: userId,
-                title: "You've Been Assigned to a Project as Manager",
+                title: "You've Been Assigned as Manager",
                 type: "Project Assigned",
               },
             },
@@ -264,23 +290,22 @@ export default function FormAddProjectModal({ refechProjects }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const managerDepartmentId = managerDepartment?.id;
-    const projectManager = isManager
-      ? managerId
-      : formData.projectManager && formData.projectManager.trim() !== ""
-      ? formData.projectManager
-      : null;
-
-    if (!isManager && projectManager && !isValidObjectId(projectManager)) {
+    if (
+      formData.projectManager &&
+      formData.projectManager.trim() !== "" &&
+      !isValidObjectId(formData.projectManager)
+    ) {
       toast.error("Invalid Project Manager ID.");
       return;
     }
+    const projectManager =
+      formData.projectManager && formData.projectManager.trim() !== ""
+        ? formData.projectManager
+        : null;
 
-    const departmentId = isManager ? managerDepartmentId : formData.department;
-
-    if (!departmentId) {
-      toast.error("Department is required.");
+    const hasDeptManagers = filteredManagersByDept.length > 0;
+    if (hasDeptManagers && !projectManager) {
+      toast.error("Please select a project manager for this department.");
       return;
     }
 
@@ -289,15 +314,28 @@ export default function FormAddProjectModal({ refechProjects }) {
       return;
     }
 
+    const validDepartment = availableDepartments.find(
+      (dept) =>
+        dept.id === formData.department || dept.name === formData.department,
+    );
+    if (!validDepartment) {
+      toast.error("Please choose a valid department from the list.");
+      return;
+    }
+
+    const projectManagerId = hasDeptManagers
+      ? projectManager
+      : managerId || projectManager;
+
     createProject({
       variables: {
         title: formData.projectName,
         description: formData.description,
         client: formData.client,
-        department: departmentId,
+        department: validDepartment.id,
         status: formData.status,
         priority: formData.priority,
-        projectManager,
+        projectManager: projectManagerId,
         budget: parseInt(formData.budget, 10) || 0,
         users: selectedEmployees,
         startDate: formData.startDate,
@@ -306,62 +344,23 @@ export default function FormAddProjectModal({ refechProjects }) {
     });
   };
 
-  const toggleEmployee = (id) => {
-    setSelectedEmployees((prev) =>
-      prev.includes(id) ? prev.filter((empId) => empId !== id) : [...prev, id],
-    );
-  };
-
-  const managerDepartment = isManager
-    ? (dataDepartments?.departments || []).find((dept) =>
-        dept.users?.some((u) => u.id === managerId),
-      )
-    : null;
-
-  const selectedDept =
-    managerDepartment ||
-    (dataDepartments?.departments || []).find(
-      (d) => d.id === formData.department || d.name === formData.department,
-    );
-
-  const eligibleManagers = isAdmin
-    ? selectedDept?.users?.filter((u) => u.role === "manager") || []
-    : dataUserManager?.userRoleManager || [];
-
-  const filteredManagers = eligibleManagers.filter((manager) =>
-    manager.fullname
-      ?.toLowerCase()
-      .includes((managerSearch || "").toLowerCase()),
-  );
-
-  const filteredDepartments = (dataDepartments?.departments || []).filter(
-    (dept) =>
-      dept.name?.toLowerCase().includes((departmentSearch || "").toLowerCase()),
-  );
-
-  const teamUsers = selectedDept?.users?.filter((u) => u.role === "user") || [];
-  const filteredTeamMembers = teamUsers.filter((emp) =>
-    emp.fullname
-      ?.toLowerCase()
-      .includes((teamMemberSearch || "").toLowerCase()),
-  );
-
-  if (loadindDepartments)
+  //all the loading
+  if (loadindDepartments || loadingUserManager || loadingUpdateProjectMgnt) {
     return (
-      <div className="flex justify-center items-center min-h-screen dark:bg-[#181d28]">
-        <span className="loading loading-spinner loading-xl"></span>
+      <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+        <div className="flex flex-col items-center gap-3">
+          <Loader
+            size={70}
+            className="animate-spin text-blue-500 dark:text-[#31f64b]"
+          />
+        </div>
       </div>
     );
+  }
   if (errorDepartments)
     return (
       <div className="flex justify-center items-center min-h-screen dark:bg-[#181d28]">
         <div className="text-red-600">Failed to load projects</div>
-      </div>
-    );
-  if (loadingUserManager)
-    return (
-      <div className="flex justify-center items-center min-h-screen dark:bg-[#181d28]">
-        <span className="loading loading-spinner loading-xl"></span>
       </div>
     );
   if (errorUserManager)
@@ -370,6 +369,23 @@ export default function FormAddProjectModal({ refechProjects }) {
         <div className="text-red-600">Failed to load User Manager</div>
       </div>
     );
+
+  const filteredDepartments = (
+    dataDepartments?.projectMgnt?.departments || []
+  ).filter((dept) =>
+    dept.name?.toLowerCase().includes((departmentSearch || "").toLowerCase()),
+  );
+
+  const availableDepartments = dataDepartments?.projectMgnt?.departments || [];
+  const selectedDept = availableDepartments.find(
+    (d) => d.id === formData.department || d.name === formData.department,
+  );
+
+  const managers = dataUserManager?.userRoleManager || [];
+
+  const filteredManagersByDept = selectedDept?.id
+    ? managers.filter((m) => m?.department?.id === selectedDept.id)
+    : [];
 
   const handleInputChange = (name, value) =>
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -386,9 +402,9 @@ export default function FormAddProjectModal({ refechProjects }) {
       <button
         onClick={() => setIsOpen(true)}
         className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150
-          bg-blue-600 hover:bg-blue-700 text-white
-          dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
-          dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]"
+            bg-blue-600 hover:bg-blue-700 text-white
+            dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
+            dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]"
       >
         <Plus size={18} />
         Add New Project
@@ -420,7 +436,7 @@ export default function FormAddProjectModal({ refechProjects }) {
                   />
                 </div>
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-slate-100">
-                  Create Project
+                  Add New Project
                 </h2>
               </div>
               <p className="text-center text-sm text-gray-500 dark:text-slate-500 mt-1">
@@ -484,36 +500,35 @@ export default function FormAddProjectModal({ refechProjects }) {
 
                       {/* Department searchable dropdown */}
                       <div className="space-y-2 relative" ref={departmentRef}>
-                        <label className={labelCls}>
-                          Department <span className="text-red-500">*</span>
-                        </label>
+                        <label className={labelCls}>Department</label>
                         <div className="relative">
                           <input
                             type="text"
                             placeholder="Search department..."
-                            value={
-                              isManager
-                                ? managerDepartment?.name || departmentSearch
-                                : departmentSearch
-                            }
+                            value={departmentSearch}
                             onChange={(e) => {
-                              if (isManager) return;
                               setDepartmentSearch(e.target.value);
                               setShowDepartmentDropdown(true);
+                              handleInputChange("department", "");
                             }}
-                            onFocus={() =>
-                              !isManager && setShowDepartmentDropdown(true)
-                            }
-                            readOnly={isManager}
+                            onFocus={() => setShowDepartmentDropdown(true)}
+                            onBlur={() => {
+                              const exact = availableDepartments.find(
+                                (dept) =>
+                                  dept.name.toLowerCase() ===
+                                  departmentSearch.trim().toLowerCase(),
+                              );
+                              if (exact) {
+                                handleInputChange("department", exact.id);
+                                setDepartmentSearch(exact.name);
+                              } else if (departmentSearch) {
+                                handleInputChange("department", "");
+                              }
+                            }}
                             required
-                            className={
-                              inputCls +
-                              (isManager
-                                ? " bg-gray-100 cursor-not-allowed"
-                                : "")
-                            }
+                            className={inputCls}
                           />
-                          {!isManager && showDepartmentDropdown && (
+                          {showDepartmentDropdown && (
                             <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#1a1f2b] border border-gray-300 dark:border-[#2a3040] rounded-lg shadow-lg dark:shadow-[0_4px_16px_rgba(0,0,0,0.4)] max-h-48 overflow-auto">
                               {filteredDepartments.length > 0 ? (
                                 filteredDepartments.map((dept) => (
@@ -523,8 +538,6 @@ export default function FormAddProjectModal({ refechProjects }) {
                                       handleInputChange("department", dept.id);
                                       setDepartmentSearch(dept.name);
                                       setShowDepartmentDropdown(false);
-                                      setManagerSearch("");
-                                      handleInputChange("projectManager", "");
                                     }}
                                     className="px-3 py-2 hover:bg-blue-50 dark:hover:bg-[#252d3d] cursor-pointer text-sm text-gray-800 dark:text-slate-200 transition-colors"
                                   >
@@ -540,54 +553,57 @@ export default function FormAddProjectModal({ refechProjects }) {
                           )}
                         </div>
                       </div>
-                    </div>
 
-                    {/* Team Members */}
-                    <div className="space-y-2">
-                      <label className={labelCls}>Team Members</label>
-                      <input
-                        type="text"
-                        placeholder="Search team members..."
-                        value={teamMemberSearch}
-                        onChange={(e) => setTeamMemberSearch(e.target.value)}
-                        className={inputCls + " mb-2"}
-                      />
-                      <div className="w-full bg-gray-50 dark:bg-[#1a1f2b] max-h-48 overflow-auto rounded-lg border border-gray-300 dark:border-[#2a3040] py-3 px-4">
-                        {filteredTeamMembers.length > 0 ? (
-                          filteredTeamMembers.map((emp) => (
-                            <label
-                              key={emp.id}
-                              className="flex items-center justify-between gap-3 py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-[#252d3d] cursor-pointer transition-colors"
-                            >
-                              <div className="flex items-center gap-3">
-                                <input
-                                  type="checkbox"
-                                  checked={selectedEmployees?.includes(emp.id)}
-                                  onChange={() => toggleEmployee(emp.id)}
-                                  className="w-4 h-4 accent-blue-600 dark:accent-[#31f64b] cursor-pointer"
-                                />
-                                <div className="text-sm">
-                                  <div className="font-medium text-gray-800 dark:text-slate-200">
-                                    {emp.fullname}
-                                  </div>
-                                  <div className="text-xs text-gray-500 dark:text-slate-500">
-                                    {emp.position}
-                                  </div>
-                                </div>
-                              </div>
-                            </label>
-                          ))
+                      {/* Manager */}
+                      <div className="space-y-2">
+                        <label className={labelCls}>
+                          Project Manager{" "}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        {/* No department selected */}
+                        {!selectedDept?.id ? (
+                          <div className="text-sm text-gray-500 dark:text-slate-400">
+                            No department selected
+                          </div>
+                        ) : filteredManagersByDept.length === 0 ? (
+                          <div className="text-sm text-gray-500 dark:text-slate-400">
+                            No managers in this department
+                          </div>
                         ) : (
-                          <div className="text-sm text-gray-500 dark:text-slate-500 text-center py-2">
-                            No team members found
+                          /* Radio list */
+                          <div className="space-y-2 max-h-48 overflow-auto border border-gray-300 dark:border-[#2a3040] rounded-lg p-2">
+                            {filteredManagersByDept.map((manager) => (
+                              <label
+                                key={manager.id}
+                                className="flex items-center gap-2 cursor-pointer px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-[#252d3d]"
+                              >
+                                <input
+                                  type="radio"
+                                  name="projectManager"
+                                  value={manager.id}
+                                  checked={
+                                    formData.projectManager === manager.id
+                                  }
+                                  onChange={() =>
+                                    handleInputChange(
+                                      "projectManager",
+                                      manager.id,
+                                    )
+                                  }
+                                />
+
+                                <span className="text-sm text-gray-800 dark:text-slate-200">
+                                  {manager.fullname}
+                                </span>
+
+                                <span className="text-xs text-gray-500 dark:text-slate-500 lowercase">
+                                  ({manager.position})
+                                </span>
+                              </label>
+                            ))}
                           </div>
                         )}
                       </div>
-                      {selectedEmployees?.length > 0 && (
-                        <p className="text-xs text-gray-500 dark:text-slate-500">
-                          {selectedEmployees.length} member(s) selected
-                        </p>
-                      )}
                     </div>
                   </div>
 
@@ -595,21 +611,7 @@ export default function FormAddProjectModal({ refechProjects }) {
                   <div className="space-y-4 p-6">
                     <h3 className={sectionHeading}>Project Details</h3>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {/* Budget */}
-                      <div className="space-y-2">
-                        <label className={labelCls}>Budget</label>
-                        <input
-                          type="text"
-                          placeholder="e.g., $50,000"
-                          value={formData.budget}
-                          onChange={(e) =>
-                            handleInputChange("budget", e.target.value)
-                          }
-                          className={inputCls}
-                        />
-                      </div>
-
+                    <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {/* Priority */}
                       <div className="space-y-2">
                         <label className={labelCls}>
@@ -630,80 +632,7 @@ export default function FormAddProjectModal({ refechProjects }) {
                         </select>
                       </div>
 
-                      {/* Project Manager searchable dropdown */}
-                      {!isManager && (
-                        <div className="space-y-2 relative" ref={managerRef}>
-                          <label className={labelCls}>Project Manager</label>
-                          <div className="relative">
-                            <input
-                              disabled={isManager || (isAdmin && !selectedDept)}
-                              type="text"
-                              placeholder={
-                                isAdmin
-                                  ? selectedDept
-                                    ? "Search department manager..."
-                                    : "Select department first"
-                                  : "Search project manager..."
-                              }
-                              value={managerSearch}
-                              onChange={(e) => {
-                                if (isManager || (isAdmin && !selectedDept))
-                                  return;
-                                setManagerSearch(e.target.value);
-                                setShowManagerDropdown(true);
-                              }}
-                              onFocus={() => {
-                                if (!isManager && !(isAdmin && !selectedDept)) {
-                                  setShowManagerDropdown(true);
-                                }
-                              }}
-                              readOnly={isManager || (isAdmin && !selectedDept)}
-                              className={
-                                inputCls +
-                                (isManager || (isAdmin && !selectedDept)
-                                  ? " bg-gray-100 cursor-not-allowed"
-                                  : "")
-                              }
-                            />
-                            {showManagerDropdown && (
-                              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#1a1f2b] border border-gray-300 dark:border-[#2a3040] rounded-lg shadow-lg dark:shadow-[0_4px_16px_rgba(0,0,0,0.4)] max-h-48 overflow-auto">
-                                {filteredManagers.length > 0 ? (
-                                  filteredManagers.map((manager) => (
-                                    <div
-                                      key={manager.id}
-                                      onClick={() => {
-                                        handleInputChange(
-                                          "projectManager",
-                                          manager?.id,
-                                        );
-                                        setManagerSearch(manager?.fullname);
-                                        setShowManagerDropdown(false);
-                                      }}
-                                      className="px-3 py-2 hover:bg-blue-50 dark:hover:bg-[#252d3d] cursor-pointer text-sm text-gray-800 dark:text-slate-200 transition-colors"
-                                    >
-                                      {manager?.fullname}{" "}
-                                      <span className="text-gray-500 dark:text-slate-500 lowercase">
-                                        ({manager?.position})
-                                      </span>
-                                    </div>
-                                  ))
-                                ) : (
-                                  <div className="px-3 py-2 text-sm text-gray-500 dark:text-slate-500">
-                                    No managers found
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Timeline */}
-                  <div className="space-y-4 p-6">
-                    <h3 className={sectionHeading}>Timeline</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/*timeline*/}
                       <div className="space-y-2">
                         <label className={labelCls}>
                           Start Date <span className="text-red-500">*</span>
@@ -746,10 +675,10 @@ export default function FormAddProjectModal({ refechProjects }) {
                 type="button"
                 onClick={handleClose}
                 className="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-150
-                  border border-gray-300 dark:border-[#2a3040]
-                  bg-white dark:bg-[#222732]
-                  text-gray-700 dark:text-slate-300
-                  hover:bg-gray-100 dark:hover:bg-[#252d3d]"
+                    border border-gray-300 dark:border-[#2a3040]
+                    bg-white dark:bg-[#222732]
+                    text-gray-700 dark:text-slate-300
+                    hover:bg-gray-100 dark:hover:bg-[#252d3d]"
               >
                 Cancel
               </button>
@@ -757,12 +686,14 @@ export default function FormAddProjectModal({ refechProjects }) {
                 type="submit"
                 disabled={loadingCreateProject}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-150
-                  bg-blue-600 hover:bg-blue-700 text-white
-                  dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
-                  dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]
-                  ${
-                    loadingCreateProject ? "opacity-60 cursor-not-allowed" : ""
-                  }`}
+                    bg-blue-600 hover:bg-blue-700 text-white
+                    dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
+                    dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]
+                    ${
+                      loadingCreateProject
+                        ? "opacity-60 cursor-not-allowed"
+                        : ""
+                    }`}
               >
                 {loadingCreateProject ? "Creating..." : "Create Project"}
               </button>

@@ -225,7 +225,7 @@ function DayCell({ cell, logs, isToday, isSelected, accent, onClick }) {
         !cell.isCurrentMonth ? "cursor-default bg-slate-50/50 dark:bg-[#1a1f2b]/50" : "cursor-pointer",
         isSelected && cell.isCurrentMonth ? "ring-2 ring-inset ring-blue-500 bg-blue-50/40 dark:bg-[#31f64b]/5 z-10" : "",
         hov && cell.isCurrentMonth && !isSelected ? "bg-gray-200 dark:bg-[#252d3d]" : "",
-        hasLogs && !isSelected && cell.isCurrentMonth ? accent.light + " dark:!bg-[#1e2b20]" : "",
+        hasLogs && !isSelected && cell.isCurrentMonth ? accent.light + " dark:bg-[#1e2b20]" : "",
       ].join(" ")}
     >
       <div

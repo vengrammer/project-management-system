@@ -9,6 +9,7 @@ export const projectSchema = `#graphql
         client: String
         department: Department
         projectManager: User
+        projectMgnt: ProjectMgnt
         users: [User]
         budget: Int
         isArchive: Boolean
@@ -22,6 +23,7 @@ export const projectSchema = `#graphql
         projectByUser(id: ID): [Project]
         projectsByManager(id: ID): [Project]
         projectsByArchive: [Project]
+        projectsByProjectMgnt(id: [ID]): [Project]
     }
     type Message {
         message: String

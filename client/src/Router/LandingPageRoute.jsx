@@ -20,6 +20,8 @@ function LandingPageRoute() {
       }
       else if (user.role === "user") {
         return <Navigate to="/employee/dashboard" replace />;
+      }else if (user.role === "pm") {
+        return <Navigate to="/projectmanager/dashboard" replace />;
       }
     }
     
