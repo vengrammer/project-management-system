@@ -75,13 +75,11 @@ const toInputDate = (dateStr) => {
 
 export default function EditProjectmgnt({
   onProjectUpdated,
-  projectMgntId,
   isOpen,
   setIsOpen,
 }) {
   // ── All hooks must come BEFORE any early return ──────────────────────────
   const { id } = useParams();
-  const resolvedId = projectMgntId || id;
 
   const auth = useSelector((state) => state.auth);
   const userId = auth.user?.id;
@@ -100,8 +98,8 @@ export default function EditProjectmgnt({
   const { data: dataProjectMgnt, loading: loadingProjectMgnt } = useQuery(
     GET_THE_PROJECTMGNT,
     {
-      variables: { projectMgntId: resolvedId },
-      skip: !resolvedId || !isOpen,
+      variables: { projectMgntId: id },
+      skip: !isOpen,
     },
   );
 
@@ -163,7 +161,7 @@ export default function EditProjectmgnt({
       refetchQueries: [
         {
           query: GET_THE_PROJECTMGNT,
-          variables: { projectMgntId: resolvedId },
+          variables: { projectMgntId: id },
         },
       ],
       awaitRefetchQueries: true,
@@ -184,7 +182,7 @@ export default function EditProjectmgnt({
 
     updateProjectMgnt({
       variables: {
-        updateProjectMgntId: resolvedId,
+        updateProjectMgntId: id,
         title:     formData.title,
         priority:  formData.priority,
         startDate: formData.startDate,

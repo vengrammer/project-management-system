@@ -100,17 +100,17 @@ const toInputDate = (dateStr) => {
 };
 
 export default function PmFormEditProjectModal({
-  onProjectUpdated,
-  projectMgntId,
   isOpen,
   setIsOpen,
   projectToEdit,
 }) {
 
+  console.log("project to edit in modal:", projectToEdit);
+
   if(!isOpen) return null;
 
   const { id } = useParams();
-  const resolvedId = projectMgntId || id;
+
 
   const auth = useSelector((state) => state.auth);
   const currentManagerData = auth.user;
@@ -368,11 +368,11 @@ export default function PmFormEditProjectModal({
               <img src={logo} alt="Logo" className="object-cover w-full h-full" />
             </div>
             <h2 className="text-lg font-semibold text-gray-800 dark:text-slate-100">
-              Edit Project Management
+              Edit Project
             </h2>
           </div>
           <p className="text-center text-sm text-gray-500 dark:text-slate-500 mt-1">
-            Update the information below to edit this project management.
+            Update the information below to update this project.
           </p>
         </div>
 

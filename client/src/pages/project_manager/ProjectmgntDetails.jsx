@@ -26,7 +26,6 @@ import ViewCurrentManager from "./ViewCurrentManager";
 import { Fragment, useState } from "react";
 import { motion } from "framer-motion";
 import PmFormEditProjectModal from "./PmFormEditProjectModal";
-
 import EditProjectmgnt from "./EditProjectmgnt";
 
 export const GET_THE_PROJECTMGNT = gql`
@@ -213,7 +212,6 @@ function ProjectmgntDetails() {
   // get the projects by project management id
   const {
     data: dataProjectsByProjectMgnt,
-    loading: loadingProjectsByProjectMgnt,
   } = useQuery(GET_PROJECTS_BY_PROJECTMGNT, {
     variables: { projectsByProjectMgntId: projectMgntProjectIds },
     skip: projectMgntProjectIds.length === 0,
@@ -270,7 +268,10 @@ function ProjectmgntDetails() {
   const [availableManagers, setAvailableManagers] = useState([]);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [projectToEdit, setProjectToEdit] = useState(null);
+  
+  const [projectToEdit, setProjectToEdit] = useState("");
+  const [openEditProjectMgnt, setOpenEditProjectMgnt] = useState(false);
+  
 
   const handleViewManagers = (department) => {
     if (!department) return;
@@ -334,7 +335,7 @@ function ProjectmgntDetails() {
     });
   };
 
-  const { data: tasksByProjectData, loading: loadingTasksByProjects } =
+  const { data: tasksByProjectData } =
     useQuery(GET_TASKS_BY_PROJECTS, {
       variables: { projectIds: projectMgntProjectIds },
       skip: projectMgntProjectIds.length === 0,
@@ -406,9 +407,7 @@ function ProjectmgntDetails() {
 
 
   if (
-    loadingProjectMgnt ||
-    loadingProjectsByProjectMgnt ||
-    loadingTasksByProjects
+    loadingProjectMgnt 
   ) {
     return (
       <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
@@ -513,7 +512,7 @@ function ProjectmgntDetails() {
               <div className="flex flex-col flex-1  w-full h-full">
                 {!isManagerRoute && <div className="flex lg:justify-end gap-3">
                   <button
-                    onClick={() => setIsOpen(true) && setProjectToEdit(project.id)}
+                    onClick={() => setIsOpen(true) }
                     className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-semibold transition-all duration-150
                             bg-blue-600 hover:bg-blue-700 text-white
                             dark:bg-blue-600/90 dark:hover:bg-blue-500
@@ -690,7 +689,8 @@ function ProjectmgntDetails() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setIsOpen(true) && setProjectToEdit(project.id)}
+                          
+                          onClick={() => setOpenEditProjectMgnt(true) && setProjectToEdit(project.id)}
                           className="p-2 rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-800"
                           title="Edit"
                         >
@@ -821,7 +821,7 @@ function ProjectmgntDetails() {
                       <button
                         onClick={() => handleViewManagers(department)}
                         type="button"
-                        className="p-2 rounded-md bg-green-200 text-gray-700 hover:bg-green-300 dark:bg-[#074ccc] dark:text-green-200 dark:hover:bg-[#144cf3]"
+                        className="p-2 rounded-md bg-blue-200 text-gray-700 hover:bg-blue-300 dark:bg-[#074ccc] dark:text-green-200 dark:hover:bg-[#144cf3]"
                         title="View Managers"
                       >
                         <Users size={18} />
@@ -883,7 +883,12 @@ function ProjectmgntDetails() {
      {isOpen && <EditProjectmgnt
         isOpen={isOpen}
         setIsOpen={setIsOpen}
-        projectMgnt={projectToEdit}
+      />}
+
+      {openEditProjectMgnt && <PmFormEditProjectModal
+        isOpen={openEditProjectMgnt}
+        setIsOpen={setOpenEditProjectMgnt}
+        projectToEdit={projectToEdit}
       />}
     </div>
   );
