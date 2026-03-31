@@ -5,7 +5,7 @@ import logo from "@/assets/logo.png";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import {
@@ -129,6 +129,9 @@ export default function PmFormAddProjectModal({
   const { id } = useParams();
   const auth = useSelector((state) => state.auth);
   const managerId = auth.user?.id;
+  const currentManagerData = auth.user;
+  const location = useLocation();
+  const isManagerRoute = location.pathname.includes("manager");
   const userId = auth.user?.id;
 
   const [selectedEmployees, setSelectedEmployees] = useState([]);
@@ -151,9 +154,10 @@ export default function PmFormAddProjectModal({
   const [departmentSearch, setDepartmentSearch] = useState("");
 
   const handleClose = () => setIsOpen(false);
-
   const [createNotif] = useMutation(CREATE_NOTIF_FOR_ADMIN);
   const { data: AdminData } = useQuery(GET_ALL_ADMIN);
+
+  console.log("Current Manager Data:", currentManagerData);
 
   const {
     loading: loadindDepartments,
@@ -179,6 +183,18 @@ export default function PmFormAddProjectModal({
     };
     refetching();
   }, [refetchUserManager, refetchDepartments]);
+
+  useEffect(() => {
+    if (isManagerRoute && currentManagerData) {
+      setFormData((prev) => ({
+        ...prev,
+        department: currentManagerData.department?.id || "",
+        projectManager: currentManagerData.id || "",
+      }));
+
+      setDepartmentSearch(currentManagerData.department?.name || "");
+    }
+  }, [isManagerRoute, currentManagerData]);
 
   const [updateProjectMgnt, { loading: loadingUpdateProjectMgnt }] =
     useMutation(UPDATE_PROJECTMGNT_PROJECTS, {
@@ -376,7 +392,14 @@ export default function PmFormAddProjectModal({
     dept.name?.toLowerCase().includes((departmentSearch || "").toLowerCase()),
   );
 
-  const availableDepartments = dataDepartments?.projectMgnt?.departments || [];
+  // const availableDepartments =  dataDepartments?.projectMgnt?.departments || [];
+
+  const availableDepartments = isManagerRoute
+    ? currentManagerData?.department
+      ? [currentManagerData.department]  // wrap object in array
+      : []
+    : dataDepartments?.projectMgnt?.departments || [];
+
   const selectedDept = availableDepartments.find(
     (d) => d.id === formData.department || d.name === formData.department,
   );
@@ -503,6 +526,7 @@ export default function PmFormAddProjectModal({
                         <label className={labelCls}>Department</label>
                         <div className="relative">
                           <input
+                            disabled={isManagerRoute}
                             type="text"
                             placeholder="Search department..."
                             value={departmentSearch}
@@ -511,6 +535,7 @@ export default function PmFormAddProjectModal({
                               setShowDepartmentDropdown(true);
                               handleInputChange("department", "");
                             }}
+
                             onFocus={() => setShowDepartmentDropdown(true)}
                             onBlur={() => {
                               const exact = availableDepartments.find(
@@ -557,7 +582,7 @@ export default function PmFormAddProjectModal({
                       {/* Manager */}
                       <div className="space-y-2">
                         <label className={labelCls}>
-                          Project Manager{" "}
+                          Manager{" "}
                           <span className="text-red-500">*</span>
                         </label>
                         {/* No department selected */}
@@ -572,35 +597,45 @@ export default function PmFormAddProjectModal({
                         ) : (
                           /* Radio list */
                           <div className="space-y-2 max-h-48 overflow-auto border border-gray-300 dark:border-[#2a3040] rounded-lg p-2">
-                            {filteredManagersByDept.map((manager) => (
-                              <label
-                                key={manager.id}
-                                className="flex items-center gap-2 cursor-pointer px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-[#252d3d]"
-                              >
+                            {isManagerRoute ? (
+                              <label className="flex items-center gap-2 px-2 py-1">
                                 <input
                                   type="radio"
-                                  name="projectManager"
-                                  value={manager.id}
-                                  checked={
-                                    formData.projectManager === manager.id
-                                  }
-                                  onChange={() =>
-                                    handleInputChange(
-                                      "projectManager",
-                                      manager.id,
-                                    )
-                                  }
+                                  checked
+                                 
+                                  value={currentManagerData.id}
                                 />
-
                                 <span className="text-sm text-gray-800 dark:text-slate-200">
-                                  {manager.fullname}
+                                  {currentManagerData.fullname}
                                 </span>
-
                                 <span className="text-xs text-gray-500 dark:text-slate-500 lowercase">
-                                  ({manager.position})
+                                  ({currentManagerData.position})
                                 </span>
                               </label>
-                            ))}
+                            ) : (
+                              filteredManagersByDept.map((manager) => (
+                                <label
+                                  key={manager.id}
+                                  className="flex items-center gap-2 cursor-pointer px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-[#252d3d]"
+                                >
+                                  <input
+                                    type="radio"
+                                    name="projectManager"
+                                    value={manager.id}
+                                    checked={formData.projectManager === manager.id}
+                                    onChange={() =>
+                                      handleInputChange("projectManager", manager.id)
+                                  }
+                                  />
+                                  <span className="text-sm text-gray-800 dark:text-slate-200">
+                                    {manager.fullname}
+                                  </span>
+                                  <span className="text-xs text-gray-500 dark:text-slate-500 lowercase">
+                                    ({manager.position})
+                                  </span>
+                                </label>
+                              ))
+                            )}
                           </div>
                         )}
                       </div>
@@ -689,11 +724,10 @@ export default function PmFormAddProjectModal({
                     bg-blue-600 hover:bg-blue-700 text-white
                     dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
                     dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]
-                    ${
-                      loadingCreateProject
-                        ? "opacity-60 cursor-not-allowed"
-                        : ""
-                    }`}
+                    ${loadingCreateProject
+                    ? "opacity-60 cursor-not-allowed"
+                    : ""
+                  }`}
               >
                 {loadingCreateProject ? "Creating..." : "Create Project"}
               </button>

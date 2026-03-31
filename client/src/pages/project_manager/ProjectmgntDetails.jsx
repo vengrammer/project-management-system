@@ -17,13 +17,13 @@ import {
 } from "lucide-react";
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import PmFormAddProjectModal from "./PmFormAddProjectModal";
 import AddTheManagerFromDepartment from "./AddTheManagerFromDepartment";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import ViewCurrentManager from "./ViewCurrentManager";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { motion } from "framer-motion";
 
 export const GET_THE_PROJECTMGNT = gql`
@@ -156,7 +156,7 @@ export const DELETE_DEPARTMENT = gql`
   }
 `;
 
-  const DELETE_PROJECT = gql`
+const DELETE_PROJECT = gql`
     mutation DeleteProject($id: ID!) {
       deleteProject(id: $id) {
         message
@@ -173,9 +173,11 @@ function ProjectmgntDetails() {
   const { id } = useParams();
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const userRoute = location.pathname.includes("manager") ? "/manager" : "/projectmanager";
 
   const handelBack = () => {
-    navigate("/projectmanager/projectmgnt")
+    navigate(`${userRoute}/projectmgnt`)
   }
   //get the project management details
   const {
@@ -190,7 +192,7 @@ function ProjectmgntDetails() {
   const projectMgntProjectIds =
     projectmgnt?.projects?.map((p) => p?.id).filter(Boolean) || [];
 
-  const { data: allManagersData, loading: loadingAllManagers } = useQuery(GET_ALL_MANAGERS);
+  const { data: allManagersData } = useQuery(GET_ALL_MANAGERS);
 
   const [updateProjectMgntManagers] = useMutation(UPDATE_PROJECTMGNT_MANAGERS, {
     onError: (error) => toast.error(`Could not add manager: ${error.message}`),
@@ -256,8 +258,8 @@ function ProjectmgntDetails() {
     }
   };
 
-  
-   const [deleteProject] = useMutation(DELETE_PROJECT);
+
+  const [deleteProject] = useMutation(DELETE_PROJECT);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [departmentManagers, setDepartmentManagers] = useState([]);
   const [openAddManager, setOpenAddManager] = useState(false);
@@ -302,28 +304,28 @@ function ProjectmgntDetails() {
   };
 
   const handleDelete = async (id) => {
-       Swal.fire({
-         title: "Are you sure you want to delete this project?",
-         text: "You won't be able to revert this!",
-         icon: "warning",
-         showCancelButton: true,
-         confirmButtonColor: "#3085d6",
-         cancelButtonColor: "#d33",
-         confirmButtonText: "Yes, delete it!",
-       }).then(async (result) => {
-         if (result.isConfirmed) {
-           try {
-             const { data } = await deleteProject({ variables: { id } });
-             if (data.deleteProject) {
-               toast.success("Project deleted successfully");
-               await refetchProjectMgnt();
-             }
-           } catch (error) {
-             toast.error(`Error deleting project: ${error.message}`);
-           }
-         }
-       });
-     };
+    Swal.fire({
+      title: "Are you sure you want to delete this project?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const { data } = await deleteProject({ variables: { id } });
+          if (data.deleteProject) {
+            toast.success("Project deleted successfully");
+            await refetchProjectMgnt();
+          }
+        } catch (error) {
+          toast.error(`Error deleting project: ${error.message}`);
+        }
+      }
+    });
+  };
 
   const { data: tasksByProjectData, loading: loadingTasksByProjects } =
     useQuery(GET_TASKS_BY_PROJECTS, {
@@ -413,23 +415,24 @@ function ProjectmgntDetails() {
     );
   }
 
-  
+
+
 
 
   return (
     <div className="h-screen flex flex-col w-flow  overflow-auto bg-gray-200 dark:bg-[#181d28] p-3 lg:px-10 lg:py-5">
       <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-       className="flex flex-col h-full min-h-0">
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeInOut" }}
+        className="flex flex-col h-full min-h-0">
         <div
           key={projectmgnt?.id}
           className="flex flex-col flex-1 w-full h-full"
         >
           <button
-          onClick={() => handelBack()}
-           className="flex items-center gap-2 text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-[#31f64b] mb-6 transition-colors duration-150">
+            onClick={() => handelBack()}
+            className="flex items-center gap-2 text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-[#31f64b] mb-6 transition-colors duration-150">
             <ArrowLeft size={20} />
             <span>Back</span>
           </button>
@@ -501,7 +504,7 @@ function ProjectmgntDetails() {
               </div>
               {/* Progress bar */}
               <div className="flex flex-col flex-1  w-full h-full">
-                <div className="flex lg:justify-end gap-3">
+                {!userRoute && <div className="flex lg:justify-end gap-3">
                   <button
                     className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-semibold transition-all duration-150
                             bg-blue-600 hover:bg-blue-700 text-white
@@ -525,7 +528,7 @@ function ProjectmgntDetails() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </div>}
               </div>
             </div>
             {/* for the progress*/}
@@ -784,7 +787,7 @@ function ProjectmgntDetails() {
                     {projectmgnt?.departments?.length || 0} total departments
                   </p>
                 </div>
-                <div>
+                {!userRoute && <div>
                   <div className="flex gap-3 flex-wrap">
                     <button
                       className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150
@@ -796,7 +799,7 @@ function ProjectmgntDetails() {
                       Add New Department
                     </button>
                   </div>
-                </div>
+                </div>}
               </header>
               {projectmgnt?.departments?.map((department) => (
                 <div key={department?.id} className="flex flex-col w-full max-w-full border-b border-gray-200 dark:border-gray-600 p-3  gap-3">
@@ -804,7 +807,7 @@ function ProjectmgntDetails() {
                     <div>
                       <p>{department.name}</p>
                     </div>
-                    
+
                     <div className="flex items-start gap-2">
                       <button
                         onClick={() => handleViewManagers(department)}
@@ -814,7 +817,8 @@ function ProjectmgntDetails() {
                       >
                         <Users size={18} />
                       </button>
-                       <button
+
+                      {!userRoute && <Fragment>  <button
                         type="button"
                         onClick={() => handleOpenAddManagers(department)}
                         className="p-2 rounded-md bg-green-200 text-gray-700 hover:bg-green-300 dark:bg-[#0a7f19] dark:text-green-200 dark:hover:bg-[#06a31b]"
@@ -823,27 +827,29 @@ function ProjectmgntDetails() {
                         <UserPlus size={18} />
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteDepartment(department.id, department.name)}
-                        className="p-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-800"
-                        title="Delete"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDepartment(department.id, department.name)}
+                          className="p-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-800"
+                          title="Delete"
+                        >
+                          <Trash2 size={18} />
+                        </button> </Fragment>}
+
+
                     </div>
                   </div>
                   {/* for the managers and projects count*/}
                   <div className="flex flex-1 flex-row items-center gap-4">
                     <div className="flex  items-center justify-center gap-1">
-                       <Users2 size={15}/>
+                      <Users2 size={15} />
                       <p>{projectmgnt?.managers?.filter(manager => manager.department?.id === department.id).length || 0} <span>managers</span></p>
                     </div>
                     <div className="flex gap-2 items-center ">
-                      <Target size={15}/>
+                      <Target size={15} />
                       <p>{projectsByProjectMgnt?.filter(project => project.department?.id === department.id).length || 0} <span>projects</span></p>
                     </div>
-                     
+
                   </div>
                 </div>
               ))}

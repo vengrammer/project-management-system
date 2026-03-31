@@ -204,21 +204,32 @@ export default function ManagerSideBar() {
             <li>
               <Link
                 to="/manager/dashboard"
-                className={`${linkDesign} ${
-                  isActive("/manager/dashboard") ? active : ""
-                }`}
+                className={`${linkDesign} ${isActive("/manager/dashboard") ? active : ""
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 <LayoutDashboard size={20} />
                 <span>Dashboard</span>
               </Link>
             </li>
+
+            <li>
+              <Link
+                to="/manager/projectmgnt"
+                className={`${linkDesign} ${isActive("/manager/projectmgnt") ? active : ""
+                  }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <FolderOpenDot size={20} />
+                <span>Project/Mgnt</span>
+              </Link>
+            </li>
+
             <li>
               <Link
                 to="/manager/projects"
-                className={`${linkDesign} ${
-                  isActive("/manager/projects") ? active : ""
-                }`}
+                className={`${linkDesign} ${isActive("/manager/projects") ? active : ""
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 <FolderOpenDot size={20} />
@@ -228,9 +239,8 @@ export default function ManagerSideBar() {
             <li>
               <Link
                 to="/manager/archive"
-                className={`${linkDesign} ${
-                  isActive("/manager/archive") ? active : ""
-                }`}
+                className={`${linkDesign} ${isActive("/manager/archive") ? active : ""
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 <Archive size={20} />
@@ -239,25 +249,23 @@ export default function ManagerSideBar() {
             </li>
 
             {/* calendar mentions  */}
-             <li>
+            <li>
               <Link
                 to="/manager/calendarmentions"
-                className={`flex relative ${linkDesign} ${
-                  isActive("/manager/calendarmentions") ? active : ""
-                }`}
+                className={`flex relative ${linkDesign} ${isActive("/manager/calendarmentions") ? active : ""
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 <CalendarClock size={20} />
                 <span>Calendar Mentions</span>{" "}
               </Link>
             </li>
- 
+
             <li>
               <Link
                 to="/manager/notification"
-                className={`flex relative ${linkDesign} ${
-                  isActive("/manager/notification") ? active : ""
-                }`}
+                className={`flex relative ${linkDesign} ${isActive("/manager/notification") ? active : ""
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 <Bell size={20} />
@@ -292,9 +300,8 @@ export default function ManagerSideBar() {
           {/* Profile Link */}
           <Link
             to="/manager/profile"
-            className={`${linkDesign} mb-1 ${
-              isActive("/manager/profile") ? active : ""
-            }`}
+            className={`${linkDesign} mb-1 ${isActive("/manager/profile") ? active : ""
+              }`}
             onClick={() => setIsOpen(false)}
           >
             <User size={18} />

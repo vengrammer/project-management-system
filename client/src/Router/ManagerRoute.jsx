@@ -3,13 +3,15 @@ import NotFound from "@/components/Notfound";
 // import ProjectTable from "@/pages/admin/ProjectTable";
 import ManagerSideBar from "@/layout/ManagerSideBar";
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";
-import ProjectDetailsPage from "@/pages/admin/ProjectDetailsPage";
+import ProjectDetailsPage from "@/pages/project_manager/ProjectmgntDetails";
 import Profile from "@/pages/admin/Profile";
 import ProjectTableManager from "@/pages/manager/ProjectTableManager";
 import ProtectedRoute from "./ProtectedRoute";
 import ArchiveAdminEmployeeManager from "@/pages/admin/ArchiveAdminEmployeeManager";
 import Notification from "@/pages/admin/Notification";
 import CalendaMentions from "@/pages/CalendarMentions";
+import Projectmgnt from "@/pages/manager/ProjectmgntManager";
+
 function ManagerRoute() {
   return (
     <ProtectedRoute requiredRole="manager">
@@ -21,6 +23,7 @@ function ManagerRoute() {
           />
           <Route path="dashboard" element={<ManagerDashboard />} />
           <Route path="projects" element={<ProjectTableManager />} />
+          <Route path="projectmgnt" element={<Projectmgnt />} />
           <Route path="archive" element={<ArchiveAdminEmployeeManager />} />
           <Route path="notification" element={<Notification />} />
           <Route path="calendarmentions" element={<CalendaMentions/>}/>
@@ -28,6 +31,7 @@ function ManagerRoute() {
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
+        <Route path="projectmgntdetails/:id" element={<ProjectDetailsPage />} />
         <Route
           path="archive/projectdetails/:id"
           element={<ProjectDetailsPage />}

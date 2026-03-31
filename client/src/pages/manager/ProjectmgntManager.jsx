@@ -1,12 +1,11 @@
 import { motion } from "framer-motion";
 import { Archive, Eye, Trash2, CalendarArrowUp, CalendarArrowDown, Plus, ChevronDown, Loader } from "lucide-react";
 import { useState } from "react";
-import AddNewProgram from "../project_manager/AddNewProgram";
+// import AddNewProgram from "../project_manager/AddNewProgram";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-
 export const GET_THE_PROJECTMGNT = gql`
     query ProjectMgnts {
         projectMgnts {
@@ -27,7 +26,7 @@ export const GET_THE_PROJECTMGNT = gql`
             }
             pm {
                 id
-                fullname
+                fullname    
             }
         }
     }
@@ -127,7 +126,7 @@ function Projectmgnt() {
 
     //handel view 
     function handleView(projectmgnt) {
-        navigate(`/projectmanager/projectmgntdetails/${projectmgnt}`);
+        navigate(`/manager/projectmgntdetails/${projectmgnt}`);
     }
     
     return (
@@ -138,16 +137,16 @@ function Projectmgnt() {
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 className="bg-white border-2 dark:bg-[#222732] rounded-lg shadow dark:shadow-[0_2px_20px_rgba(0,0,0,0.5)] w-full h-full flex flex-col">
                 {/*This is the add new program model*/}
-               {openAddProgram && <AddNewProgram open={openAddProgram} setOpen={setOpenAddProgram} />}
+               {/* {openAddProgram && <AddNewProgram open={openAddProgram} setOpen={setOpenAddProgram} />} */}
 
                 <div className="flex flex-col flex-1 gap-3">
                     <header className="flex flex-row justify-between py-4 px-4">
                         <div className="p-3  dark:text-green-400 text-blue-600 text-2xl font-extrabold rounded-4xl">| <span className="dark:text-white text-black">Project management</span></div>
-                        <div className="flex justify-center items-center  pr-8">
+                        {/* <div className="flex justify-center items-center  pr-8">
                             <button
                                 onClick={() => setOpenAddProgram(true)}
                                 className="bg-[#03c01c] text-white cursor-pointer hover:scale-120 duration-200 px-4 p-2 rounded-lg flex gap-2"><Plus /> Project/mgnt</button>
-                        </div>
+                        </div> */}
                     </header>
                     <div className="flex mx-4">
                         <input
@@ -238,8 +237,8 @@ function Projectmgnt() {
 
                                             {/* Priority — desktop */}
                                             <div className="hidden lg:block">
-                                                <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap`}>
-                                                  {project.pm.fullname || "No pm"}
+                                                <span className={`text-sm text-gray-700 w-full dark:text-slate-300`}>
+                                                    {project.pm.fullname || "No project manager"}
                                                 </span>
                                             </div>
 
@@ -249,7 +248,7 @@ function Projectmgnt() {
                                                     {project.status || "No status"}
                                                 </span>
                                                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(project.priority || "")}`}>
-                                                    {project.pm.fullname || "No pm"}
+                                                   PM: {project.pm.fullname || "No project manager"}
                                                 </span>
                                             </div>
 
@@ -283,7 +282,7 @@ function Projectmgnt() {
                                                     <Eye size={18} className="hidden lg:inline" />
                                                 </button>
 
-                                                <button
+                                                {/* <button
                                                     title="Archive"
                                                     onClick={() => handleArchive(project._id)}
                                                     className="flex-1 lg:flex-none cursor-pointer bg-gray-500 hover:bg-gray-600 text-white dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
@@ -299,7 +298,7 @@ function Projectmgnt() {
                                                 >
                                                     <span className="lg:hidden">Delete</span>
                                                     <Trash2 size={17} className="hidden lg:inline" />
-                                                </button>
+                                                </button> */}
                                             </div>
 
                                         </div>
