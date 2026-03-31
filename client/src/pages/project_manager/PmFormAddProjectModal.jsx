@@ -89,7 +89,15 @@ const UPDATE_PROJECTMGNT_PROJECTS = gql`
       message
       projectMgnt {
         _id
+        title
+        pm {
+          id
+        }
+        managers {
+          id
+        }
       }
+      
     }
   }
 `;
@@ -131,7 +139,7 @@ export default function PmFormAddProjectModal({
   const managerId = auth.user?.id;
   const currentManagerData = auth.user;
   const location = useLocation();
-  const isManagerRoute = location.pathname.includes("manager");
+  const isManagerRoute = location.pathname.includes("/manager");
   const userId = auth.user?.id;
 
   const [selectedEmployees, setSelectedEmployees] = useState([]);
@@ -157,7 +165,7 @@ export default function PmFormAddProjectModal({
   const [createNotif] = useMutation(CREATE_NOTIF_FOR_ADMIN);
   const { data: AdminData } = useQuery(GET_ALL_ADMIN);
 
-  console.log("Current Manager Data:", currentManagerData);
+  // console.log("Current Manager Data:", currentManagerData);
 
   const {
     loading: loadindDepartments,
@@ -198,6 +206,30 @@ export default function PmFormAddProjectModal({
 
   const [updateProjectMgnt, { loading: loadingUpdateProjectMgnt }] =
     useMutation(UPDATE_PROJECTMGNT_PROJECTS, {
+      onCompleted: (data) => {
+        toast.success("Project added to project management successfully");
+
+        // Notify the pm when the manager add new project in the project management
+        const projectMgntID = data?.updateProjectMgnt?.projectMgnt?._id;
+        const pm = data?.updateProjectMgnt?.projectMgnt?.pm;
+        const title = data?.updateProjectMgnt?.projectMgnt?.title;
+
+        if (isManagerRoute) {
+          createNotif({
+            variables: {
+              input: {
+                entity: { id: projectMgntID, type: "ProjectMgnt" },
+                isRead: false,
+                message: `New project has been added to "${title}" by "${currentManagerData?.fullname}".`,
+                recipients: pm?.id,
+                sender: currentManagerData?.id,
+                title: "New Project Added",
+                type: "Project Added to Project Management",
+              },
+            },
+          });
+        }
+      },
       onError: () => toast.error("Failed to add the project in projectMgnt"),
       refetchQueries: [
         {
@@ -212,7 +244,7 @@ export default function PmFormAddProjectModal({
     CREATE_PROJECT,
     {
       onCompleted: async (data) => {
-        toast.success("Project created successfully");
+        // toast.success("Project created successfully");
         const projectId = data?.createProject?.project?.id;
         if (!projectId) return;
 
@@ -297,8 +329,14 @@ export default function PmFormAddProjectModal({
             },
           });
         }
+
+
       },
+
       onError: () => toast.error("Failed to create project"),
+
+
+
     },
   );
 
@@ -602,7 +640,7 @@ export default function PmFormAddProjectModal({
                                 <input
                                   type="radio"
                                   checked
-                                 
+                                  readOnly
                                   value={currentManagerData.id}
                                 />
                                 <span className="text-sm text-gray-800 dark:text-slate-200">
@@ -625,7 +663,7 @@ export default function PmFormAddProjectModal({
                                     checked={formData.projectManager === manager.id}
                                     onChange={() =>
                                       handleInputChange("projectManager", manager.id)
-                                  }
+                                    }
                                   />
                                   <span className="text-sm text-gray-800 dark:text-slate-200">
                                     {manager.fullname}

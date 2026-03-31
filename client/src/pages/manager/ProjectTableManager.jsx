@@ -295,10 +295,10 @@ export default function ProjectTableManager() {
                   </div>
 
                   {/* Project Management */}
-                  <div className="text-sm text-gray-700 dark:text-slate-300">
+                  <div className="text-sm text-gray-700 dark:text-slate-300 truncate">
                     <span className="text-gray-500 dark:text-slate-500 lg:hidden">Project Mgmt: </span>
                     <span className="font-medium lg:font-normal">
-                      {project?.projectMgnt?.title ? project?.projectMgnt.title : "No Project Management"}
+                      {project?.projectMgnt?.title ? project?.projectMgnt.title : "Dept. project"}
                     </span>
                   </div>
 
@@ -348,9 +348,9 @@ export default function ProjectTableManager() {
                       <Eye size={20} className="hidden lg:inline" />
                     </button>
 
-                    {!project?.projectMgnt && (
+                   
                       <>
-                        <button
+                        {!project?.projectMgnt && ( <button
                           onClick={() => handleArchive(project.id)}
                           className="flex-1 cursor-pointer lg:flex-none
                             bg-gray-500 hover:bg-gray-600
@@ -361,7 +361,7 @@ export default function ProjectTableManager() {
                         >
                           <span className="lg:hidden">Archive</span>
                           <Archive size={20} className="hidden lg:inline" />
-                        </button>
+                        </button>)}
 
                         <button
                           onClick={() => handleDelete(project.id)}
@@ -376,7 +376,7 @@ export default function ProjectTableManager() {
                           <Trash2 size={18} className="hidden lg:inline text-white" />
                         </button>
                       </>
-                    )}
+                    
                   </div>
                 </div>
               </div>

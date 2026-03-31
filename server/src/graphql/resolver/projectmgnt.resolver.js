@@ -195,7 +195,7 @@ export const projectMgntResolver = {
         });
 
         return {
-          projectMgnt: newProjectMgnt,
+          projectMgnt: reusableReturnmap([newProjectMgnt])[0],
           message: "Successfully created project management",
         };
       } catch (error) {
@@ -291,7 +291,7 @@ export const projectMgntResolver = {
 
         return {
           message: "Project Management updated successfully",
-          projectMgnt,
+          projectMgnt: reusableReturnmap([projectMgnt])[0],
         };
       } catch (error) {
         console.error("Update ProjectMgnt error:", error);

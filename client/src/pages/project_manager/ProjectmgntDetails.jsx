@@ -25,6 +25,9 @@ import { toast } from "react-toastify";
 import ViewCurrentManager from "./ViewCurrentManager";
 import { Fragment, useState } from "react";
 import { motion } from "framer-motion";
+import PmFormEditProjectModal from "./PmFormEditProjectModal";
+
+import EditProjectmgnt from "./EditProjectmgnt";
 
 export const GET_THE_PROJECTMGNT = gql`
   query ProjectMgnt($projectMgntId: ID!) {
@@ -174,7 +177,8 @@ function ProjectmgntDetails() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const userRoute = location.pathname.includes("manager") ? "/manager" : "/projectmanager";
+  const userRoute = location.pathname.includes("/manager") ? "/manager" : "/projectmanager";
+  const isManagerRoute = location.pathname.includes("/manager");
 
   const handelBack = () => {
     navigate(`${userRoute}/projectmgnt`)
@@ -264,6 +268,9 @@ function ProjectmgntDetails() {
   const [departmentManagers, setDepartmentManagers] = useState([]);
   const [openAddManager, setOpenAddManager] = useState(false);
   const [availableManagers, setAvailableManagers] = useState([]);
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [projectToEdit, setProjectToEdit] = useState(null);
 
   const handleViewManagers = (department) => {
     if (!department) return;
@@ -504,8 +511,9 @@ function ProjectmgntDetails() {
               </div>
               {/* Progress bar */}
               <div className="flex flex-col flex-1  w-full h-full">
-                {!userRoute && <div className="flex lg:justify-end gap-3">
+                {!isManagerRoute && <div className="flex lg:justify-end gap-3">
                   <button
+                    onClick={() => setIsOpen(true) && setProjectToEdit(project.id)}
                     className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-semibold transition-all duration-150
                             bg-blue-600 hover:bg-blue-700 text-white
                             dark:bg-blue-600/90 dark:hover:bg-blue-500
@@ -682,6 +690,7 @@ function ProjectmgntDetails() {
                         </button>
                         <button
                           type="button"
+                          onClick={() => setIsOpen(true) && setProjectToEdit(project.id)}
                           className="p-2 rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-800"
                           title="Edit"
                         >
@@ -787,7 +796,7 @@ function ProjectmgntDetails() {
                     {projectmgnt?.departments?.length || 0} total departments
                   </p>
                 </div>
-                {!userRoute && <div>
+                {!isManagerRoute && <div>
                   <div className="flex gap-3 flex-wrap">
                     <button
                       className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150
@@ -818,7 +827,7 @@ function ProjectmgntDetails() {
                         <Users size={18} />
                       </button>
 
-                      {!userRoute && <Fragment>  <button
+                      {!isManagerRoute && <Fragment>  <button
                         type="button"
                         onClick={() => handleOpenAddManagers(department)}
                         className="p-2 rounded-md bg-green-200 text-gray-700 hover:bg-green-300 dark:bg-[#0a7f19] dark:text-green-200 dark:hover:bg-[#06a31b]"
@@ -870,6 +879,12 @@ function ProjectmgntDetails() {
         managers={availableManagers}
         onAddManager={onAddManager}
       />
+
+     {isOpen && <EditProjectmgnt
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        projectMgnt={projectToEdit}
+      />}
     </div>
   );
 }

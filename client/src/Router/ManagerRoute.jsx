@@ -3,7 +3,7 @@ import NotFound from "@/components/Notfound";
 // import ProjectTable from "@/pages/admin/ProjectTable";
 import ManagerSideBar from "@/layout/ManagerSideBar";
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";
-import ProjectDetailsPage from "@/pages/project_manager/ProjectmgntDetails";
+import ProjectDetailsPage from "@/pages/admin/ProjectDetailsPage";
 import Profile from "@/pages/admin/Profile";
 import ProjectTableManager from "@/pages/manager/ProjectTableManager";
 import ProtectedRoute from "./ProtectedRoute";
@@ -11,6 +11,8 @@ import ArchiveAdminEmployeeManager from "@/pages/admin/ArchiveAdminEmployeeManag
 import Notification from "@/pages/admin/Notification";
 import CalendaMentions from "@/pages/CalendarMentions";
 import Projectmgnt from "@/pages/manager/ProjectmgntManager";
+
+import ProjectmgntDetails from "@/pages/project_manager/ProjectmgntDetails";
 
 function ManagerRoute() {
   return (
@@ -31,7 +33,7 @@ function ManagerRoute() {
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
-        <Route path="projectmgntdetails/:id" element={<ProjectDetailsPage />} />
+        <Route path="projectmgntdetails/:id" element={<ProjectmgntDetails />} />
         <Route
           path="archive/projectdetails/:id"
           element={<ProjectDetailsPage />}

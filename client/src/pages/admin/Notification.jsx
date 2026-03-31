@@ -97,8 +97,9 @@ export default function Notification() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isAdmin = location.pathname.includes("admin");
-  const isManager = location.pathname.includes("manager");
+  const isAdmin = location.pathname.includes("/admin");
+  const isManager = location.pathname.includes("/manager");
+  const isPm = location.pathname.includes("/projectmanager");
 
   const { data, loading, error } = useQuery(NOTIFICATIONS, { fetchPolicy: "network-only" });
 
@@ -139,10 +140,19 @@ export default function Notification() {
   if (loading) return <p className="p-4 text-gray-500 dark:text-slate-500">Loading…</p>;
   if (error) return <p className="p-4 text-red-400">Error loading notifications.</p>;
 
-  const handleNotifView = (projectId, notificationId) => {
+  const handleNotifView = (projectId, notificationId, entity) => {
     handleMarkAsRead(notificationId);
-    navigate(`/${isAdmin ? "admin" : isManager ? "manager" : "employee"}/projectdetails/${projectId}`);
+
+    console.log("Entity type:", entity);
+
+    if(entity === "ProjectMgnt") {
+        navigate(`/${isAdmin ? "admin" : isManager ? "manager" : isPm ? "projectmanager" : "employee"}/projectmgntdetails/${projectId}`);
+    }else{
+      navigate(`/${isAdmin ? "admin" : isManager ? "manager" : isPm ? "projectmanager" : "employee"}/projectdetails/${projectId}`);
+    }
   };
+
+
 
   return (
     <div className="flex flex-col w-full h-full bg-gray-50 dark:bg-[#181d28] rounded-2xl border border-gray-200 dark:border-[#2a3040] overflow-hidden">
@@ -240,7 +250,7 @@ export default function Notification() {
 
                   {/* View button */}
                   <button
-                    onClick={() => handleNotifView(n.entity.id || "", n.id)}
+                    onClick={() => handleNotifView(n.entity.id || "", n.id, n.entity.type)}
                     className="text-xs font-medium px-2 py-1 cursor-pointer rounded-full flex items-center gap-1 transition-all duration-150
                       bg-blue-300 text-black hover:bg-blue-500 hover:text-white
                       dark:bg-blue-600/90 dark:text-white dark:hover:bg-blue-500

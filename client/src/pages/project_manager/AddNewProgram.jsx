@@ -51,12 +51,30 @@ const CREATE_PROJECTMGNT = gql`
       projectMgnt {
         _id
         title
+        pm {
+          id
+          fullname
+        }
+        managers {
+          id
+          fullname
+        }
       }
     }
   }
 `;
 
-function AddNewProgram({ open, setOpen}) {
+const CREATE_NOTIF_FOR_MANAGER = gql`
+  mutation CreateNotif($input: AddNotifInput!) {
+    createNotif(input: $input) {
+      id
+      isRead
+      title
+    }
+  }
+`;
+
+function AddNewProgram({ open, setOpen }) {
   const auth = useSelector((state) => state.auth);
   const pmId = auth.user?.id;
 
@@ -68,12 +86,13 @@ function AddNewProgram({ open, setOpen}) {
   const [endDate, setEndDate] = useState("");
   const [priority, setPriority] = useState("");
   const [searchDept, setSearchDept] = useState("");
+   const [createNotif] = useMutation(CREATE_NOTIF_FOR_MANAGER);
 
   //create new projectmgnt
   const [createProjectMgnt, { loading: loadingProjectMgnt }] = useMutation(
     CREATE_PROJECTMGNT,
     {
-      onCompleted: () => {
+      onCompleted: (data) => {
         toast.success("Project management created successfully!");
         setTitle("");
         setStartDate("");
@@ -82,7 +101,29 @@ function AddNewProgram({ open, setOpen}) {
         setCheckDept([]);
         setAllManagers([]);
         setOpen(false);
+
+        //send notification to all managers and pm assigned to the project
+        const allManagers = data?.createProjectMgnt?.projectMgnt?.managers?.map((m) => m.id) || [];
+        const pm = data?.createProjectMgnt?.projectMgnt?.pm?.id;
+        const projectId = data?.createProjectMgnt?.projectMgnt?._id;
+
+        if (allManagers.length > 0) {
+          createNotif({
+            variables: {
+              input: {
+                entity: { id: projectId, type: "ProjectMgnt" },
+                isRead: false,
+                message: `You have been assigned to the project management "${data?.createProjectMgnt?.projectMgnt?.title}" as a manager.`,
+                recipients: allManagers,
+                sender: pm,
+                title: "You've Been Assigned to a Project Management as Manager",
+                type: "Project Management Assigned",
+              },
+            },
+          });
+        }
       },
+
       onError: () => {
         toast.error("Failed to add member");
       },
@@ -93,7 +134,7 @@ function AddNewProgram({ open, setOpen}) {
 
   const handleAddProjectmgnt = (e) => {
     e.preventDefault();
-    const managersSelected = allManagers?.map((item) => {return item.id})
+    const managersSelected = allManagers?.map((item) => { return item.id })
     createProjectMgnt({
       variables: {
         title: title,

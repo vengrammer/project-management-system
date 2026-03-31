@@ -502,7 +502,7 @@ const ProjectDetailsPage = () => {
 
             {/* Action buttons */}
             <div className="flex gap-3 flex-wrap">
-              <div>{!isEmployee && !isArchive && !project?.projectMgnt && <FormEditProject />}</div>
+              <div>{!isEmployee && !isArchive && <FormEditProject />}</div>
               <div>
                 {!isEmployee && !isArchive && (
                   <button
