@@ -5,7 +5,7 @@ import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
-import { GET_THE_PROJECTMGNT } from "./Projectmgnt";
+import { GET_THE_PROJECTMGNT,GET_PROJECTMGNT_BYMANAGER, GET_PROJECTMGNT_BYPM } from "./Projectmgnt";
 
 const GET_ALL_DEPARTMENTS = gql`
   query Departments {
@@ -128,7 +128,7 @@ function AddNewProgram({ open, setOpen }) {
         toast.error("Failed to add member");
       },
       awaitRefetchQueries: true,
-      refetchQueries: [{ query: GET_THE_PROJECTMGNT }]
+      refetchQueries: [{ query: GET_THE_PROJECTMGNT}, {query: GET_PROJECTMGNT_BYMANAGER, variables: { projectsMgntByManagerId: pmId }},{query: GET_PROJECTMGNT_BYPM,  variables: { projectMgntByPmId: pmId }, }]
     },
   );
 

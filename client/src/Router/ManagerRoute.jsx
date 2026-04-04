@@ -10,7 +10,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import ArchiveAdminEmployeeManager from "@/pages/admin/ArchiveAdminEmployeeManager";
 import Notification from "@/pages/admin/Notification";
 import CalendaMentions from "@/pages/CalendarMentions";
-import Projectmgnt from "@/pages/manager/ProjectmgntManager";
+import Projectmgnt from "@/pages/project_manager/Projectmgnt";
 
 import ProjectmgntDetails from "@/pages/project_manager/ProjectmgntDetails";
 

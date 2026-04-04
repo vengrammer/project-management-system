@@ -13,12 +13,12 @@ import ProjectDetailsPage from "@/pages/admin/ProjectDetailsPage";
 import Profile from "@/pages/admin/Profile";
 import ProtectedRoute from "./ProtectedRoute";
 import Notification from "@/pages/admin/Notification";
-import Projectmgnt from "@/pages/admin/ProjectmgntAdmin";
+import Projectmgnt from "@/pages/project_manager/Projectmgnt";
 
 
 function HomeRoute() {
   return (
-      <ProtectedRoute requiredRole="admin">
+    <ProtectedRoute requiredRole="admin">
       <Routes>
         <Route element={<AdminSidebar />}>
           <Route
@@ -41,7 +41,7 @@ function HomeRoute() {
           element={<ProjectDetailsPage />}
         />
       </Routes>
-      </ProtectedRoute> 
+    </ProtectedRoute>
   );
 }
 export default HomeRoute;

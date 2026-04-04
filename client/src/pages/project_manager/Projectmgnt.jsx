@@ -5,7 +5,8 @@ import AddNewProgram from "./AddNewProgram";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 export const GET_THE_PROJECTMGNT = gql`
     query ProjectMgnts {
         projectMgnts {
@@ -32,9 +33,110 @@ export const GET_THE_PROJECTMGNT = gql`
     }
 `
 
+export const GET_PROJECTMGNT_BYMANAGER = gql`
+    query Query($projectsMgntByManagerId: ID) {
+        projectsMgntByManager(id: $projectsMgntByManagerId) {
+             _id
+            title
+            status
+            startDate
+            priority
+            isArchive
+            endDate
+            departments {
+                id
+                name
+            }
+            managers {
+                id
+                fullname
+            }
+            pm {
+                id
+                fullname    
+            }
+        }
+    }
+`
+
+export const GET_PROJECTMGNT_BYPM = gql`
+    query ProjectMgntByPm($projectMgntByPmId: ID) {
+         projectMgntByPm(id: $projectMgntByPmId) {
+            _id
+            title
+            status
+            startDate
+            priority
+            isArchive
+            endDate
+            departments {
+                id
+                name
+            }
+            managers {
+                id
+                fullname
+            }
+            pm {
+                id
+                fullname    
+        }
+    }
+}
+`
+
 function Projectmgnt() {
+    const auth = useSelector((state) => state.auth);
+    const userId = auth.user?.id;
+
     const [openAddProgram, setOpenAddProgram] = useState(false)
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const manager = location.pathname.includes("/manager")
+    const pm = location.pathname.includes("/projectmanager")
+
+    // for the admin
+    const {
+        loading: loadingAdminProjectMgnt,
+        error: errorAdminProjectMgnt,
+        data: dataAdminProjectMgnt,
+    } = useQuery(GET_THE_PROJECTMGNT, {
+        skip: manager || pm,
+    });
+    //for the manager
+    const {
+        loading: loadingMProjectMgnt,
+        error: errorMProjectMgnt,
+        data: dataMProjectMgnt,
+    } = useQuery(GET_PROJECTMGNT_BYMANAGER, {
+        variables: { projectsMgntByManagerId: userId },
+        skip: !manager,
+    });
+    //for pm
+    const {
+        loading: loadingPmProjectMgnt,
+        error: errorPmProjectMgnt,
+        data: dataPmProjectMgnt,
+    } = useQuery(GET_PROJECTMGNT_BYPM, {
+        variables: { projectMgntByPmId: userId },
+        skip: !pm,
+    });
+
+    const querryloading = loadingAdminProjectMgnt || loadingMProjectMgnt || loadingPmProjectMgnt
+    const querryerror = errorAdminProjectMgnt || errorMProjectMgnt || errorPmProjectMgnt
+
+    //data of the projectmgnt 
+    let projectMgnts = [];
+    if (manager) {
+        projectMgnts = dataMProjectMgnt?.projectsMgntByManager || [];
+    } else if (pm) {
+        projectMgnts = dataPmProjectMgnt?.projectMgntByPm || [];
+    } else {
+        projectMgnts = dataAdminProjectMgnt?.projectMgnts || [];
+    }
+
+
     // const toggle = () => setOpen(!open);
     const overdue = (project) => {
         if (!project.endDate) return false;
@@ -68,15 +170,6 @@ function Projectmgnt() {
         }
     };
 
-    const {
-        loading: loadingProjectMgnt,
-        error: errorProjectMgnt,
-        data: dataProjectMgnt,
-    } = useQuery(GET_THE_PROJECTMGNT);
-
-    //data of the projectmgnt
-    const projectMgnts = dataProjectMgnt?.projectMgnts || [];
-
     //dropdown for the managers and departments
     function Dropdown({ items, defaultLabel }) {
         const [open, setOpen] = useState(false);
@@ -107,28 +200,28 @@ function Projectmgnt() {
             </div>)
     }
 
-    if (errorProjectMgnt) {
+    if (querryerror) {
         toast.error("Something went wrong on the server. Try again.")
     }
 
-     if (loadingProjectMgnt) {
+    if (querryloading) {
         return (
-          <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
-            <div className="flex flex-col items-center gap-3">
-              <Loader
-                size={70}
-                className="animate-spin text-blue-500 dark:text-[#31f64b]"
-              />
+            <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader
+                        size={70}
+                        className="animate-spin text-blue-500 dark:text-[#31f64b]"
+                    />
+                </div>
             </div>
-          </div>
         );
-      }
+    }
 
     //handel view 
     function handleView(projectmgnt) {
         navigate(`/projectmanager/projectmgntdetails/${projectmgnt}`);
     }
-    
+
     return (
         <>
             <motion.div
@@ -137,7 +230,7 @@ function Projectmgnt() {
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 className="bg-white border-2 dark:bg-[#222732] rounded-lg shadow dark:shadow-[0_2px_20px_rgba(0,0,0,0.5)] w-full h-full flex flex-col">
                 {/*This is the add new program model*/}
-               {openAddProgram && <AddNewProgram open={openAddProgram} setOpen={setOpenAddProgram} />}
+                {openAddProgram && <AddNewProgram open={openAddProgram} setOpen={setOpenAddProgram} />}
 
                 <div className="flex flex-col flex-1 gap-3">
                     <header className="flex flex-row justify-between py-4 px-4">

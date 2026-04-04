@@ -172,6 +172,192 @@ export const projectMgntResolver = {
       ]);
       return reusableReturnmap(projectMgnt)[0] || null;
     },
+    projectMgntByPm: async(__dirname, {id}, context) => {
+
+      const userId = id || context?.user?.id;
+
+      if (!userId) {
+        throw new Error("User ID is required to fetch projects");
+      }
+      const projectMgnts = await ProjectMgnt.aggregate([
+        {
+          $match: { pm: new mongoose.Types.ObjectId(userId) },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "pm",
+            foreignField: "_id",
+            as: "pm",
+          },
+        },
+        {
+          $unwind: {
+            path: "$pm",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "departments",
+            localField: "departments",
+            foreignField: "_id",
+            as: "departments",
+          },
+        },
+        {
+          $lookup: {
+            from: "projects",
+            let: { projectIds: "$projects" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$projectIds"] },
+                },
+              },
+              {
+                $lookup: {
+                  from: "departments",
+                  localField: "department",
+                  foreignField: "_id",
+                  as: "department",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$department",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+            ],
+            as: "projects",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: { managerIds: "$managers" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$managerIds"] },
+                },
+              },
+              {
+                $lookup: {
+                  from: "departments",
+                  localField: "department",
+                  foreignField: "_id",
+                  as: "department",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$department",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+            ],
+            as: "managers",
+          },
+        },
+
+      ]);
+
+      return reusableReturnmap(projectMgnts);
+    },
+    projectsMgntByManager: async(__dirname, {id}, context) => {
+      const userId = id || context?.user?.id;
+      if (!userId) {
+        throw new Error("User ID is required to fetch projects");
+      }
+      const projectMgnts = await ProjectMgnt.aggregate([
+        {
+          $match: { managers: new mongoose.Types.ObjectId(userId) },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "pm",
+            foreignField: "_id",
+            as: "pm",
+          },
+        },
+        {
+          $unwind: {
+            path: "$pm",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "departments",
+            localField: "departments",
+            foreignField: "_id",
+            as: "departments",
+          },
+        },
+        {
+          $lookup: {
+            from: "projects",
+            let: { projectIds: "$projects" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$projectIds"] },
+                },
+              },
+              {
+                $lookup: {
+                  from: "departments",
+                  localField: "department",
+                  foreignField: "_id",
+                  as: "department",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$department",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+            ],
+            as: "projects",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: { managerIds: "$managers" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$managerIds"] },
+                },
+              },
+              {
+                $lookup: {
+                  from: "departments",
+                  localField: "department",
+                  foreignField: "_id",
+                  as: "department",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$department",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+            ],
+            as: "managers",
+          },
+        },
+
+      ]);
+
+      return reusableReturnmap(projectMgnts);
+    }
   },
   Mutation: {
     createProjectMgnt: async (__dirname, args, context) => {
