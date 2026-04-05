@@ -27,6 +27,7 @@ import { Fragment, useState } from "react";
 import { motion } from "framer-motion";
 import PmFormEditProjectModal from "./PmFormEditProjectModal";
 import EditProjectmgnt from "./EditProjectmgnt";
+import { useSelector } from "react-redux";
 
 export const GET_THE_PROJECTMGNT = gql`
   query ProjectMgnt($projectMgntId: ID!) {
@@ -171,6 +172,9 @@ const DELETE_PROJECT = gql`
 
 function ProjectmgntDetails() {
 
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id;
+
   const [openCurrentManager, setOpenCurrentManager] = useState(false);
   const { id } = useParams();
 
@@ -178,6 +182,7 @@ function ProjectmgntDetails() {
   const location = useLocation();
   const userRoute = location.pathname.includes("/manager") ? "/manager" : "/projectmanager";
   const isManagerRoute = location.pathname.includes("/manager");
+  const isPm =  location.pathname.includes("/projectmanager");
 
   const handelBack = () => {
     navigate(`${userRoute}/projectmgnt`)
@@ -268,10 +273,10 @@ function ProjectmgntDetails() {
   const [availableManagers, setAvailableManagers] = useState([]);
 
   const [isOpen, setIsOpen] = useState(false);
-  
-  const [projectToEdit, setProjectToEdit] = useState("");
+
+  const [projectToEdit, setProjectToEdit] = useState(null);
   const [openEditProjectMgnt, setOpenEditProjectMgnt] = useState(false);
-  
+
 
   const handleViewManagers = (department) => {
     if (!department) return;
@@ -407,7 +412,7 @@ function ProjectmgntDetails() {
 
 
   if (
-    loadingProjectMgnt 
+    loadingProjectMgnt
   ) {
     return (
       <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
@@ -512,7 +517,7 @@ function ProjectmgntDetails() {
               <div className="flex flex-col flex-1  w-full h-full">
                 {!isManagerRoute && <div className="flex lg:justify-end gap-3">
                   <button
-                    onClick={() => setIsOpen(true) }
+                    onClick={() => setIsOpen(true)}
                     className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-semibold transition-all duration-150
                             bg-blue-600 hover:bg-blue-700 text-white
                             dark:bg-blue-600/90 dark:hover:bg-blue-500
@@ -679,8 +684,8 @@ function ProjectmgntDetails() {
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-2">
-                        <button
+                     {((project?.projectManager?.id === userId ||  isPm ) ) && <div className="flex items-start gap-2">
+                         <button
                           type="button"
                           className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700"
                           title="View"
@@ -689,8 +694,8 @@ function ProjectmgntDetails() {
                         </button>
                         <button
                           type="button"
-                          
-                          onClick={() => setOpenEditProjectMgnt(true) && setProjectToEdit(project.id)}
+      
+                          onClick={() =>{setOpenEditProjectMgnt(true); setProjectToEdit(project.id);  }}
                           className="p-2 rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-800"
                           title="Edit"
                         >
@@ -704,7 +709,7 @@ function ProjectmgntDetails() {
                         >
                           <Trash2 size={18} />
                         </button>
-                      </div>
+                      </div>}
 
                     </div>
                     <div className="w-full flex">
@@ -880,7 +885,7 @@ function ProjectmgntDetails() {
         onAddManager={onAddManager}
       />
 
-     {isOpen && <EditProjectmgnt
+      {isOpen && <EditProjectmgnt
         isOpen={isOpen}
         setIsOpen={setIsOpen}
       />}

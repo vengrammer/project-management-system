@@ -219,7 +219,12 @@ function Projectmgnt() {
 
     //handel view 
     function handleView(projectmgnt) {
-        navigate(`/projectmanager/projectmgntdetails/${projectmgnt}`);
+        if (pm) {
+            navigate(`/projectmanager/projectmgntdetails/${projectmgnt}`);
+        }else if(manager) {
+            navigate(`/manager/projectmgntdetails/${projectmgnt}`);
+        }
+
     }
 
     return (

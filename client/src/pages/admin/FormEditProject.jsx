@@ -135,7 +135,7 @@ export default function FormEditProject() {
   const toDateInputValue = (value) => {
     if (!value) return "";
     const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return "";
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
     return d.toISOString().slice(0, 10);
   };
 
