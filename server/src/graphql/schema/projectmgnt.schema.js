@@ -29,6 +29,13 @@ export const projectMgntSchema = `#graphql
         
 
         type Mutation {
+
+        
+            deleteProjectMgnt(id: ID!) : Message
+
+
+
+
             createProjectMgnt(
                     title: String!
                     pm: ID!
@@ -43,7 +50,9 @@ export const projectMgntSchema = `#graphql
             updateProjectMgnt(
                 id: ID!
                 title: String
+                status: String
                 pm: ID
+                isArchive: Boolean
                 priority: String
                 departments: [ID!]
                 managers: [ID!]
@@ -57,5 +66,7 @@ export const projectMgntSchema = `#graphql
                 addProjects: [ID!]
                 removeProjects: [ID!]
             ): Message
+
+        
     }
 `;

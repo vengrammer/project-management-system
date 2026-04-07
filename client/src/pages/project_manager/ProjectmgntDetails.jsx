@@ -14,6 +14,7 @@ import {
   Users,
   Users2,
   UserPlus,
+  Check,
 } from "lucide-react";
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
@@ -148,6 +149,13 @@ export const UPDATE_PROJECTMGNT_MANAGERS = gql`
   }
 `;
 
+const UPDATE_STATUS_PROJECTMGNT = gql`
+mutation Mutation($updateProjectMgntId: ID!, $status: String) {
+  updateProjectMgnt(id: $updateProjectMgntId, status: $status) {
+    message
+  }
+}`;
+
 export const DELETE_DEPARTMENT_AND_MANAGER = gql`
   mutation UpdateProjectMgnt($updateProjectMgntId: ID!, $removeDepartments: [ID!]) {
   updateProjectMgnt(id: $updateProjectMgntId, removeDepartments: $removeDepartments) {
@@ -182,7 +190,7 @@ function ProjectmgntDetails() {
   const location = useLocation();
   const userRoute = location.pathname.includes("/manager") ? "/manager" : "/projectmanager";
   const isManagerRoute = location.pathname.includes("/manager");
-  const isPm =  location.pathname.includes("/projectmanager");
+  const isPm = location.pathname.includes("/projectmanager");
 
   const handelBack = () => {
     navigate(`${userRoute}/projectmgnt`)
@@ -412,7 +420,52 @@ function ProjectmgntDetails() {
     return normalized === "completed";
   }).length;
 
+  const [updateStatusProjectMgnt] = useMutation(UPDATE_STATUS_PROJECTMGNT, {
+    refetchQueries: [GET_THE_PROJECTMGNT],
+    awaitRefetchQueries: true,
+    onError: (error) => toast.error(`Could not update status: ${error.message}`),
+    onCompleted: (data) => toast.success("Status updated successfully"),
+  });
 
+  const handleMarkAsDone = (status) => {
+      Swal.fire({
+        title: `${status === "completed" ? "Mark this project as in progress?" : "Mark this project as completed?"}`,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Confirm!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          updateStatusProjectMgnt({
+            variables: {
+              updateProjectMgntId: id,
+              status: status === "completed" ? "in progress" : "completed",
+            },
+          });
+        }
+      });
+    };
+
+
+
+  function handleMarkAsInProgress(){
+    updateStatusProjectMgnt({
+      variables: {
+        updateProjectMgntId: id,
+        status: "in progress",
+      },
+    });
+  }
+
+  function handleMarkAsNotStarted(){
+     updateStatusProjectMgnt({
+      variables: {
+        updateProjectMgntId: id,
+        status: "not started",
+      },
+    });
+  }
 
   if (
     loadingProjectMgnt
@@ -531,14 +584,42 @@ function ProjectmgntDetails() {
                   <div className="flex gap-3 flex-wrap">
                     <div>
                       <button
+                         onClick={() => handleMarkAsDone(projectmgnt.status)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
-                      ${projectmgnt?.status === "completed"
+                      ${projectmgnt.status === "completed"
                             ? "bg-amber-600 hover:bg-amber-700 dark:bg-amber-500/90 dark:hover:bg-amber-500"
                             : "bg-green-600 hover:bg-green-700 dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] dark:hover:shadow-[0_0_10px_rgba(49,246,75,0.35)]"
                           }`}
                       >
-                        {projectmgnt?.status}
+                        {projectmgnt.status === "completed" ? <Loader size={18} /> : <Check size={18} />}
+                        {projectmgnt.status === "completed" ? "Mark As In Progress" : "Mark As Completed"}
                       </button>
+                    </div>
+                    <div>
+                      {projectmgnt.status === "not started" && (
+                        <button
+                           onClick={() => handleMarkAsInProgress()}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
+                      bg-blue-600 hover:bg-blue-700 dark:bg-blue-500/90 dark:hover:bg-blue-500
+                      dark:hover:shadow-[0_0_8px_rgba(59,130,246,0.35)]"
+                        >
+                          <TrendingUp size={18} />
+                          Mark As In Progress
+                        </button>
+                      )}
+                    </div>
+                    <div>
+                      {projectmgnt.status === "completed" || projectmgnt.status === "in_progress" || projectmgnt.status === "inprogress" || projectmgnt.status === "in progress" && (
+                  <button
+                    onClick={() => handleMarkAsNotStarted()}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
+                      bg-gray-600 hover:bg-gray-700 dark:bg-gray-500/90 dark:hover:bg-gray-500
+                      dark:hover:shadow-[0_0_8px_rgba(107,114,128,0.35)]"
+                  >
+                    <ArrowLeft size={18} />
+                    Mark As Not Started
+                  </button>
+                )}
                     </div>
                   </div>
                 </div>}
@@ -685,8 +766,8 @@ function ProjectmgntDetails() {
                         </div>
                       </div>
 
-                     {((project?.projectManager?.id === userId ||  isPm ) ) && <div className="flex items-start gap-2">
-                         <button
+                      {((project?.projectManager?.id === userId || isPm)) && <div className="flex items-start gap-2">
+                        <button
                           type="button"
                           className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700"
                           title="View"
@@ -695,8 +776,8 @@ function ProjectmgntDetails() {
                         </button>
                         <button
                           type="button"
-      
-                          onClick={() =>{setOpenEditProjectMgnt(true); setProjectToEdit(project.id);  }}
+
+                          onClick={() => { setOpenEditProjectMgnt(true); setProjectToEdit(project.id); }}
                           className="p-2 rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-800"
                           title="Edit"
                         >
