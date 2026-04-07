@@ -27,6 +27,8 @@ import { Fragment, useState } from "react";
 import { motion } from "framer-motion";
 import PmFormEditProjectModal from "./PmFormEditProjectModal";
 import EditProjectmgnt from "./EditProjectmgnt";
+import { useSelector } from "react-redux";
+import AddNewProjectMgntDepartment from "./AddNewProjectMgntDepartment";
 
 export const GET_THE_PROJECTMGNT = gql`
   query ProjectMgnt($projectMgntId: ID!) {
@@ -146,16 +148,15 @@ export const UPDATE_PROJECTMGNT_MANAGERS = gql`
   }
 `;
 
-export const DELETE_DEPARTMENT = gql`
-  mutation DeleteDepartment($id: ID!) {
-    deleteDepartment(id: $id) {
-      message
-      department {
-        id
-        name
-      }
+export const DELETE_DEPARTMENT_AND_MANAGER = gql`
+  mutation UpdateProjectMgnt($updateProjectMgntId: ID!, $removeDepartments: [ID!]) {
+  updateProjectMgnt(id: $updateProjectMgntId, removeDepartments: $removeDepartments) {
+    message
+    projectMgnt {
+      _id
     }
   }
+}
 `;
 
 const DELETE_PROJECT = gql`
@@ -171,6 +172,9 @@ const DELETE_PROJECT = gql`
 
 function ProjectmgntDetails() {
 
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.user?.id;
+
   const [openCurrentManager, setOpenCurrentManager] = useState(false);
   const { id } = useParams();
 
@@ -178,6 +182,7 @@ function ProjectmgntDetails() {
   const location = useLocation();
   const userRoute = location.pathname.includes("/manager") ? "/manager" : "/projectmanager";
   const isManagerRoute = location.pathname.includes("/manager");
+  const isPm =  location.pathname.includes("/projectmanager");
 
   const handelBack = () => {
     navigate(`${userRoute}/projectmgnt`)
@@ -219,7 +224,8 @@ function ProjectmgntDetails() {
   const projectsByProjectMgnt =
     dataProjectsByProjectMgnt?.projectsByProjectMgnt || [];
 
-  const [deleteDepartment] = useMutation(DELETE_DEPARTMENT);
+
+  const [deleteDepartmentAndManager] = useMutation(DELETE_DEPARTMENT_AND_MANAGER)
 
   const handleDeleteDepartment = async (departmentId, departmentName) => {
     // Check if department is used by any project in this projectmgnt
@@ -239,7 +245,7 @@ function ProjectmgntDetails() {
     // Confirm deletion
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: `Do you want to delete the department "${departmentName}"?`,
+      text: `Do you want to delete this department in project management "${departmentName}"?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -249,8 +255,8 @@ function ProjectmgntDetails() {
 
     if (result.isConfirmed) {
       try {
-        await deleteDepartment({
-          variables: { id: departmentId },
+        await deleteDepartmentAndManager({
+          variables: { updateProjectMgntId: id, removeDepartments: [departmentId] },
         });
         Swal.fire("Deleted!", "The department has been deleted.", "success");
         refetchProjectMgnt(); // Refetch to update the list
@@ -268,10 +274,12 @@ function ProjectmgntDetails() {
   const [availableManagers, setAvailableManagers] = useState([]);
 
   const [isOpen, setIsOpen] = useState(false);
-  
-  const [projectToEdit, setProjectToEdit] = useState("");
+
+  const [projectToEdit, setProjectToEdit] = useState(null);
   const [openEditProjectMgnt, setOpenEditProjectMgnt] = useState(false);
-  
+
+  const [openAddDepartment, setOpenAddDepartment] = useState(false);
+
 
   const handleViewManagers = (department) => {
     if (!department) return;
@@ -407,7 +415,7 @@ function ProjectmgntDetails() {
 
 
   if (
-    loadingProjectMgnt 
+    loadingProjectMgnt
   ) {
     return (
       <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
@@ -420,8 +428,6 @@ function ProjectmgntDetails() {
       </div>
     );
   }
-
-
 
 
 
@@ -512,7 +518,7 @@ function ProjectmgntDetails() {
               <div className="flex flex-col flex-1  w-full h-full">
                 {!isManagerRoute && <div className="flex lg:justify-end gap-3">
                   <button
-                    onClick={() => setIsOpen(true) }
+                    onClick={() => setIsOpen(true)}
                     className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-semibold transition-all duration-150
                             bg-blue-600 hover:bg-blue-700 text-white
                             dark:bg-blue-600/90 dark:hover:bg-blue-500
@@ -679,8 +685,8 @@ function ProjectmgntDetails() {
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-2">
-                        <button
+                     {((project?.projectManager?.id === userId ||  isPm ) ) && <div className="flex items-start gap-2">
+                         <button
                           type="button"
                           className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700"
                           title="View"
@@ -689,8 +695,8 @@ function ProjectmgntDetails() {
                         </button>
                         <button
                           type="button"
-                          
-                          onClick={() => setOpenEditProjectMgnt(true) && setProjectToEdit(project.id)}
+      
+                          onClick={() =>{setOpenEditProjectMgnt(true); setProjectToEdit(project.id);  }}
                           className="p-2 rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-800"
                           title="Edit"
                         >
@@ -704,7 +710,7 @@ function ProjectmgntDetails() {
                         >
                           <Trash2 size={18} />
                         </button>
-                      </div>
+                      </div>}
 
                     </div>
                     <div className="w-full flex">
@@ -799,6 +805,7 @@ function ProjectmgntDetails() {
                 {!isManagerRoute && <div>
                   <div className="flex gap-3 flex-wrap">
                     <button
+                      onClick={() => setOpenAddDepartment(true)}
                       className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150
             bg-blue-600 hover:bg-blue-700 text-white
             dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
@@ -880,7 +887,7 @@ function ProjectmgntDetails() {
         onAddManager={onAddManager}
       />
 
-     {isOpen && <EditProjectmgnt
+      {isOpen && <EditProjectmgnt
         isOpen={isOpen}
         setIsOpen={setIsOpen}
       />}
@@ -889,6 +896,12 @@ function ProjectmgntDetails() {
         isOpen={openEditProjectMgnt}
         setIsOpen={setOpenEditProjectMgnt}
         projectToEdit={projectToEdit}
+      />}
+
+      {openAddDepartment && <AddNewProjectMgntDepartment
+        open={openAddDepartment}
+        setOpen={setOpenAddDepartment}
+        refetchQueries={[{ query: GET_THE_PROJECTMGNT, variables: { projectMgntId: id } }]}
       />}
     </div>
   );
