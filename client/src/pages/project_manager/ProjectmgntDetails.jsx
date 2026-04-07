@@ -28,6 +28,7 @@ import { motion } from "framer-motion";
 import PmFormEditProjectModal from "./PmFormEditProjectModal";
 import EditProjectmgnt from "./EditProjectmgnt";
 import { useSelector } from "react-redux";
+import AddNewProjectMgntDepartment from "./AddNewProjectMgntDepartment";
 
 export const GET_THE_PROJECTMGNT = gql`
   query ProjectMgnt($projectMgntId: ID!) {
@@ -147,16 +148,15 @@ export const UPDATE_PROJECTMGNT_MANAGERS = gql`
   }
 `;
 
-export const DELETE_DEPARTMENT = gql`
-  mutation DeleteDepartment($id: ID!) {
-    deleteDepartment(id: $id) {
-      message
-      department {
-        id
-        name
-      }
+export const DELETE_DEPARTMENT_AND_MANAGER = gql`
+  mutation UpdateProjectMgnt($updateProjectMgntId: ID!, $removeDepartments: [ID!]) {
+  updateProjectMgnt(id: $updateProjectMgntId, removeDepartments: $removeDepartments) {
+    message
+    projectMgnt {
+      _id
     }
   }
+}
 `;
 
 const DELETE_PROJECT = gql`
@@ -224,7 +224,8 @@ function ProjectmgntDetails() {
   const projectsByProjectMgnt =
     dataProjectsByProjectMgnt?.projectsByProjectMgnt || [];
 
-  const [deleteDepartment] = useMutation(DELETE_DEPARTMENT);
+
+  const [deleteDepartmentAndManager] = useMutation(DELETE_DEPARTMENT_AND_MANAGER)
 
   const handleDeleteDepartment = async (departmentId, departmentName) => {
     // Check if department is used by any project in this projectmgnt
@@ -244,7 +245,7 @@ function ProjectmgntDetails() {
     // Confirm deletion
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: `Do you want to delete the department "${departmentName}"?`,
+      text: `Do you want to delete this department in project management "${departmentName}"?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -254,8 +255,8 @@ function ProjectmgntDetails() {
 
     if (result.isConfirmed) {
       try {
-        await deleteDepartment({
-          variables: { id: departmentId },
+        await deleteDepartmentAndManager({
+          variables: { updateProjectMgntId: id, removeDepartments: [departmentId] },
         });
         Swal.fire("Deleted!", "The department has been deleted.", "success");
         refetchProjectMgnt(); // Refetch to update the list
@@ -276,6 +277,8 @@ function ProjectmgntDetails() {
 
   const [projectToEdit, setProjectToEdit] = useState(null);
   const [openEditProjectMgnt, setOpenEditProjectMgnt] = useState(false);
+
+  const [openAddDepartment, setOpenAddDepartment] = useState(false);
 
 
   const handleViewManagers = (department) => {
@@ -425,8 +428,6 @@ function ProjectmgntDetails() {
       </div>
     );
   }
-
-
 
 
 
@@ -804,6 +805,7 @@ function ProjectmgntDetails() {
                 {!isManagerRoute && <div>
                   <div className="flex gap-3 flex-wrap">
                     <button
+                      onClick={() => setOpenAddDepartment(true)}
                       className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150
             bg-blue-600 hover:bg-blue-700 text-white
             dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940]
@@ -894,6 +896,12 @@ function ProjectmgntDetails() {
         isOpen={openEditProjectMgnt}
         setIsOpen={setOpenEditProjectMgnt}
         projectToEdit={projectToEdit}
+      />}
+
+      {openAddDepartment && <AddNewProjectMgntDepartment
+        open={openAddDepartment}
+        setOpen={setOpenAddDepartment}
+        refetchQueries={[{ query: GET_THE_PROJECTMGNT, variables: { projectMgntId: id } }]}
       />}
     </div>
   );

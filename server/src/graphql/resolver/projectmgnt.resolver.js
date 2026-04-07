@@ -1,5 +1,7 @@
 import ProjectMgnt from "../../model/projectmgnt.js";
 import mongoose from "mongoose";
+import User from "../../model/user.model.js";
+
 export const projectMgntResolver = {
   Query: {
     projectMgnts: async () => {
@@ -172,7 +174,7 @@ export const projectMgntResolver = {
       ]);
       return reusableReturnmap(projectMgnt)[0] || null;
     },
-    projectMgntByPm: async(__dirname, {id}, context) => {
+    projectMgntByPm: async (__dirname, { id }, context) => {
 
       const userId = id || context?.user?.id;
 
@@ -266,7 +268,7 @@ export const projectMgntResolver = {
 
       return reusableReturnmap(projectMgnts);
     },
-    projectsMgntByManager: async(__dirname, {id}, context) => {
+    projectsMgntByManager: async (__dirname, { id }, context) => {
       const userId = id || context?.user?.id;
       if (!userId) {
         throw new Error("User ID is required to fetch projects");
@@ -390,7 +392,7 @@ export const projectMgntResolver = {
     },
 
     updateProjectMgnt: async (_, args, context) => {
-      const userId =   args.pm || context?.user?.id;
+      const userId = args.pm || context?.user?.id;
       if (!userId) {
         throw new Error("User ID is required");
       }
@@ -411,60 +413,97 @@ export const projectMgntResolver = {
 
         if (!id) throw new Error("ProjectMgnt id is required");
 
-        // fetch existing document
         const projectMgnt = await ProjectMgnt.findById(id);
         if (!projectMgnt) throw new Error("ProjectMgnt not found");
 
         // fields allowed to update
         const updatable = ["title", "pm", "priority", "startDate", "endDate"];
-
-        // update scalar fields only if provided
         updatable.forEach((key) => {
           if (fields[key] !== undefined) {
             projectMgnt[key] = fields[key];
           }
         });
 
-        // ===== ARRAY HANDLING =====
-
-        // replace full arrays if provided
-        if (Array.isArray(departments)) {
-          projectMgnt.departments = departments;
-        }
-        if (Array.isArray(managers)) {
-          projectMgnt.managers = managers;
-        }
-        if (Array.isArray(projects)) {
-          projectMgnt.projects = projects;
-        }
-
         // helper function for add/remove
         const updateArray = (existing = [], add = [], remove = []) => {
           let set = new Set(existing.map(String));
-
-          if (Array.isArray(add)) {
-            add.forEach((item) => set.add(String(item)));
-          }
-
-          if (Array.isArray(remove)) {
-            remove.forEach((item) => set.delete(String(item)));
-          }
-
+          if (Array.isArray(add)) add.forEach((item) => set.add(String(item)));
+          if (Array.isArray(remove)) remove.forEach((item) => set.delete(String(item)));
           return Array.from(set);
         };
 
-        // apply add/remove logic
-        projectMgnt.departments = updateArray(
-          projectMgnt.departments,
-          addDepartments,
-          removeDepartments,
-        );
+        // ===== DEPARTMENT HANDLING =====
+
+        // collect which department IDs are being removed
+        let deptIdsToRemove = [];
+
+        if (Array.isArray(departments)) {
+          // full replace — figure out which ones were removed
+          const existingDeptIds = projectMgnt.departments.map(String);
+          const newDeptIds = departments.map(String);
+          deptIdsToRemove = existingDeptIds.filter((d) => !newDeptIds.includes(d));
+          projectMgnt.departments = departments;
+        }
+
+        if (Array.isArray(removeDepartments) && removeDepartments.length > 0) {
+          deptIdsToRemove = [
+            ...new Set([...deptIdsToRemove, ...removeDepartments.map(String)]),
+          ];
+          projectMgnt.departments = updateArray(
+            projectMgnt.departments,
+            addDepartments,
+            removeDepartments,
+          );
+        } else {
+          projectMgnt.departments = updateArray(
+            projectMgnt.departments,
+            addDepartments,
+            [],
+          );
+        }
+
+        // ===== AUTO-REMOVE MANAGERS BASED ON REMOVED DEPARTMENTS =====
+
+        let managersToAutoRemove = [];
+
+        if (deptIdsToRemove.length > 0) {
+          // find all users whose department is one of the removed departments
+          // AND are currently assigned as managers in this projectMgnt
+          const currentManagerIds = projectMgnt.managers.map(String);
+
+          const managersInRemovedDepts = await User.find({
+            _id: { $in: currentManagerIds },
+            department: { $in: deptIdsToRemove },
+          }).select("_id");
+
+          managersToAutoRemove = managersInRemovedDepts.map((u) => String(u._id));
+        }
+
+        // ===== MANAGERS HANDLING =====
+
+        if (Array.isArray(managers)) {
+          projectMgnt.managers = managers;
+        }
+
+        // merge auto-removed managers with explicitly requested removeManagers
+        const allManagersToRemove = [
+          ...new Set([
+            ...managersToAutoRemove,
+            ...(Array.isArray(removeManagers) ? removeManagers.map(String) : []),
+          ]),
+        ];
 
         projectMgnt.managers = updateArray(
           projectMgnt.managers,
           addManagers,
-          removeManagers,
+          allManagersToRemove,
         );
+
+        // ===== PROJECTS HANDLING =====
+
+        if (Array.isArray(projects)) {
+          projectMgnt.projects = projects;
+        }
 
         projectMgnt.projects = updateArray(
           projectMgnt.projects,
@@ -472,7 +511,6 @@ export const projectMgntResolver = {
           removeProjects,
         );
 
-        // save updated document
         await projectMgnt.save();
 
         return {
@@ -510,9 +548,9 @@ const reusableReturnmap = (projectMgnts) => {
     // single object
     pm: projectMgnt.pm
       ? {
-          ...projectMgnt.pm,
-          id: projectMgnt.pm._id.toString(),
-        }
+        ...projectMgnt.pm,
+        id: projectMgnt.pm._id.toString(),
+      }
       : null,
 
     //Managers (array)
@@ -522,9 +560,9 @@ const reusableReturnmap = (projectMgnts) => {
         id: m._id.toString(),
         department: m.department
           ? {
-              ...m.department,
-              id: m.department._id.toString(),
-            }
+            ...m.department,
+            id: m.department._id.toString(),
+          }
           : null,
       })),
 
@@ -542,9 +580,9 @@ const reusableReturnmap = (projectMgnts) => {
         id: p._id.toString(),
         department: p.department
           ? {
-              ...p.department,
-              id: p.department._id.toString(),
-            }
+            ...p.department,
+            id: p.department._id.toString(),
+          }
           : null,
       })),
   }));

@@ -59,6 +59,7 @@ const GET_THE_DEPT_MAN = gql`
       managers {
         id
         fullname
+        position
         department {
           name
           id

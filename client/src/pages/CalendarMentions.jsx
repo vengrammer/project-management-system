@@ -150,11 +150,7 @@ function CalendarMentions() {
                                             </p>
                                         );
                                     })}
-
-
-
                                 </div>
-
                                 {/*action button*/}
                                 <div className={` absolute h-full flex w-full b-1 items-end justify-end`}>
                                     <button className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ec7ff] rounded-lg h-8 w-10   items-center justify-center m-1 p-1">
