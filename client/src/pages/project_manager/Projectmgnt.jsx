@@ -353,7 +353,7 @@ function Projectmgnt() {
                         <div className="flex justify-center items-center  pr-8">
                             <button
                                 onClick={() => setOpenAddProgram(true)}
-                                className="bg-[#03c01c] text-white cursor-pointer hover:scale-120 duration-200 px-4 p-2 rounded-lg flex gap-2"><Plus /> Project/mgnt</button>
+                                className="bg-[#03c01c] text-black cursor-pointer hover:scale-120 duration-200 px-4 p-2 rounded-lg flex gap-2"><Plus /> Project/mgnt</button>
                         </div>
                     </header>
                     <div className="flex mx-4">
