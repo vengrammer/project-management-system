@@ -1,6 +1,6 @@
 
 import { NotebookPen, NotepadText } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 function CalendarMentions() {
     //data for the dates 
@@ -115,12 +115,12 @@ function CalendarMentions() {
                     <div className="flex w-full justify-between bg-blue-600 text-white border-3 border-[#060606]  dark:border-y-[#05fffb] px-1 flex-nowrap py-2">
                         <div className="font-bold">|</div>
                         {WEEKS.map((week, index) => (
-                            <>
-                                <div key={index} className="flex items-center justify-center w-full">
+                            <Fragment key={index}>
+                                <div  className="flex items-center justify-center w-full">
                                     <p>{week}</p>
                                 </div>
                                 <div className="font-bold flex self-end">|</div>
-                            </>
+                            </Fragment>
                         ))}
                     </div>
 

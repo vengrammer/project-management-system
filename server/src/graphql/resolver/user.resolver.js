@@ -199,8 +199,9 @@ export const userResolvers = {
         },
       };
     },
-    logout: async (_, __, context) => {
-      const token = context.token; // get from headers
+    logout: async (_, __, {user}) => {
+      console.log(user)
+      const token = context.token; 
       if (!token) throw new Error("Not authenticated");
       // add token to blacklist
       blacklist.add(token);

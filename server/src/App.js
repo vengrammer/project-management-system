@@ -13,6 +13,7 @@ import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/use/ws";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import http from "http"
+import User from "./model/user.model.js";
 const app = express();
 
 //use the typedefs and resolver fromm graphql/index.js
@@ -37,15 +38,10 @@ app.use(
   expressMiddleware(server, {
     context: async ({ req }) => {
       const token = req.headers.authorization?.split(" ")[1];
+
       if (token) {
-        try {
-          const decoded = jwt.verify(token, process.env.JWT_SECRET);
-          // console.log( decoded )
-          return { user: decoded };
-        } catch (error) {
-          // console.log("Invalid token");
-          return {};
-        }
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return { user: decoded };
       }
       return {};
     },
