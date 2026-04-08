@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { Calendar, CloudCog, Eraser, Plus, Send, SendHorizontal, SendIcon, XCircle } from "lucide-react";
+import { Calendar, CloudCog, Eraser, Loader, Plus, Send, SendHorizontal, SendIcon, XCircle } from "lucide-react";
 import { Fragment } from "react";
 import { useSelector } from "react-redux";
 import { useState } from "react";
@@ -37,7 +37,7 @@ const ADD_MENTION = gql`
     }
 `
 
-function Addmention({ open = false, setOpen, datemention }) {
+function Addmention({ open = false, setOpen, datemention, refetchSenderMentions }) {
     
     //get the current login user
     const auth = useSelector((state) => state.auth);
@@ -60,9 +60,11 @@ function Addmention({ open = false, setOpen, datemention }) {
     localDate.setHours(localDate.getHours() + 8);
 
     //useMutation need for mentions
-    const [addMention, { loading: loadingMention, error: errorMention }] = useMutation(ADD_MENTION, {
+    const [addMention, { loading: loadingMention}] = useMutation(ADD_MENTION, {
         onCompleted: () => {
             toast.success("Successfully sent message!");
+            refetchSenderMentions();
+            setOpen(false);
         },
         onError: () => {
             toast.error("Failed to send message!");
@@ -80,6 +82,18 @@ function Addmention({ open = false, setOpen, datemention }) {
         });
         setOpen(false);
     };
+    if (loadingMention) {
+        return (
+        <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+            <div className="flex flex-col items-center gap-3">
+            <Loader
+                size={70}
+                className="animate-spin text-blue-500 dark:text-[#31f64b]"
+            />
+            </div>
+        </div>
+        );
+    }
 
     return (
         <Fragment>
@@ -161,7 +175,7 @@ function Addmention({ open = false, setOpen, datemention }) {
 
                                 <div className="flex w-full justify-end gap-2">
                                     {/* <button onClick={() => setMessage("")} className="bg-[#db0134] text-white  py-2 px-8 rounded flex items-center gap-2">Erase <span><Eraser /></span></button> */}
-                                    <button onClick={handleAddMention} className="bg-green-600 text-white  py-2 px-8 rounded flex items-center gap-2">Send <span><SendHorizontal /></span></button>
+                                    <button onClick={handleAddMention} disabled={message.length === 0} className="bg-[#0643f7] cursor-pointer disabled:bg-gray-400 text-white  py-2 px-8 rounded flex items-center gap-2">Send <span><SendHorizontal /></span></button>
                                 </div>
                             </div>
                         </div>
