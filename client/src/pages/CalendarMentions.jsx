@@ -139,6 +139,9 @@ function CalendarMentions() {
                         <div className="flex justuify-center items-center">
                             <p className="text-black dark:text-[#31f64b]  text-xl w-full  font-bold flex whitespace-nowrap ">Calendar Mentions</p>
                         </div>
+                        <div className="flex w-full items-center justify-end pr-15">
+                            <p className="text-3xl dark:text-[#1fff02] font-bold gap-4 flex"><span>{MONTH_NAMES[curMonth]}</span> <span>{curYear}</span></p>
+                        </div>
                         <div className="flex w-full gap-1 justify-end">
                             {/* dropdown for the year */}
                             <select
@@ -189,7 +192,7 @@ function CalendarMentions() {
                                 return (
                                     <div key={i}
 
-                                        className={`${day === null ? "pointer-events-none opacity-50 " : ""}group flex relative hover:scale-110 flex-col min-h-0 max-h-40 h-full bg-blue-700 border-2 rounded-2xl border-black`}>
+                                        className={`${day === null ? "pointer-events-none opacity-50 " : ""}group flex relative hover:scale-110 flex-col min-h-0 max-h-38 h-full bg-blue-700 border-2 rounded-2xl border-black`}>
                                         <div className="h-10 absolute z-10 ">
                                             <p className={`${day === currentDay && today.getMonth() === curMonth && today.getFullYear() === curYear ? " bg-[#06ff27] text-black" : "text-white"}  h-8 w-8 rounded-2xl  font-bold flex flex-col flex-1 items-center justify-center m-2`}>{day || null}</p>
                                         </div>
