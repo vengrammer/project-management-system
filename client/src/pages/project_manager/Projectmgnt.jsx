@@ -3,10 +3,12 @@ import { Archive, Eye, Trash2, CalendarArrowUp, CalendarArrowDown, Plus, Chevron
 import { useState } from "react";
 import AddNewProgram from "./AddNewProgram";
 import { gql } from "@apollo/client";
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import Swal from "sweetalert2";
+
 export const GET_THE_PROJECTMGNT = gql`
     query ProjectMgnts {
         projectMgnts {
@@ -85,6 +87,30 @@ export const GET_PROJECTMGNT_BYPM = gql`
 }
 `
 
+const DELETE_PROJECTMGNT = gql`
+    mutation DeleteProjectMgnt($deleteProjectMgntId: ID!) {
+        deleteProjectMgnt(id: $deleteProjectMgntId) {
+            message
+            projectMgnt {
+            _id
+            title
+            }
+        }
+    }
+`
+
+const UPDATE_PROJECTMGNT = gql`
+    mutation Mutation($updateProjectMgntId: ID!, $isArchive: Boolean) {
+        updateProjectMgnt(id: $updateProjectMgntId, isArchive: $isArchive) {
+            message
+            projectMgnt {
+            _id
+            title
+            }
+        }
+    }
+`
+
 function Projectmgnt() {
     const auth = useSelector((state) => state.auth);
     const userId = auth.user?.id;
@@ -101,14 +127,17 @@ function Projectmgnt() {
         loading: loadingAdminProjectMgnt,
         error: errorAdminProjectMgnt,
         data: dataAdminProjectMgnt,
+        refetch: refetchAdminProjectMgnt,
     } = useQuery(GET_THE_PROJECTMGNT, {
         skip: manager || pm,
+
     });
     //for the manager
     const {
         loading: loadingMProjectMgnt,
         error: errorMProjectMgnt,
         data: dataMProjectMgnt,
+        refetch: refetchMProjectMgnt,
     } = useQuery(GET_PROJECTMGNT_BYMANAGER, {
         variables: { projectsMgntByManagerId: userId },
         skip: !manager,
@@ -118,6 +147,7 @@ function Projectmgnt() {
         loading: loadingPmProjectMgnt,
         error: errorPmProjectMgnt,
         data: dataPmProjectMgnt,
+        refetch: refetchPmProjectMgnt,
     } = useQuery(GET_PROJECTMGNT_BYPM, {
         variables: { projectMgntByPmId: userId },
         skip: !pm,
@@ -136,12 +166,92 @@ function Projectmgnt() {
         projectMgnts = dataAdminProjectMgnt?.projectMgnts || [];
     }
 
+    const [deleteProjectMgnt] = useMutation(DELETE_PROJECTMGNT, {
+        onCompleted: async () => {
+            toast.success('Successfully deleted project management');
 
-    // const toggle = () => setOpen(!open);
+            if (!manager && !pm) {
+                await refetchAdminProjectMgnt();
+            } else if (manager) {
+                await refetchMProjectMgnt();
+            } else if (pm) {
+                await refetchPmProjectMgnt();
+            }
+        },
+        onError: (error) => {
+            toast.error('Failed to delete project management. Please try again.');
+        },
+        refetchAdminProjectMgnt,
+        refetchMProjectMgnt,
+        refetchPmProjectMgnt,
+    })
+
+    const handleDelete = async (id) => {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const { data } = await deleteProjectMgnt({
+                        variables: { deleteProjectMgntId: id },
+                    });
+                } catch (error) {
+                    console.error("Error deleting project:", error);
+                }
+            }
+        })
+    }
+
+    const [updateProjectMgnt] = useMutation(UPDATE_PROJECTMGNT, {
+        onCompleted: async () => {
+            toast.success('Successfully archived project management');
+            if (!manager && !pm) {
+                await refetchAdminProjectMgnt();
+            } else if (manager) {
+                await refetchMProjectMgnt();
+            } else if (pm) {
+                await refetchPmProjectMgnt();
+            }
+        },
+        onError: (error) => {
+            toast.error('Failed to archive project management. Please try again.');
+        }
+    })
+
+    const handleArchive = async (id) => {
+        Swal.fire({
+            title: 'Are you sure you want to archive?',
+            text: "Archive project!",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Archive it!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const { data } = await updateProjectMgnt({
+                        variables: { updateProjectMgntId: id, isArchive: true },
+                    });
+                }catch (error) {
+                    console.error("Error archiving project:");
+                }   
+            }
+        })
+    }
+
+
     const overdue = (project) => {
         if (!project.endDate) return false;
         return new Date(project.endDate) < new Date();
     };
+
     const getStatusColor = (status) => {
         switch (status) {
             case "Completed":
@@ -221,7 +331,7 @@ function Projectmgnt() {
     function handleView(projectmgnt) {
         if (pm) {
             navigate(`/projectmanager/projectmgntdetails/${projectmgnt}`);
-        }else if(manager) {
+        } else if (manager) {
             navigate(`/manager/projectmgntdetails/${projectmgnt}`);
         }
 
@@ -386,7 +496,7 @@ function Projectmgnt() {
 
                                                 <button
                                                     title="Archive"
-                                                    onClick={() => handleArchive(project._id)}
+                                                    onClick={() => handleArchive(project?._id)}
                                                     className="flex-1 lg:flex-none cursor-pointer bg-gray-500 hover:bg-gray-600 text-white dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
                                                 >
                                                     <span className="lg:hidden">Archive</span>
@@ -394,7 +504,7 @@ function Projectmgnt() {
                                                 </button>
 
                                                 <button
-                                                    onClick={() => handleDelete(project._id)}
+                                                    onClick={() => handleDelete(project?._id)}
                                                     title="Delete"
                                                     className="flex-1 lg:flex-none cursor-pointer bg-red-600 hover:bg-red-700 dark:bg-red-600/90 dark:hover:bg-red-500 text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
                                                 >

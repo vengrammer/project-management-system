@@ -1,6 +1,9 @@
 import ProjectMgnt from "../../model/projectmgnt.js";
 import mongoose from "mongoose";
 import User from "../../model/user.model.js";
+import Task from "../../model/Task.js"
+import TaskLog from "../../model/TaskLogs.js"
+import Project from "../../model/project.model.js";
 
 export const projectMgntResolver = {
   Query: {
@@ -183,7 +186,7 @@ export const projectMgntResolver = {
       }
       const projectMgnts = await ProjectMgnt.aggregate([
         {
-          $match: { pm: new mongoose.Types.ObjectId(userId) },
+          $match: { pm: new mongoose.Types.ObjectId(userId),  isArchive: true  },
         },
         {
           $lookup: {
@@ -417,7 +420,7 @@ export const projectMgntResolver = {
         if (!projectMgnt) throw new Error("ProjectMgnt not found");
 
         // fields allowed to update
-        const updatable = ["title", "pm", "priority", "startDate", "endDate"];
+        const updatable = ["title", "pm", "priority", "startDate", "endDate", "status", "isArchive"];
         updatable.forEach((key) => {
           if (fields[key] !== undefined) {
             projectMgnt[key] = fields[key];
@@ -521,6 +524,35 @@ export const projectMgntResolver = {
         console.error("Update ProjectMgnt error:", error);
         throw new Error(error.message || "Failed to update ProjectMgnt");
       }
+    },
+    deleteProjectMgnt: async (_, { id }) => {
+      if (!id) throw new Error("ProjectMgnt id is required");
+
+      
+      const projectMgnt = await ProjectMgnt.findById(id);
+      if (!projectMgnt) throw new Error("ProjectMgnt not found");
+
+      const projectIds = projectMgnt.projects;
+
+  
+      const tasks = await Task.find({ project: { $in: projectIds } });
+
+      const taskIds = tasks.map((task) => task._id);
+
+      
+      await TaskLog.deleteMany({ task: { $in: taskIds } });
+
+   
+      await Task.deleteMany({ project: { $in: projectIds } });
+
+      await Project.deleteMany({ _id: { $in: projectIds } });
+
+      await ProjectMgnt.findByIdAndDelete(id);
+
+      return {
+        message: "Project Management and all related data deleted successfully",
+        projectMgnt: reusableReturnmap([projectMgnt])[0],
+      };
     },
   },
 };
