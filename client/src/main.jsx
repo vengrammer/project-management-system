@@ -15,9 +15,13 @@ import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient } from "graphql-ws";
 import { getMainDefinition } from "@apollo/client/utilities";
 
+const graphqlHttpUrl = import.meta.env.VITE_GRAPHQL_URL || "http://localhost:5000/graphql";
+const graphqlWsUrl =
+  import.meta.env.VITE_GRAPHQL_WS ||
+  graphqlHttpUrl.replace(/^http/i, "ws");
 
 const httpLink = new HttpLink({
-  uri: "/graphql",
+  uri: graphqlHttpUrl,
 });
 
 import { store, persistor } from "./middleware/store";
@@ -34,12 +38,9 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-//websocket
-const host = location.pathname
-
 const wsLink = new GraphQLWsLink(
   createClient({
-    url: `wss://${host}:4000/graphql`,
+    url: graphqlWsUrl,
     connectionParams: () => {
       const state = store.getState();
       const token = state?.auth?.token;

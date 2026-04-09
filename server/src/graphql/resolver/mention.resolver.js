@@ -1,5 +1,6 @@
 import Mention from "../../model/mentions.model.js"
 import User from "../../model/user.model.js"
+import mongoose from "mongoose";
 
 export const mentionResolver = {
     Mention: {
@@ -23,6 +24,65 @@ export const mentionResolver = {
             const mentions = await Mention.find({ sender: userId });
             return mentions;
         },
+        mentionsByDateMention: async (_, { datemention, userId, isSender }, context) => {
+            const currentUserId = userId || context?.user?.id;
+
+          
+
+            if (!currentUserId) {
+                throw new Error("User ID is required to fetch mentions");
+            }
+
+            // Build dynamic match condition
+            const { start, end } = getDateRange(datemention);
+
+            let matchCondition = {
+                datemention: {
+                    $gte: start,
+                    $lte: end
+                }
+            };
+
+            
+
+            if (isSender) {
+                matchCondition.sender = new mongoose.Types.ObjectId(currentUserId);
+            } else {
+                matchCondition.recipients = new mongoose.Types.ObjectId(currentUserId);
+            }
+
+            // console.log("matchCondition:", matchCondition);
+
+            const mentions = await Mention.aggregate([
+                {
+                    $match: matchCondition
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "recipients",
+                        foreignField: "_id",
+                        as: "recipients"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "sender",
+                        foreignField: "_id",
+                        as: "sender"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$sender",
+                        preserveNullAndEmptyArrays: true,
+                    }
+                }
+            ]);
+
+            return mentions;
+        }
     },
     Mutation: {
         createMention: async (_, { sender, recipients, message, datemention }, context) => {
@@ -73,3 +133,18 @@ export const mentionResolver = {
     }
 }
 
+const getDateRange = (dateInput) => {
+    const date = new Date(dateInput);
+
+    if (isNaN(date)) {
+        throw new Error("Invalid date format");
+    }
+
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+
+    return { start, end };
+};

@@ -168,7 +168,7 @@ function Addmention({ open = false, setOpen, datemention, refetchSenderMentions 
                                 {/*text area*/}
                                 <textarea
                                     name="" id=""
-                                    placeholder="enter mentions..."
+                                    placeholder="enter message or note..."
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
                                     className="border-2 bg-gray-300 dark:bg-[#374347] py-1 px-2 min-h-40 w-full rounded">
