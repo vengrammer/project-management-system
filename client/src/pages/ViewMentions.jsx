@@ -72,7 +72,7 @@ const ADD_REPLY = gql`
     }
 `;
 
-function ViewMentions({ open = false, setOpen, datemention }) {
+function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessage = "" }) {
     const location = useLocation();
     const isManager = location.pathname.includes("/manager");
     const isPm = location.pathname.includes("/projectmanager");
@@ -89,12 +89,16 @@ function ViewMentions({ open = false, setOpen, datemention }) {
         },
         skip: !open,
         onCompleted: (queryData) => {
-            const firstMessageId = queryData?.mentionsByDateMention?.[0]?._id;
-            if (!firstMessageId) {
+            const availableMessages = queryData?.mentionsByDateMention ?? [];
+            const defaultMessageId = availableMessages.some((message) => message._id === initialSelectedMessage)
+                ? initialSelectedMessage
+                : availableMessages[0]?._id;
+
+            if (!defaultMessageId) {
                 return;
             }
 
-            setSelectedMessage((currentMessage) => currentMessage || firstMessageId);
+            setSelectedMessage((currentMessage) => currentMessage || defaultMessageId);
         },
     });
 
@@ -131,6 +135,14 @@ function ViewMentions({ open = false, setOpen, datemention }) {
             .join(", ");
     }, [selectedMention]);
 
+
+    useEffect(() => {
+        if (!initialSelectedMessage) {
+            return;
+        }
+
+        setSelectedMessage(initialSelectedMessage);
+    }, [initialSelectedMessage]);
 
     useEffect(() => {
         if (!selectedMessage) {
@@ -286,12 +298,12 @@ function ViewMentions({ open = false, setOpen, datemention }) {
                                             <div
                                                 key={message._id}
                                                 onClick={() => setSelectedMessage(message._id)}
-                                                className={`flex cursor-pointer flex-col gap-1 border-b-2 border-black p-3 transition-colors dark:border-[#2a3040] ${selectedMessage === message._id
-                                                    ? "bg-blue-100 dark:bg-[#2f3b52]"
+                                                className={`flex cursor-pointer flex-col gap-1 border-b-2 border-black p-3 transition-colors dark:border-[#2a3040] ${selectedMessage === message?._id
+                                                    ? "bg-[#8eb5d0] dark:bg-[#0051b4]"
                                                     : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a3040] dark:hover:bg-[#313a4f]"
                                                     }`}
                                             >
-                                                <p className="truncate font-medium text-gray-900 dark:text-slate-100">{message.message}</p>
+                                                <p className="truncate font-medium text-gray-900 dark:text-slate-100">{message?.message}</p>
                                                 <p className="truncate text-xs text-slate-600 dark:text-slate-300">
                                                     Sender: {message.sender?.fullname ?? "Unknown sender"}
                                                 </p>

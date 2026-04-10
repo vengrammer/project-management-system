@@ -22,7 +22,7 @@ function EmployeeRoute() {
           <Route path="dashboard" element={<EmployeeDashboard />} />
           <Route path="notification" element={<Notification />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="calendarmentions" element={<CalendarMentions/>}/>
+          <Route path="calendarmentions/:id?" element={<CalendarMentions/>}/>
         </Route>
         <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
         <Route

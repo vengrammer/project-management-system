@@ -72,6 +72,7 @@ export const mentionResolver = {
             return getMentionsWithUsers(matchCondition);
         },
         mention: async (_, { id }) => {
+            
             const mention = await Mention.findById(id);
             return mention;
         },

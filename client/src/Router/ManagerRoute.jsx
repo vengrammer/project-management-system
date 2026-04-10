@@ -28,7 +28,7 @@ function ManagerRoute() {
           <Route path="projectmgnt" element={<Projectmgnt />} />
           <Route path="archive" element={<ArchiveAdminEmployeeManager />} />
           <Route path="notification" element={<Notification />} />
-          <Route path="calendarmentions" element={<CalendaMentions/>}/>
+          <Route path="calendarmentions/:id?" element={<CalendaMentions/>}/>
           <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="*" element={<NotFound />} />

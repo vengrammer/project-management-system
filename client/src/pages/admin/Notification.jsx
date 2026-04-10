@@ -143,11 +143,12 @@ export default function Notification() {
   const handleNotifView = (projectId, notificationId, entity) => {
     handleMarkAsRead(notificationId);
 
-    console.log("Entity type:", entity);
-
     if(entity === "ProjectMgnt") {
         navigate(`/${isAdmin ? "admin" : isManager ? "manager" : isPm ? "projectmanager" : "employee"}/projectmgntdetails/${projectId}`);
-    }else{
+    }else if(entity === "Mention") {
+      navigate(`/${isAdmin ? "admin" : isManager ? "manager" : isPm ? "projectmanager" : "employee"}/calendarmentions/${projectId}`);
+    }
+    else{
       navigate(`/${isAdmin ? "admin" : isManager ? "manager" : isPm ? "projectmanager" : "employee"}/projectdetails/${projectId}`);
     }
   };
