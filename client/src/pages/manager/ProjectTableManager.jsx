@@ -363,7 +363,7 @@ export default function ProjectTableManager() {
                           <Archive size={20} className="hidden lg:inline" />
                         </button>)}
 
-                        <button
+                       {!project?.projectMgnt && <button
                           onClick={() => handleDelete(project.id)}
                           className="flex-1 cursor-pointer lg:flex-none
                             bg-red-600 hover:bg-red-700
@@ -374,7 +374,7 @@ export default function ProjectTableManager() {
                         >
                           <span className="lg:hidden">Delete</span>
                           <Trash2 size={18} className="hidden lg:inline text-white" />
-                        </button>
+                        </button>}
                       </>
                     
                   </div>

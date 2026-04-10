@@ -168,14 +168,14 @@ export const DELETE_DEPARTMENT_AND_MANAGER = gql`
 `;
 
 const DELETE_PROJECT = gql`
-    mutation DeleteProject($id: ID!) {
-      deleteProject(id: $id) {
-        message
-        project {
-          id
-        }
+  mutation DeleteProject($id: ID!) {
+    deleteProject(id: $id) {
+      message
+      project {
+        id
       }
     }
+  }
   `;
 
 function ProjectmgntDetails() {
@@ -275,7 +275,25 @@ function ProjectmgntDetails() {
   };
 
 
-  const [deleteProject] = useMutation(DELETE_PROJECT);
+  const [deleteProject] = useMutation(DELETE_PROJECT, {
+    onError: () => toast.error(`Could not delete project`),
+    onCompleted: () => toast.success("Project deleted successfully"),
+    refetchQueries: [
+      {
+        query: GET_THE_PROJECTMGNT,
+        variables: { projectMgntId: id },
+      },
+      {
+        query: GET_PROJECTS_BY_PROJECTMGNT,
+        variables: { projectsByProjectMgntId: projectMgntProjectIds },
+      },
+      {
+        query: GET_TASKS_BY_PROJECTS,
+        variables: { projectIds: projectMgntProjectIds },
+      },
+    ],
+    awaitRefetchQueries: true,
+  });
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [departmentManagers, setDepartmentManagers] = useState([]);
   const [openAddManager, setOpenAddManager] = useState(false);
@@ -327,7 +345,7 @@ function ProjectmgntDetails() {
     setAvailableManagers((prev) => prev.filter((m) => m.id !== managerId));
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (projectid) => {
     Swal.fire({
       title: "Are you sure you want to delete this project?",
       text: "You won't be able to revert this!",
@@ -338,15 +356,12 @@ function ProjectmgntDetails() {
       confirmButtonText: "Yes, delete it!",
     }).then(async (result) => {
       if (result.isConfirmed) {
-        try {
-          const { data } = await deleteProject({ variables: { id } });
-          if (data.deleteProject) {
-            toast.success("Project deleted successfully");
-            await refetchProjectMgnt();
+        deleteProject({
+          variables: {
+            id: projectid,
           }
-        } catch (error) {
-          toast.error(`Error deleting project: ${error.message}`);
-        }
+        });
+
       }
     });
   };
@@ -428,28 +443,28 @@ function ProjectmgntDetails() {
   });
 
   const handleMarkAsDone = (status) => {
-      Swal.fire({
-        title: `${status === "completed" ? "Mark this project as in progress?" : "Mark this project as completed?"}`,
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Confirm!",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          updateStatusProjectMgnt({
-            variables: {
-              updateProjectMgntId: id,
-              status: status === "completed" ? "in progress" : "completed",
-            },
-          });
-        }
-      });
-    };
+    Swal.fire({
+      title: `${status === "completed" ? "Mark this project as in progress?" : "Mark this project as completed?"}`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        updateStatusProjectMgnt({
+          variables: {
+            updateProjectMgntId: id,
+            status: status === "completed" ? "in progress" : "completed",
+          },
+        });
+      }
+    });
+  };
 
 
 
-  function handleMarkAsInProgress(){
+  function handleMarkAsInProgress() {
     updateStatusProjectMgnt({
       variables: {
         updateProjectMgntId: id,
@@ -458,8 +473,8 @@ function ProjectmgntDetails() {
     });
   }
 
-  function handleMarkAsNotStarted(){
-     updateStatusProjectMgnt({
+  function handleMarkAsNotStarted() {
+    updateStatusProjectMgnt({
       variables: {
         updateProjectMgntId: id,
         status: "not started",
@@ -584,7 +599,7 @@ function ProjectmgntDetails() {
                   <div className="flex gap-3 flex-wrap">
                     <div>
                       <button
-                         onClick={() => handleMarkAsDone(projectmgnt.status)}
+                        onClick={() => handleMarkAsDone(projectmgnt.status)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
                       ${projectmgnt.status === "completed"
                             ? "bg-amber-600 hover:bg-amber-700 dark:bg-amber-500/90 dark:hover:bg-amber-500"
@@ -598,7 +613,7 @@ function ProjectmgntDetails() {
                     <div>
                       {projectmgnt.status === "not started" && (
                         <button
-                           onClick={() => handleMarkAsInProgress()}
+                          onClick={() => handleMarkAsInProgress()}
                           className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
                       bg-blue-600 hover:bg-blue-700 dark:bg-blue-500/90 dark:hover:bg-blue-500
                       dark:hover:shadow-[0_0_8px_rgba(59,130,246,0.35)]"
@@ -610,16 +625,16 @@ function ProjectmgntDetails() {
                     </div>
                     <div>
                       {projectmgnt.status === "completed" || projectmgnt.status === "in_progress" || projectmgnt.status === "inprogress" || projectmgnt.status === "in progress" && (
-                  <button
-                    onClick={() => handleMarkAsNotStarted()}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
+                        <button
+                          onClick={() => handleMarkAsNotStarted()}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-150 text-sm font-semibold text-white
                       bg-gray-600 hover:bg-gray-700 dark:bg-gray-500/90 dark:hover:bg-gray-500
                       dark:hover:shadow-[0_0_8px_rgba(107,114,128,0.35)]"
-                  >
-                    <ArrowLeft size={18} />
-                    Mark As Not Started
-                  </button>
-                )}
+                        >
+                          <ArrowLeft size={18} />
+                          Mark As Not Started
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>}
@@ -946,7 +961,6 @@ function ProjectmgntDetails() {
                       <Target size={15} />
                       <p>{projectsByProjectMgnt?.filter(project => project.department?.id === department.id).length || 0} <span>projects</span></p>
                     </div>
-
                   </div>
                 </div>
               ))}

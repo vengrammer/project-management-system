@@ -2,6 +2,7 @@ import Project from "../../model/project.model.js";
 import TaskLog from "../../model/TaskLogs.js";
 import Task from "../../model/Task.js";
 import User from "../../model/user.model.js";
+import ProjectMgnt from "../../model/projectmgnt.js";
 import mongoose from "mongoose";
 //projectData = title,description,priority,status,department,progress,tags,budget,startdate,endate,timestamps
 export const projectResolvers = {
@@ -605,6 +606,10 @@ export const projectResolvers = {
     },
     deleteProject: async (_, { id }) => {
       try {
+        if (!id) {
+          throw new Error("Project id is required");
+        }
+
         // First get the project data before deleting
         const projectToDelete = await Project.aggregate([
           { $match: { _id: new mongoose.Types.ObjectId(id) } },
@@ -646,6 +651,10 @@ export const projectResolvers = {
           },
         ]);
 
+        if (projectToDelete.length === 0) {
+          throw new Error("Project not found");
+        }
+
         const tasks = await Task.find({ project: id });
 
         const taskIds = tasks.map((task) => task._id);
@@ -653,6 +662,12 @@ export const projectResolvers = {
         await TaskLog.deleteMany({ task: { $in: taskIds } });
 
         await Task.deleteMany({ project: id });
+
+        // Remove the deleted project from any project management record
+        await ProjectMgnt.updateMany(
+          { projects: id },
+          { $pull: { projects: id } },
+        );
 
         await Project.findByIdAndDelete(id);
 
