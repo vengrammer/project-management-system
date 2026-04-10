@@ -46,6 +46,11 @@ const mentionSchema = `#graphql
             message: String
         ): Mention
 
+        deleteReply(
+            mentionId: ID
+            replyId: ID
+        ): Mention
+
         updateMention(
             id: ID
             message: String

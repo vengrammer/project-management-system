@@ -192,6 +192,25 @@ export const mentionResolver = {
 
             return mention;
         },
+        deleteReply: async (_, { replyId, mentionId }) => {
+            const mention = await Mention.findById(mentionId);
+
+            if (!mention) {
+                throw new Error("Mention not found");
+            }
+
+            const reply = mention.replies.find((reply) => reply._id.toString() === replyId);
+
+            if (!reply) {
+                throw new Error("Reply not found");
+            }
+
+            mention.replies = mention.replies.filter((reply) => reply._id.toString() !== replyId);
+            await mention.save();
+
+            return mention;
+            
+        },
     }
 }
 
