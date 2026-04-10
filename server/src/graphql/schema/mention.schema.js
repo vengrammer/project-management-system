@@ -20,6 +20,11 @@ const mentionSchema = `#graphql
     }
 
     type Query {
+        mentionsByDateMention(datemention: String
+            userId: ID
+            isSender: Boolean
+        ): [Mention]
+        
         mentions: [Mention]
         mention(id: ID!): Mention
         mentionsByUser(userId: ID!): [Mention]

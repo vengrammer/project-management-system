@@ -211,19 +211,18 @@ export default function AdminSideBar() {
               Welcome, <span className="text-blue-600">Admin</span>
             </h1>
             <div className="flex items-center justify-center p-2">
-              <DarkModeSwitch/>
+              <DarkModeSwitch />
             </div>
-            
+
           </div>
           <ul className="space-y-2">
             <li>
               <Link
                 to="/admin/dashboard"
-                className={`${linkDesign} ${
-                  isActive("/admin/dashboard")
+                className={`${linkDesign} ${isActive("/admin/dashboard")
                     ? `${active}`
                     : ""
-                }`}
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 <LayoutDashboard size={20} />
@@ -233,23 +232,9 @@ export default function AdminSideBar() {
 
             <li>
               <Link
-                to="/admin/projects"
-                className={`${linkDesign} ${
-                  isActive("/admin/projects") ? `${active}` : ""
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <FolderOpenDot size={20} />
-                <span>Projects</span>
-              </Link>
-            </li>
-
-              <li>
-              <Link
                 to="/admin/projectmgnt"
-                className={`${linkDesign} ${
-                  isActive("/admin/projctmgnt") ? `${active}` : ""
-                }`}
+                className={`${linkDesign} ${isActive("/admin/projectmgnt") ? `${active}` : ""
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 <FolderOpen size={20} />
@@ -259,10 +244,23 @@ export default function AdminSideBar() {
 
             <li>
               <Link
+                to="/admin/projects"
+                className={`${linkDesign} ${isActive("/admin/projects") ? `${active}` : ""
+                  }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <FolderOpenDot size={20} />
+                <span>Projects</span>
+              </Link>
+            </li>
+
+
+
+            <li>
+              <Link
                 to="/admin/users"
-                className={` ${linkDesign} ${
-                  isActive("/admin/users") ? `${active}` : ""
-                }`}
+                className={` ${linkDesign} ${isActive("/admin/users") ? `${active}` : ""
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 <UserCheck size={20} />
@@ -273,11 +271,10 @@ export default function AdminSideBar() {
             <li>
               <Link
                 to="/admin/department"
-                className={`${linkDesign} ${
-                  isActive("/admin/department")
+                className={`${linkDesign} ${isActive("/admin/department")
                     ? `${active}`
                     : ""
-                }`}
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 <Building2 size={20} />
@@ -288,9 +285,8 @@ export default function AdminSideBar() {
             <li>
               <Link
                 to="/admin/archive"
-                className={` ${linkDesign} ${
-                  isActive("/admin/archive") ? `${active}` : ""
-                }`}
+                className={` ${linkDesign} ${isActive("/admin/archive") ? `${active}` : ""
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 <Archive size={20} />
@@ -302,11 +298,10 @@ export default function AdminSideBar() {
           <li>
             <Link
               to="/admin/notification"
-              className={`${linkDesign} mt-2 ${
-                isActive("/admin/notification")
+              className={`${linkDesign} mt-2 ${isActive("/admin/notification")
                   ? `${active}`
                   : ""
-              }`}
+                }`}
               onClick={() => setIsOpen(false)}
             >
               <Bell size={20} />
@@ -337,9 +332,8 @@ export default function AdminSideBar() {
           {/* Account */}
           <Link
             to="/admin/profile"
-            className={`${linkDesign} ${
-              isActive("/admin/profile") ? `${active}` : ""
-            }`}
+            className={`${linkDesign} ${isActive("/admin/profile") ? `${active}` : ""
+              }`}
             onClick={() => setIsOpen(false)}
           >
             <User size={18} />
@@ -348,7 +342,7 @@ export default function AdminSideBar() {
 
           <button
             onClick={() => {
-              dispatch(logout()); 
+              dispatch(logout());
               persistor.purge();
               client.resetStore();
               navigate("/");

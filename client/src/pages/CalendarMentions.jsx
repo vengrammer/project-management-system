@@ -98,9 +98,9 @@ function CalendarMentions() {
         setDayClick(new Date(curYear, curMonth, day).toDateString());
     }
 
-    const dayClickForViewMention = (day) => {
-        setDayClick(new Date(curYear, curMonth, day).toDateString());
-    }
+    // const dayClickForViewMention = (day) => {
+    //     setDayClick(new Date(curYear, curMonth, day).toDateString());
+    // }
 
     const filterDayMentions = (date, datemention, message) => {
         const cellDate = new Date(date);
@@ -222,19 +222,35 @@ function CalendarMentions() {
                                         </div>
                                         {/*action button*/}
                                         <div className={` absolute h-full flex w-full b-1 items-end justify-end`}>
-                                            <button onClick={() => {
-                                                dayClickForViewMention(day);
-                                                setOpenViewMentions(true)
-                                            }}
-                                                className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ec7ff] rounded-lg h-8 w-10   items-center justify-center m-1 p-1">
-                                                <NotepadText size={30} className="text-gray-800" />
-                                            </button>
+
+                                            {dayMentions?.some(data =>
+                                                filterDayMentions(
+                                                    new Date(curYear, curMonth, day),
+                                                    data.datemention,
+                                                    data.message
+                                                )
+                                            ) && (
+                                                    <button
+                                                        onClick={() => {
+                                                            dayClickForAddMention(day);
+                                                            setOpenViewMentions(true);
+                                                        }}
+                                                        className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ec7ff] rounded-lg h-8 w-10 items-center justify-center m-1 p-1"
+                                                    >
+                                                        <NotepadText size={30} className="text-gray-800" />
+                                                    </button>
+                                                )}
+
+
+
                                             <button onClick={() => {
                                                 dayClickForAddMention(day);
                                                 setOpenAddNote(true)
                                             }} className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ad045] rounded-lg h-8 w-10   items-center justify-center m-1 p-1">
                                                 <NotebookPen size={30} className="text-gray-800" />
                                             </button>
+
+
                                         </div>
                                     </div>
                                 )
@@ -249,7 +265,7 @@ function CalendarMentions() {
                 openAddNote && <Addmention open={openAddNote} setOpen={setOpenAddNote} datemention={dayClick} refetchSenderMentions={refetchSenderMentions} />
             }
             {
-                openViewMentions && <ViewMentions open={openViewMentions} setOpen={setOpenViewMentions} datemention={dayClickForViewMention} />
+                openViewMentions && <ViewMentions open={openViewMentions} setOpen={setOpenViewMentions} datemention={dayClick} />
             }
         </Fragment>
     )
