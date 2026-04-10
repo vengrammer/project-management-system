@@ -166,6 +166,8 @@ function Projectmgnt() {
         projectMgnts = dataAdminProjectMgnt?.projectMgnts || [];
     }
 
+    console.log("projectMgnts",projectMgnts)
+
     const [deleteProjectMgnt] = useMutation(DELETE_PROJECTMGNT, {
         onCompleted: async () => {
             toast.success('Successfully deleted project management');

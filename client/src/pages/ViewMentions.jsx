@@ -1,14 +1,38 @@
 import { gql } from "@apollo/client";
 import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react";
-import { Calendar, Loader, SendHorizontal, XCircle } from "lucide-react";
+import { Calendar, EllipsisVertical, Loader, SendHorizontal, Trash, Trash2, XCircle } from "lucide-react";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const GET_MENTIONS_BY_DATEMENTION = gql`
-    query MentionsByDateMention($userId: ID, $isSender: Boolean, $datemention: String) {
-        mentionsByDateMention(userId: $userId, isSender: $isSender, datemention: $datemention) {
+    query MentionsByDateMention($userId: ID, $datemention: String) {
+        senderMentions: mentionsByDateMention(userId: $userId, isSender: true, datemention: $datemention) {
+            _id
+            createdAt
+            datemention
+            message
+            recipients {
+                id
+                fullname
+            }
+            replies {
+                _id
+                message
+                createdAt
+                sender {
+                    id
+                    fullname
+                }
+            }
+            sender {
+                fullname
+                id
+            }
+            updatedAt
+        }
+        recipientMentions: mentionsByDateMention(userId: $userId, isSender: false, datemention: $datemention) {
             _id
             createdAt
             datemention
@@ -76,6 +100,7 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
     const location = useLocation();
     const isManager = location.pathname.includes("/manager");
     const isPm = location.pathname.includes("/projectmanager");
+    const isEmployee = location.pathname.includes("/employee");
     const userId = useSelector((state) => state.auth.user.id);
 
     const [selectedMessage, setSelectedMessage] = useState("");
@@ -84,12 +109,11 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
     const { data: dataMentions, loading: loadingMentions, refetch: refetchMentions } = useQuery(GET_MENTIONS_BY_DATEMENTION, {
         variables: {
             userId,
-            isSender: isManager || isPm,
             datemention,
         },
         skip: !open,
         onCompleted: (queryData) => {
-            const availableMessages = queryData?.mentionsByDateMention ?? [];
+            const availableMessages = getMergedMessages(queryData, { isManager, isPm, isEmployee });
             const defaultMessageId = availableMessages.some((message) => message._id === initialSelectedMessage)
                 ? initialSelectedMessage
                 : availableMessages[0]?._id;
@@ -126,7 +150,10 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
         },
     });
 
-    const messages = useMemo(() => dataMentions?.mentionsByDateMention ?? [], [dataMentions]);
+    const messages = useMemo(
+        () => getMergedMessages(dataMentions, { isManager, isPm, isEmployee }),
+        [dataMentions, isEmployee, isManager, isPm]
+    );
     const selectedMention = selectedMentionData?.mention;
     const recipientNames = useMemo(() => {
         return (selectedMention?.recipients ?? [])
@@ -134,15 +161,6 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
             .filter(Boolean)
             .join(", ");
     }, [selectedMention]);
-
-
-    useEffect(() => {
-        if (!initialSelectedMessage) {
-            return;
-        }
-
-        setSelectedMessage(initialSelectedMessage);
-    }, [initialSelectedMessage]);
 
     useEffect(() => {
         if (!selectedMessage) {
@@ -211,6 +229,25 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
         });
     }
 
+    function formatDateTime(dateValue) {
+        const normalizedDate = normalizeDateValue(dateValue);
+        if (!normalizedDate) {
+            return "No time";
+        }
+
+        const date = new Date(normalizedDate);
+        if (Number.isNaN(date.getTime())) {
+            return "Invalid time";
+        }
+
+        return date.toLocaleTimeString("en-US", {
+            day: "numeric",
+            month: "long",
+            hour: "numeric",
+            minute: "numeric",
+        })
+    }
+
     function isOwnMessage(sender) {
         return String(sender?.id ?? "") === String(userId ?? "");
     }
@@ -230,14 +267,29 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
         });
     }
 
+    
+
+    const handleDeleteReply = async (replyId) => {
+        await deleteReply({
+            variables: {
+                replyId: replyId,
+            }
+        })
+    }
+
     function renderMessageBubble(item) {
         const ownMessage = isOwnMessage(item.sender);
 
         return (
             <div
                 key={item._id}
-                className={`flex w-full ${ownMessage ? "justify-end" : "justify-start"}`}
+                className={`flex w-full gap-1 ${ownMessage ? "justify-end" : "justify-start"}`}
             >
+                {(ownMessage && !item.isOriginal  ) &&  (
+                    <div className="flex items-center cursor-pointer  ">
+                        <Trash2 className="hover:text-[#fd3410] text-[#cb0a03]"/>
+                    </div>
+                )}
                 <div
                     className={`flex max-w-[80%] min-w-0 flex-col gap-2 rounded-3xl px-4 py-3 shadow-sm ${ownMessage
                         ? "rounded-br-md bg-blue-500 text-white"
@@ -249,7 +301,7 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
                             {item.sender?.fullname ?? "Unknown sender"}
                         </p>
                         <p className={`text-[11px] ${ownMessage ? "text-blue-100" : "text-slate-500 dark:text-slate-400"}`}>
-                            {formatDate(item.createdAt)}
+                            {formatDateTime(item.createdAt)}
                         </p>
                     </div>
                     {item.isOriginal && (
@@ -259,6 +311,7 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
                     )}
                     <p className="whitespace-pre-wrap wrap-break-words text-sm">{item.message}</p>
                 </div>
+
             </div>
         );
     }
@@ -340,9 +393,9 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
                                                 <Loader className="animate-spin text-blue-500" size={32} />
                                             </div>
                                         ) : !selectedMessage ? (
-                                            <p className="self-center text-slate-400">No message selected.</p>
+                                            <p className="self-center flex justify-center text-slate-400">No message selected...</p>
                                         ) : conversationItems.length === 0 ? (
-                                            <p className="self-center text-slate-400">No conversation found for this mention.</p>
+                                            <p className="self-center  text-slate-400">No conversation found for this mention.</p>
                                         ) : (
                                             <div className="flex flex-col gap-3">{conversationItems.map(renderMessageBubble)}</div>
                                         )}
@@ -378,3 +431,30 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
 }
 
 export default ViewMentions;
+
+function getMergedMessages(dataMentions, { isManager, isPm, isEmployee }) {
+    if (!dataMentions) {
+        return [];
+    }
+
+    if (isEmployee) {
+        return dataMentions.recipientMentions ?? [];
+    }
+
+    if (isManager) {
+        const combinedMentions = [
+            ...(dataMentions.senderMentions ?? []),
+            ...(dataMentions.recipientMentions ?? []),
+        ];
+
+        return combinedMentions.filter(
+            (mention, index, list) => list.findIndex((item) => item._id === mention._id) === index
+        );
+    }
+
+    if (isPm) {
+        return dataMentions.senderMentions ?? [];
+    }
+
+    return dataMentions.recipientMentions ?? [];
+}

@@ -170,16 +170,29 @@ function CalendarMentions() {
     const { loading: loadingMentions, data: mentionData, refetch: refetchMentions } = useQuery(GET_MENTIONS_FOR_CALENDAR, {
         variables: {
             senderId: isSenderView ? userId : null,
-            recipientId: isEmployee ? userId : null,
+            recipientId: isEmployee || isManager ? userId : null,
         },
         skip: !userId,
     });
 
-    const dayMentions = useMemo(() => (
-        isSenderView
-            ? (mentionData?.mentionsBySender ?? [])
-            : (mentionData?.mentionsByRecipient ?? [])
-    ), [isSenderView, mentionData]);
+    const dayMentions = useMemo(() => {
+        if (isEmployee) {
+            return mentionData?.mentionsByRecipient ?? [];
+        }
+
+        if (isManager) {
+            const combinedMentions = [
+                ...(mentionData?.mentionsBySender ?? []),
+                ...(mentionData?.mentionsByRecipient ?? []),
+            ];
+
+            return combinedMentions.filter(
+                (mention, index, list) => list.findIndex((item) => item._id === mention._id) === index
+            );
+        }
+
+        return mentionData?.mentionsBySender ?? [];
+    }, [isEmployee, isManager, mentionData]);
 
 
 

@@ -178,7 +178,6 @@ export const projectMgntResolver = {
       return reusableReturnmap(projectMgnt)[0] || null;
     },
     projectMgntByPm: async (__dirname, { id }, context) => {
-
       const userId = id || context?.user?.id;
 
       if (!userId) {
@@ -186,7 +185,7 @@ export const projectMgntResolver = {
       }
       const projectMgnts = await ProjectMgnt.aggregate([
         {
-          $match: { pm: new mongoose.Types.ObjectId(userId),  isArchive: true  },
+          $match: { pm: new mongoose.Types.ObjectId(userId),  isArchive: false  },
         },
         {
           $lookup: {
@@ -268,8 +267,10 @@ export const projectMgntResolver = {
         },
 
       ]);
-
+      
       return reusableReturnmap(projectMgnts);
+
+      
     },
     projectsMgntByManager: async (__dirname, { id }, context) => {
       const userId = id || context?.user?.id;
