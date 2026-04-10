@@ -23,6 +23,7 @@ import {
   Building2,
   Archive,
   Bell,
+  CalendarClock,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -240,6 +241,19 @@ export default function PmSideBar() {
               >
                 <FolderOpenDot size={20} />
                 <span>Project/mgnt</span>
+              </Link>
+            </li>
+
+            {/* calendar mentions  */}
+            <li>
+              <Link
+                to="/projectmanager/calendarmentions"
+                className={`flex relative ${linkDesign} ${isActive("/projectmanager/calendarmentions") ? active : ""
+                  }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <CalendarClock size={20} />
+                <span>Calendar Mentions</span>{" "}
               </Link>
             </li>
 

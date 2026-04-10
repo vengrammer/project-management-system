@@ -5,6 +5,7 @@ import { Fragment } from "react";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 import { toast } from "react-toastify";
+
 const GET_MEMBER = gql`
     query Department($departmentId: ID) {
         department(id: $departmentId) {
@@ -17,6 +18,19 @@ const GET_MEMBER = gql`
             position
             }
         }
+    }
+`
+const GET_MANAGER = gql`
+    query Users {
+    userRoleManager {
+        id
+        fullname
+        position
+        department {
+        id
+        name
+        }
+    }
     }
 `
 
@@ -38,34 +52,46 @@ const ADD_MENTION = gql`
 `
 
 function Addmention({ open = false, setOpen, datemention, refetchSenderMentions }) {
-    
+
     //get the current login user
     const auth = useSelector((state) => state.auth);
     const userId = auth.user?.id;
     const userDepartment = auth.user?.department.id;
+    const isPm = useSelector((state) => state.auth.user?.role === "pm");
+
     //GET THE MEMBER FROM THE DEPARTMENT OF MANAGERS
     const { data: memberData } = useQuery(GET_MEMBER, {
         variables: {
             departmentId: userDepartment
-        }
+        },
+        skip: isPm
     })
+
+    //GET THE MANAGERS
+    const { data: managerData } = useQuery(GET_MANAGER, {
+        skip: !isPm
+    })
+
+
 
     //useState and variable need for mentions
     const [message, setMessage] = useState("");
     const [selectedMembers, setSelectedMembers] = useState([]);
-    
+
     const memberList = memberData?.department?.users
-    const filteredMembers = memberList?.filter((member) => member.id !== userId && member.role !== "admin" && member.role !== "pm" );
+    const managerList = managerData?.userRoleManager
+
+    const filteredMembers = isPm ? managerList : memberList?.filter((member) => member.id !== userId && member.role !== "admin" && member.role !== "pm");
     const allRecipientIds = filteredMembers?.map((member) => member.id) ?? [];
     const isAllSelected = allRecipientIds.length > 0 && allRecipientIds.every((id) => selectedMembers.includes(id));
 
-    
+
 
     const localDate = new Date(datemention);
     localDate.setHours(localDate.getHours() + 8);
 
     //useMutation need for mentions
-    const [addMention, { loading: loadingMention}] = useMutation(ADD_MENTION, {
+    const [addMention, { loading: loadingMention }] = useMutation(ADD_MENTION, {
         onCompleted: () => {
             toast.success("Successfully sent message!");
             refetchSenderMentions();
@@ -94,14 +120,14 @@ function Addmention({ open = false, setOpen, datemention, refetchSenderMentions 
 
     if (loadingMention) {
         return (
-        <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
-            <div className="flex flex-col items-center gap-3">
-            <Loader
-                size={70}
-                className="animate-spin text-blue-500 dark:text-[#31f64b]"
-            />
+            <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+                <div className="flex flex-col items-center gap-3">
+                    <Loader
+                        size={70}
+                        className="animate-spin text-blue-500 dark:text-[#31f64b]"
+                    />
+                </div>
             </div>
-        </div>
         );
     }
 
@@ -175,9 +201,9 @@ function Addmention({ open = false, setOpen, datemention, refetchSenderMentions 
                                                             className="w-4 h-4"
                                                             type="checkbox"
                                                             checked={selectedMembers.includes(member.id)}
-                                                            onChange={() => { }} 
+                                                            onChange={() => { }}
                                                             onClick={selectedMembers.includes(member.id)}
-                                                        />  
+                                                        />
                                                     </div>
                                                 ))
                                             )}
