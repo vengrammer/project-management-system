@@ -389,10 +389,21 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
                                                     : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a3040] dark:hover:bg-[#313a4f]"
                                                     }`}
                                             >
-                                                <p className="truncate font-medium text-gray-900 dark:text-slate-100">{message?.message}</p>
-                                                <p className="truncate text-xs text-slate-600 dark:text-slate-300">
-                                                    Sender: {message.sender?.fullname ?? "Unknown sender"}
-                                                </p>
+                                                <div className="flex flex-row justify-between w-full">
+                                                    <div>
+                                                        <p className="truncate flex-1 font-medium text-gray-900 dark:text-slate-100">{message?.message}</p>
+                                                        <p className="truncate flex-1 text-xs text-slate-600 dark:text-slate-300">
+                                                            Sender: {message.sender?.fullname ?? "Unknown sender"}
+                                                        </p>
+                                                    </div>
+                                                    <div className="cursor-pointer ">
+                                                        <EllipsisVertical onClick={() => console.log("sample")}  className="cursor-pointer hover:bg-[#4c00fe] rounded-full"/>
+                                                    </div>
+                                                    
+                                                </div>
+
+
+
                                                 <p className="self-end text-xs text-slate-500 dark:text-slate-400">
                                                     {formatDate(message.createdAt)}
                                                 </p>
