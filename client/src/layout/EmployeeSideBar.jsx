@@ -21,6 +21,7 @@ import {
   LayoutDashboard,
   Loader,
   Bell,
+  CalendarClock,
 } from "lucide-react";
 import { useQuery } from "@apollo/client/react";
 
@@ -242,6 +243,19 @@ export default function EmployeeSideBar() {
               >
                 <Archive size={20} />
                 <span>Archive</span>
+              </Link>
+            </li>
+
+             {/* calendar mentions  */}
+            <li>
+              <Link
+                to="/employee/calendarmentions"
+                className={`flex relative ${linkDesign} ${isActive("/employee/calendarmentions") ? active : ""
+                  }`}
+                onClick={() => setIsOpen(false)}
+              >
+                <CalendarClock size={20} />
+                <span>Calendar Mentions</span>{" "}
               </Link>
             </li>
 

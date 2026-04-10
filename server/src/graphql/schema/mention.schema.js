@@ -28,7 +28,8 @@ const mentionSchema = `#graphql
         mentions: [Mention]
         mention(id: ID!): Mention
         mentionsByUser(userId: ID!): [Mention]
-        mentionsBySender(senderId: ID!): [Mention]
+        mentionsBySender(senderId: ID): [Mention]
+        mentionsByRecipient(recipientId: ID): [Mention]
     }
 
     type Mutation {

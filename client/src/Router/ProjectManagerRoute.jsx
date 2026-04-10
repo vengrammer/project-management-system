@@ -30,6 +30,7 @@ function ProjectManagerRoute() {
                     <Route path="dashboard" element={<ProjectManagerDashboard />} />
                     <Route path="projectmgnt" element={<Program />} />
                     <Route path="notification" element={<Notification />} />
+                    <Route path="calendarmentions/:id?" element={<CalendaMentions />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="archive" element={<ArchiveAdminEmployeeManager />} />
                 </Route>

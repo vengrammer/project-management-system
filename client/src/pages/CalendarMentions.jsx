@@ -1,15 +1,29 @@
 
-import { CloudCog, Loader, NotebookPen, NotepadText, Pin } from "lucide-react";
-import { Fragment, useState } from "react";
+import { Loader, NotebookPen, NotepadText } from "lucide-react";
+import { Fragment, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import Addmention from "./Addmentions";
 import { useQuery } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 import ViewMentions from "./ViewMentions";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-const GET_MENTIONS_BY_SENDER = gql`
-    query MentionsBySender($senderId: ID!) {
+const GET_MENTIONS_FOR_CALENDAR = gql`
+    query MentionsForCalendar($senderId: ID, $recipientId: ID) {
         mentionsBySender(senderId: $senderId) {
+            _id
+            message
+            sender {
+                id
+                fullname
+            }
+            recipients {
+                id
+                fullname
+            }
+            datemention
+        }
+        mentionsByRecipient(recipientId: $recipientId) {
             _id
             message
             sender {
@@ -24,12 +38,42 @@ const GET_MENTIONS_BY_SENDER = gql`
         }
     }
 `
+const GET_MENTION_FROM_NOTIF = gql`
+    query Mention($mentionId: ID!) {
+        mention(id: $mentionId) {
+            datemention
+            createdAt
+            _id
+            message
+        }
+    }
+`
 
 function CalendarMentions() {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { id } = useParams();
+
+    const { data: mentionFromNotifData } = useQuery(GET_MENTION_FROM_NOTIF, {
+        variables: {
+            mentionId: id,
+        },
+        skip: !id
+    });
+
+    const mentionFromNotif = mentionFromNotifData?.mention;
+    
 
     //get the current login user
     const auth = useSelector((state) => state.auth);
     const userId = auth.user?.id;
+
+    //const get the route of the user login
+    const isManager = useSelector((state) => state.auth.user?.role === "manager");
+    const isEmployee = useSelector((state) => state.auth.user?.role === "user");
+    const isPm = useSelector((state) => state.auth.user?.role === "pm");
+    const isSenderView = isManager || isPm;
+
 
     //for the modal
     const [openAddNote, setOpenAddNote] = useState(false);
@@ -40,12 +84,48 @@ function CalendarMentions() {
     const today = new Date();
     const [curYear, setCurYear] = useState(today.getFullYear());
     const [curMonth, setCurMonth] = useState(today.getMonth());
-    const firstDay = new Date(curYear, curMonth, 1).getDay();
-    const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
     const currentDay = today.getDate()
 
-    function handleYearChange(e) { setCurYear(Number(e.target.value)); setSelectedDay(null); }
-    function handleMonthChange(e) { setCurMonth(Number(e.target.value)); setSelectedDay(null); }
+    const normalizeDateValue = (dateValue) => {
+        if (dateValue === null || dateValue === undefined || dateValue === "") {
+            return null;
+        }
+
+        const numericValue = Number(dateValue);
+        if (!Number.isNaN(numericValue)) {
+            return numericValue < 1000000000000 ? numericValue * 1000 : numericValue;
+        }
+
+        return dateValue;
+    };
+
+    const shortcutDateValue = normalizeDateValue(mentionFromNotif?.datemention);
+    const shortcutDate = shortcutDateValue ? new Date(shortcutDateValue) : null;
+    const displayYear = shortcutDate && !Number.isNaN(shortcutDate.getTime()) ? shortcutDate.getFullYear() : curYear;
+    const displayMonth = shortcutDate && !Number.isNaN(shortcutDate.getTime()) ? shortcutDate.getMonth() : curMonth;
+    const firstDay = new Date(displayYear, displayMonth, 1).getDay();
+    const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
+
+    function clearMentionShortcut() {
+        if(!mentionFromNotif) return;
+        if (!id) {
+            return;
+        }
+
+        const rootPath = location.pathname.split("/").slice(0, 3).join("/");
+        navigate(rootPath, { replace: true });
+    }
+
+
+    function handleYearChange(e) {
+        setCurYear(Number(e.target.value));
+        clearMentionShortcut();
+    }
+
+    function handleMonthChange(e) {
+        setCurMonth(Number(e.target.value));
+        clearMentionShortcut();
+    }
 
     function buildYears() {
         const cur = new Date().getFullYear();
@@ -87,24 +167,35 @@ function CalendarMentions() {
 
 
     //get the mentions by sender or in the current user login
-    const { loading: loadingSenderMentions, data: dataSenderMentions, refetch: refetchSenderMentions } = useQuery(GET_MENTIONS_BY_SENDER, { variables: { senderId: userId } });
-    const dayMentions = dataSenderMentions?.mentionsBySender;
+    const { loading: loadingMentions, data: mentionData, refetch: refetchMentions } = useQuery(GET_MENTIONS_FOR_CALENDAR, {
+        variables: {
+            senderId: isSenderView ? userId : null,
+            recipientId: isEmployee ? userId : null,
+        },
+        skip: !userId,
+    });
+
+    const dayMentions = useMemo(() => (
+        isSenderView
+            ? (mentionData?.mentionsBySender ?? [])
+            : (mentionData?.mentionsByRecipient ?? [])
+    ), [isSenderView, mentionData]);
 
 
 
     const years = buildYears();
     const [dayClick, setDayClick] = useState(null);
     const dayClickForAddMention = (day) => {
-        setDayClick(new Date(curYear, curMonth, day).toDateString());
-    }
-
-    // const dayClickForViewMention = (day) => {
-    //     setDayClick(new Date(curYear, curMonth, day).toDateString());
-    // }
+        setDayClick(new Date(displayYear, displayMonth, day).toDateString());
+    };
 
     const filterDayMentions = (date, datemention, message) => {
         const cellDate = new Date(date);
-        const mentionDate = new Date(Number(datemention));
+        const normalizedDate = normalizeDateValue(datemention);
+        if (!normalizedDate) return null;
+
+        const mentionDate = new Date(normalizedDate);
+        if (Number.isNaN(mentionDate.getTime())) return null;
 
         const isSameDay =
             cellDate.getFullYear() === mentionDate.getFullYear() &&
@@ -118,7 +209,27 @@ function CalendarMentions() {
         return null;
     };
 
-    if (loadingSenderMentions) {
+    const isShortcutDay = (day) => {
+        if (!day || !shortcutDate || Number.isNaN(shortcutDate.getTime())) {
+            return false;
+        }
+
+        return (
+            shortcutDate.getFullYear() === displayYear &&
+            shortcutDate.getMonth() === displayMonth &&
+            shortcutDate.getDate() === day
+        );
+    };
+
+    const visibleShortcutMention = useMemo(() => {
+        if (!id) {
+            return null;
+        }
+
+        return dayMentions.find((mention) => mention._id === id) ?? null;
+    }, [dayMentions, id]);
+
+    if (loadingMentions) {
         return (
             <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
                 <div className="flex flex-col items-center gap-3">
@@ -140,12 +251,12 @@ function CalendarMentions() {
                             <p className="text-black dark:text-[#31f64b]  text-xl w-full  font-bold flex whitespace-nowrap ">Calendar Mentions</p>
                         </div>
                         <div className="flex w-full items-center justify-end pr-15">
-                            <p className="text-3xl dark:text-[#1fff02] font-bold gap-4 flex"><span>{MONTH_NAMES[curMonth]}</span> <span>{curYear}</span></p>
+                            <p className="text-3xl dark:text-[#1fff02] font-bold gap-4 flex"><span>{MONTH_NAMES[displayMonth]}</span> <span>{displayYear}</span></p>
                         </div>
                         <div className="flex w-full gap-1 justify-end">
                             {/* dropdown for the year */}
                             <select
-                                value={curYear}
+                                value={displayYear}
                                 onChange={handleYearChange}
                                 className={`border-2 border-slate-200 rounded-lg px-3 py-2 m-2 text-sm font-semibold
                                         text-slate-700 outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer
@@ -158,7 +269,7 @@ function CalendarMentions() {
 
                             {/* ── Month dropdown ── */}
                             <select
-                                value={curMonth}
+                                value={displayMonth}
                                 onChange={handleMonthChange}
                                 className={`border-2 border-slate-200 m-2 rounded-lg px-3 py-2 text-sm font-semibold
                                     text-slate-700 outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer
@@ -191,17 +302,29 @@ function CalendarMentions() {
 
                                 return (
                                     <div key={i}
-
-                                        className={`${day === null ? "pointer-events-none opacity-50 " : ""}group flex relative hover:scale-110 flex-col min-h-0 max-h-38 h-full bg-blue-700 border-2 rounded-2xl border-black`}>
+                                        className={`${day === null ? "pointer-events-none opacity-50 " : ""} ${isShortcutDay(day) ? "ring-4 ring-yellow-300 dark:ring-[#31f64b]" : ""} group flex relative hover:scale-110 flex-col min-h-0 max-h-38 h-full bg-blue-700 border-2 rounded-2xl border-black`}>
                                         <div className="h-10 absolute z-10 ">
-                                            <p className={`${day === currentDay && today.getMonth() === curMonth && today.getFullYear() === curYear ? " bg-[#06ff27] text-black" : "text-white"}  h-8 w-8 rounded-2xl  font-bold flex flex-col flex-1 items-center justify-center m-2`}>{day || null}</p>
+                                            <p className={`${isShortcutDay(day)
+                                                ? "bg-yellow-300 text-black dark:bg-[#31f64b] dark:text-black"
+                                                : day === currentDay && today.getMonth() === displayMonth && today.getFullYear() === displayYear
+                                                    ? " bg-[#06ff27] text-black"
+                                                    : "text-white"}  h-8 w-8 rounded-2xl  font-bold flex flex-col flex-1 items-center justify-center m-2`}>{day || null}</p>
                                         </div>
 
                                         {/*data: I filter the data based on their date then show to the calendar */}
                                         <div className="pt-9 px-2 flex flex-col flex-1 rounded-b-lg min-h-0 gap-0.5 overflow-hidden">
+                                            {isShortcutDay(day) && visibleShortcutMention && (
+                                                <p className="rounded-2xl bg-yellow-300 px-2 text-black dark:bg-[#31f64b] dark:text-black truncate flex items-center gap-1 font-semibold">
+                                                    {visibleShortcutMention.message}
+                                                </p>
+                                            )}
                                             {dayMentions?.map((data) => {
+                                                if (visibleShortcutMention?._id === data._id && isShortcutDay(day)) {
+                                                    return null;
+                                                }
+
                                                 const result = filterDayMentions(
-                                                    new Date(curYear, curMonth, day),
+                                                    new Date(displayYear, displayMonth, day),
                                                     data.datemention,
                                                     data.message
                                                 );
@@ -225,7 +348,7 @@ function CalendarMentions() {
 
                                             {dayMentions?.some(data =>
                                                 filterDayMentions(
-                                                    new Date(curYear, curMonth, day),
+                                                    new Date(displayYear, displayMonth, day),
                                                     data.datemention,
                                                     data.message
                                                 )
@@ -243,12 +366,14 @@ function CalendarMentions() {
 
 
 
-                                            <button onClick={() => {
-                                                dayClickForAddMention(day);
-                                                setOpenAddNote(true)
-                                            }} className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ad045] rounded-lg h-8 w-10   items-center justify-center m-1 p-1">
-                                                <NotebookPen size={30} className="text-gray-800" />
-                                            </button>
+                                            {isSenderView && (
+                                                <button onClick={() => {
+                                                    dayClickForAddMention(day);
+                                                    setOpenAddNote(true)
+                                                }} className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ad045] rounded-lg h-8 w-10   items-center justify-center m-1 p-1">
+                                                    <NotebookPen size={30} className="text-gray-800" />
+                                                </button>
+                                            )}
 
 
                                         </div>
@@ -262,12 +387,12 @@ function CalendarMentions() {
             </div>
             {/* modal*/}
             {
-                openAddNote && <Addmention open={openAddNote} setOpen={setOpenAddNote} datemention={dayClick} refetchSenderMentions={refetchSenderMentions} />
+                openAddNote && <Addmention open={openAddNote} setOpen={setOpenAddNote} datemention={dayClick} refetchSenderMentions={refetchMentions} />
             }
             {
-                openViewMentions && <ViewMentions open={openViewMentions} setOpen={setOpenViewMentions} datemention={dayClick} />
+                openViewMentions && <ViewMentions open={openViewMentions} setOpen={setOpenViewMentions} datemention={dayClick} initialSelectedMessage={id || ""} />
             }
         </Fragment>
-    )
+    );
 }
 export default CalendarMentions;

@@ -7,6 +7,7 @@ import EmployeeDashboard from "@/pages/employee/EmployeeDashboard";
 import Profile from "@/pages/admin/Profile";
 import ProtectedRoute from "./ProtectedRoute";
 import Notification from "@/pages/admin/Notification";
+import CalendarMentions from "@/pages/CalendarMentions";
 function EmployeeRoute() {
   return (
     <ProtectedRoute requiredRole="user">
@@ -21,6 +22,7 @@ function EmployeeRoute() {
           <Route path="dashboard" element={<EmployeeDashboard />} />
           <Route path="notification" element={<Notification />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="calendarmentions/:id?" element={<CalendarMentions/>}/>
         </Route>
         <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
         <Route

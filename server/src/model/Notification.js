@@ -41,7 +41,7 @@ const notificationSchema = new mongoose.Schema(
     entity: {
       type: {
         type: String,
-        enum: ["Task", "Project", "TaskLogs", "ProjectMgnt"],
+        enum: ["Task", "Project", "TaskLogs", "ProjectMgnt", "Mention"],
         required: true,
       },
       id: {

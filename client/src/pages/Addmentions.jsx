@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { Calendar, CloudCog, Eraser, Loader, Plus, Send, SendHorizontal, SendIcon, XCircle } from "lucide-react";
+import { Calendar, Loader, SendHorizontal, XCircle } from "lucide-react";
 import { Fragment } from "react";
 import { useSelector } from "react-redux";
 import { useState } from "react";
@@ -44,17 +44,22 @@ function Addmention({ open = false, setOpen, datemention, refetchSenderMentions 
     const userId = auth.user?.id;
     const userDepartment = auth.user?.department.id;
     //GET THE MEMBER FROM THE DEPARTMENT OF MANAGERS
-    const { data: memberData, loading: memberLoading, error: memberError } = useQuery(GET_MEMBER, {
+    const { data: memberData } = useQuery(GET_MEMBER, {
         variables: {
             departmentId: userDepartment
         }
     })
-    const memberList = memberData?.department?.users
-    const filteredMembers = memberList?.filter((member) => member.id !== userId && member.role !== "admin" && member.role !== "pm" );
 
     //useState and variable need for mentions
     const [message, setMessage] = useState("");
     const [selectedMembers, setSelectedMembers] = useState([]);
+    
+    const memberList = memberData?.department?.users
+    const filteredMembers = memberList?.filter((member) => member.id !== userId && member.role !== "admin" && member.role !== "pm" );
+    const allRecipientIds = filteredMembers?.map((member) => member.id) ?? [];
+    const isAllSelected = allRecipientIds.length > 0 && allRecipientIds.every((id) => selectedMembers.includes(id));
+
+    
 
     const localDate = new Date(datemention);
     localDate.setHours(localDate.getHours() + 8);
@@ -82,6 +87,11 @@ function Addmention({ open = false, setOpen, datemention, refetchSenderMentions 
         });
         setOpen(false);
     };
+
+    const handleToggleAllRecipients = () => {
+        setSelectedMembers(isAllSelected ? [] : allRecipientIds);
+    };
+
     if (loadingMention) {
         return (
         <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
@@ -121,9 +131,20 @@ function Addmention({ open = false, setOpen, datemention, refetchSenderMentions 
                                     <span className="dark:text-slate-400 text-sm">{new Date(datemention).toDateString()}</span>
                                 </div>
                                 <div className="flex-1 pt-4 ">
-                                    <div className="flex w-full items-center justify-center">
-                                        <p className="dark:text-slate-350 pb-2">Select Member</p>
+                                    <div className="flex w-full items-center justify-between pb-2">
+                                        <p className="dark:text-slate-350">Select Member</p>
+                                        <button
+                                            type="button"
+                                            onClick={handleToggleAllRecipients}
+                                            disabled={allRecipientIds.length === 0}
+                                            className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-gray-400"
+                                        >
+                                            {isAllSelected ? "Clear All" : "Select All"}
+                                        </button>
                                     </div>
+                                    <p className="pb-2 text-xs text-slate-500 dark:text-slate-400">
+                                        {selectedMembers.length} recipient{selectedMembers.length === 1 ? "" : "s"} selected
+                                    </p>
 
                                     <div className="flex flex-col max-h-30 border-gray-400 dark:border-none rounded bg-gray-400 overflow-y-auto border-2">
 
