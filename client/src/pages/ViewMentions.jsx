@@ -5,6 +5,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const GET_MENTIONS_BY_DATEMENTION = gql`
     query MentionsByDateMention($userId: ID, $datemention: String) {
@@ -96,6 +97,15 @@ const ADD_REPLY = gql`
     }
 `;
 
+const DELETE_REPLY = gql`
+    mutation DeleteReply($replyId: ID, $mentionId: ID) {
+        deleteReply(replyId: $replyId, mentionId: $mentionId) {
+            _id
+            message
+        }
+    }
+`;
+
 function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessage = "" }) {
     const location = useLocation();
     const isManager = location.pathname.includes("/manager");
@@ -147,6 +157,16 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
         },
         onError: () => {
             toast.error("Failed to send reply");
+        },
+    });
+
+    const [deleteReply, { loading: loadingDeleteReply }] = useMutation(DELETE_REPLY, {
+        onCompleted: async () => {
+            toast.success("Reply deleted successfully");
+            await refetchMentions();
+        },
+        onError: () => {
+            toast.error("Failed to delete reply");
         },
     });
 
@@ -267,12 +287,25 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
         });
     }
 
-    
+
 
     const handleDeleteReply = async (replyId) => {
-        await deleteReply({
-            variables: {
-                replyId: replyId,
+        Swal.fire({
+            title: "Are you sure you want to delete this reply?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                await deleteReply({
+                    variables: {
+                        replyId: replyId,
+                        mentionId: selectedMessage
+                    }
+                })
             }
         })
     }
@@ -285,9 +318,9 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
                 key={item._id}
                 className={`flex w-full gap-1 ${ownMessage ? "justify-end" : "justify-start"}`}
             >
-                {(ownMessage && !item.isOriginal  ) &&  (
+                {(ownMessage && !item.isOriginal) && (
                     <div className="flex items-center cursor-pointer  ">
-                        <Trash2 className="hover:text-[#fd3410] text-[#cb0a03]"/>
+                        <Trash2 onClick={() => handleDeleteReply(item?._id)} className="hover:text-[#fd3410] text-[#cb0a03]" />
                     </div>
                 )}
                 <div
