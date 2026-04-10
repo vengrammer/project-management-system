@@ -13,6 +13,15 @@ export const mentionResolver = {
             return users;
         },
     },
+    Reply: {
+        sender: async (parent) => {
+            if (!parent?.sender) {
+                return null;
+            }
+
+            return User.findById(parent.sender);
+        },
+    },
     Query: {
         mentionsBySender: async (_, { senderId }, context) => {
             console.log("senderId:", senderId);
@@ -82,7 +91,11 @@ export const mentionResolver = {
             ]);
 
             return mentions;
-        }
+        },
+        mention: async (_, { id }) => {
+            const mention = await Mention.findById(id);
+            return mention;
+        },
     },
     Mutation: {
         createMention: async (_, { sender, recipients, message, datemention }, context) => {
@@ -129,6 +142,33 @@ export const mentionResolver = {
             ])
 
             return returnData[0];
+        },
+        addReply: async (_, { mentionId, sender, message }, context) => {
+            const userId = sender || context?.user?.id;
+
+            if (!userId) {
+                throw new Error("User ID is required to add a reply");
+            }
+
+            const mention = await Mention.findByIdAndUpdate(
+                mentionId,
+                {
+                    $push: {
+                        replies: {
+                            sender: userId,
+                            message,
+                            createdAt: new Date(),
+                        },
+                    },
+                },
+                { new: true }
+            );
+
+            if (!mention) {
+                throw new Error("Mention not found");
+            }
+
+            return mention;
         },
     }
 }
