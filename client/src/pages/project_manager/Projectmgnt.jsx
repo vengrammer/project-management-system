@@ -345,15 +345,18 @@ function Projectmgnt() {
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 className="bg-white border-2 dark:bg-[#222732] rounded-lg shadow dark:shadow-[0_2px_20px_rgba(0,0,0,0.5)] w-full h-full flex flex-col">
                 {/*This is the add new program model*/}
-                {openAddProgram || pm && <AddNewProgram open={openAddProgram} setOpen={setOpenAddProgram} />}
+                
+                   {openAddProgram && <AddNewProgram open={openAddProgram} setOpen={setOpenAddProgram} />} 
+                
+                
 
                 <div className="flex flex-col flex-1 gap-3">
                     <header className="flex flex-row justify-between py-4 px-4">
                         <div className="p-3  dark:text-green-400 text-blue-600 text-2xl font-extrabold rounded-4xl">| <span className="dark:text-white text-black">Project management</span></div>
                         <div className="flex justify-center items-center  pr-8">
-                            <button
+                            { pm && <button
                                 onClick={() => setOpenAddProgram(true)}
-                                className="bg-[#03c01c] text-black cursor-pointer hover:scale-120 duration-200 px-4 p-2 rounded-lg flex gap-2"><Plus /> Project/mgnt</button>
+                                className="bg-[#03c01c] text-black cursor-pointer hover:scale-120 duration-200 px-4 p-2 rounded-lg flex gap-2"><Plus /> Project/mgnt</button>}
                         </div>
                     </header>
                     <div className="flex mx-4">
