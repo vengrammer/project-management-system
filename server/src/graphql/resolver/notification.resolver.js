@@ -1,7 +1,7 @@
 import Notification from "../../model/Notification.js";
 import { PubSub } from "graphql-subscriptions";
 
-const pubsub = new PubSub();
+export const pubsub = new PubSub();
 
 export const notificationResolvers = {
   Query: {
@@ -53,7 +53,7 @@ export const notificationResolvers = {
     createNotif: async (_, { input }, { user }) => {
       if (!user) throw new Error("Unauthorized");
 
-      const notification = await Notification.create({
+      return publishNotificationToRecipients({
         recipients: input.recipients,
         sender: input.sender || user.id,
         type: input.type,
@@ -62,21 +62,6 @@ export const notificationResolvers = {
         entity: input.entity,
         isRead: input.isRead ?? false,
       });
-
-      // Populate sender and recipients before formatting
-      await notification.populate("sender");
-      await notification.populate("recipients");
-
-      const formatted = formatNotification(notification);
-
-      // send notification to each recipient
-      input.recipients.forEach((recipientId) => {
-        pubsub.publish(`NOTIFICATION_${recipientId}`, {
-          notificationAdded: formatted,
-        });
-      });
-
-      return formatted;
     },
 
     markNotificationRead: async (_, { id }, { user }) => {
@@ -117,7 +102,32 @@ export const notificationResolvers = {
 };
 
 // helper formatter
-function formatNotification(notif) {
+export async function publishNotificationToRecipients(input) {
+  const notification = await Notification.create({
+    recipients: input.recipients,
+    sender: input.sender,
+    type: input.type,
+    title: input.title,
+    message: input.message,
+    entity: input.entity,
+    isRead: input.isRead ?? false,
+  });
+
+  await notification.populate("sender");
+  await notification.populate("recipients");
+
+  const formatted = formatNotification(notification);
+
+  input.recipients.forEach((recipientId) => {
+    pubsub.publish(`NOTIFICATION_${recipientId}`, {
+      notificationAdded: formatted,
+    });
+  });
+
+  return formatted;
+}
+
+export function formatNotification(notif) {
   // Helper to format a user object
   const formatUser = (user) => {
     if (!user) return null;

@@ -124,6 +124,12 @@ function ViewMentions({ open = false, setOpen, datemention }) {
 
     const messages = useMemo(() => dataMentions?.mentionsByDateMention ?? [], [dataMentions]);
     const selectedMention = selectedMentionData?.mention;
+    const recipientNames = useMemo(() => {
+        return (selectedMention?.recipients ?? [])
+            .map((recipient) => recipient?.fullname)
+            .filter(Boolean)
+            .join(", ");
+    }, [selectedMention]);
 
 
     useEffect(() => {
@@ -221,11 +227,10 @@ function ViewMentions({ open = false, setOpen, datemention }) {
                 className={`flex w-full ${ownMessage ? "justify-end" : "justify-start"}`}
             >
                 <div
-                    className={`flex max-w-[80%] min-w-0 flex-col gap-2 rounded-3xl px-4 py-3 shadow-sm ${
-                        ownMessage
-                            ? "rounded-br-md bg-blue-500 text-white"
-                            : "rounded-bl-md bg-gray-200 text-gray-900 dark:bg-[#374347] dark:text-slate-100"
-                    }`}
+                    className={`flex max-w-[80%] min-w-0 flex-col gap-2 rounded-3xl px-4 py-3 shadow-sm ${ownMessage
+                        ? "rounded-br-md bg-blue-500 text-white"
+                        : "rounded-bl-md bg-gray-200 text-gray-900 dark:bg-[#374347] dark:text-slate-100"
+                        }`}
                 >
                     <div className="flex items-center justify-between gap-4 border-b border-black/10 pb-2 dark:border-white/10">
                         <p className={`text-xs font-semibold ${ownMessage ? "text-blue-100" : "text-slate-600 dark:text-slate-300"}`}>
@@ -281,11 +286,10 @@ function ViewMentions({ open = false, setOpen, datemention }) {
                                             <div
                                                 key={message._id}
                                                 onClick={() => setSelectedMessage(message._id)}
-                                                className={`flex cursor-pointer flex-col gap-1 border-b-2 border-black p-3 transition-colors dark:border-[#2a3040] ${
-                                                    selectedMessage === message._id
-                                                        ? "bg-blue-100 dark:bg-[#2f3b52]"
-                                                        : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a3040] dark:hover:bg-[#313a4f]"
-                                                }`}
+                                                className={`flex cursor-pointer flex-col gap-1 border-b-2 border-black p-3 transition-colors dark:border-[#2a3040] ${selectedMessage === message._id
+                                                    ? "bg-blue-100 dark:bg-[#2f3b52]"
+                                                    : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a3040] dark:hover:bg-[#313a4f]"
+                                                    }`}
                                             >
                                                 <p className="truncate font-medium text-gray-900 dark:text-slate-100">{message.message}</p>
                                                 <p className="truncate text-xs text-slate-600 dark:text-slate-300">
@@ -305,6 +309,9 @@ function ViewMentions({ open = false, setOpen, datemention }) {
                                             <div className="flex flex-col gap-1">
                                                 <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
                                                     Sender: {selectedMention.sender?.fullname ?? "Unknown sender"}
+                                                </p>
+                                                <p className="text-xs text-slate-600 dark:text-slate-300">
+                                                    Recipients: {recipientNames || "No recipients"}
                                                 </p>
                                                 <p className="text-xs text-slate-500 dark:text-slate-400">
                                                     Created: {formatDate(selectedMention.createdAt)}

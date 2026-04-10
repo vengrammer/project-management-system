@@ -1,5 +1,5 @@
 
-import { CloudCog, Loader, NotebookPen, NotepadText, Pin } from "lucide-react";
+import { Loader, NotebookPen, NotepadText } from "lucide-react";
 import { Fragment, useState } from "react";
 import { useSelector } from "react-redux";
 import Addmention from "./Addmentions";
@@ -7,9 +7,22 @@ import { useQuery } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 import ViewMentions from "./ViewMentions";
 
-const GET_MENTIONS_BY_SENDER = gql`
-    query MentionsBySender($senderId: ID!) {
+const GET_MENTIONS_FOR_CALENDAR = gql`
+    query MentionsForCalendar($senderId: ID, $recipientId: ID) {
         mentionsBySender(senderId: $senderId) {
+            _id
+            message
+            sender {
+                id
+                fullname
+            }
+            recipients {
+                id
+                fullname
+            }
+            datemention
+        }
+        mentionsByRecipient(recipientId: $recipientId) {
             _id
             message
             sender {
@@ -31,6 +44,13 @@ function CalendarMentions() {
     const auth = useSelector((state) => state.auth);
     const userId = auth.user?.id;
 
+    //const get the route of the user login
+    const isManager = useSelector((state) => state.auth.user?.role === "manager");
+    const isEmployee = useSelector((state) => state.auth.user?.role === "user");
+    const isPm = useSelector((state) => state.auth.user?.role === "pm");
+    const isSenderView = isManager || isPm;
+
+
     //for the modal
     const [openAddNote, setOpenAddNote] = useState(false);
     const [openViewMentions, setOpenViewMentions] = useState(false);
@@ -44,8 +64,8 @@ function CalendarMentions() {
     const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
     const currentDay = today.getDate()
 
-    function handleYearChange(e) { setCurYear(Number(e.target.value)); setSelectedDay(null); }
-    function handleMonthChange(e) { setCurMonth(Number(e.target.value)); setSelectedDay(null); }
+    function handleYearChange(e) { setCurYear(Number(e.target.value)); }
+    function handleMonthChange(e) { setCurMonth(Number(e.target.value)); }
 
     function buildYears() {
         const cur = new Date().getFullYear();
@@ -87,8 +107,17 @@ function CalendarMentions() {
 
 
     //get the mentions by sender or in the current user login
-    const { loading: loadingSenderMentions, data: dataSenderMentions, refetch: refetchSenderMentions } = useQuery(GET_MENTIONS_BY_SENDER, { variables: { senderId: userId } });
-    const dayMentions = dataSenderMentions?.mentionsBySender;
+    const { loading: loadingMentions, data: mentionData, refetch: refetchMentions } = useQuery(GET_MENTIONS_FOR_CALENDAR, {
+        variables: {
+            senderId: isSenderView ? userId : null,
+            recipientId: isEmployee ? userId : null,
+        },
+        skip: !userId,
+    });
+
+    const dayMentions = isSenderView
+        ? (mentionData?.mentionsBySender ?? [])
+        : (mentionData?.mentionsByRecipient ?? []);
 
 
 
@@ -101,10 +130,26 @@ function CalendarMentions() {
     // const dayClickForViewMention = (day) => {
     //     setDayClick(new Date(curYear, curMonth, day).toDateString());
     // }
+    const normalizeDateValue = (dateValue) => {
+        if (dateValue === null || dateValue === undefined || dateValue === "") {
+            return null;
+        }
+
+        const numericValue = Number(dateValue);
+        if (!Number.isNaN(numericValue)) {
+            return numericValue < 1000000000000 ? numericValue * 1000 : numericValue;
+        }
+
+        return dateValue;
+    };
 
     const filterDayMentions = (date, datemention, message) => {
         const cellDate = new Date(date);
-        const mentionDate = new Date(Number(datemention));
+        const normalizedDate = normalizeDateValue(datemention);
+        if (!normalizedDate) return null;
+
+        const mentionDate = new Date(normalizedDate);
+        if (Number.isNaN(mentionDate.getTime())) return null;
 
         const isSameDay =
             cellDate.getFullYear() === mentionDate.getFullYear() &&
@@ -118,7 +163,7 @@ function CalendarMentions() {
         return null;
     };
 
-    if (loadingSenderMentions) {
+    if (loadingMentions) {
         return (
             <div className="fixed h-screen   inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
                 <div className="flex flex-col items-center gap-3">
@@ -243,12 +288,14 @@ function CalendarMentions() {
 
 
 
-                                            <button onClick={() => {
-                                                dayClickForAddMention(day);
-                                                setOpenAddNote(true)
-                                            }} className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ad045] rounded-lg h-8 w-10   items-center justify-center m-1 p-1">
-                                                <NotebookPen size={30} className="text-gray-800" />
-                                            </button>
+                                            {isSenderView && (
+                                                <button onClick={() => {
+                                                    dayClickForAddMention(day);
+                                                    setOpenAddNote(true)
+                                                }} className="hidden group-hover:flex hover:scale-150 transform transition-all cursor-pointer bg-[#0ad045] rounded-lg h-8 w-10   items-center justify-center m-1 p-1">
+                                                    <NotebookPen size={30} className="text-gray-800" />
+                                                </button>
+                                            )}
 
 
                                         </div>
@@ -262,7 +309,7 @@ function CalendarMentions() {
             </div>
             {/* modal*/}
             {
-                openAddNote && <Addmention open={openAddNote} setOpen={setOpenAddNote} datemention={dayClick} refetchSenderMentions={refetchSenderMentions} />
+                openAddNote && <Addmention open={openAddNote} setOpen={setOpenAddNote} datemention={dayClick} refetchSenderMentions={refetchMentions} />
             }
             {
                 openViewMentions && <ViewMentions open={openViewMentions} setOpen={setOpenViewMentions} datemention={dayClick} />
