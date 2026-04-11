@@ -23,7 +23,7 @@ export const projectMgntSchema = `#graphql
             projectMgnt(id: ID!) : ProjectMgnt
             projectMgntByPm(id: ID): [ProjectMgnt]
             projectsMgntByManager(id: ID): [ProjectMgnt]
-            projectsMgntByArchive: [ProjectMgnt]
+            projectsMgntByArchive(pmId: ID): [ProjectMgnt]
         }
 
         

@@ -185,7 +185,7 @@ export const projectMgntResolver = {
       }
       const projectMgnts = await ProjectMgnt.aggregate([
         {
-          $match: { pm: new mongoose.Types.ObjectId(userId),  isArchive: false  },
+          $match: { pm: new mongoose.Types.ObjectId(userId), isArchive: false },
         },
         {
           $lookup: {
@@ -267,10 +267,10 @@ export const projectMgntResolver = {
         },
 
       ]);
-      
+
       return reusableReturnmap(projectMgnts);
 
-      
+
     },
     projectsMgntByManager: async (__dirname, { id }, context) => {
       const userId = id || context?.user?.id;
@@ -280,6 +280,99 @@ export const projectMgntResolver = {
       const projectMgnts = await ProjectMgnt.aggregate([
         {
           $match: { managers: new mongoose.Types.ObjectId(userId) },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "pm",
+            foreignField: "_id",
+            as: "pm",
+          },
+        },
+        {
+          $unwind: {
+            path: "$pm",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "departments",
+            localField: "departments",
+            foreignField: "_id",
+            as: "departments",
+          },
+        },
+        {
+          $lookup: {
+            from: "projects",
+            let: { projectIds: "$projects" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$projectIds"] },
+                },
+              },
+              {
+                $lookup: {
+                  from: "departments",
+                  localField: "department",
+                  foreignField: "_id",
+                  as: "department",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$department",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+            ],
+            as: "projects",
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: { managerIds: "$managers" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$managerIds"] },
+                },
+              },
+              {
+                $lookup: {
+                  from: "departments",
+                  localField: "department",
+                  foreignField: "_id",
+                  as: "department",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$department",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+            ],
+            as: "managers",
+          },
+        },
+
+      ]);
+
+      return reusableReturnmap(projectMgnts);
+    },
+    projectsMgntByArchive: async (__dirname, { pmId }, context) => {
+      const userId = pmId || context?.user?.id;
+
+      if (!userId) {
+        throw new Error("User ID is required to fetch projects");
+      }
+      const projectMgnts = await ProjectMgnt.aggregate([
+        {
+          $match: { pm: new mongoose.Types.ObjectId(userId), isArchive: true },
         },
         {
           $lookup: {
@@ -515,6 +608,15 @@ export const projectMgntResolver = {
           removeProjects,
         );
 
+        // ===== AUTO-ARCHIVE/UNARCHIVE PROJECTS =====
+        if (fields.isArchive !== undefined && projectMgnt.projects.length > 0) {
+          await Project.updateMany(
+            { _id: { $in: projectMgnt.projects } },
+            { $set: { isArchive: fields.isArchive } }
+          );
+        }
+
+
         await projectMgnt.save();
 
         return {
@@ -529,21 +631,21 @@ export const projectMgntResolver = {
     deleteProjectMgnt: async (_, { id }) => {
       if (!id) throw new Error("ProjectMgnt id is required");
 
-      
+
       const projectMgnt = await ProjectMgnt.findById(id);
       if (!projectMgnt) throw new Error("ProjectMgnt not found");
 
       const projectIds = projectMgnt.projects;
 
-  
+
       const tasks = await Task.find({ project: { $in: projectIds } });
 
       const taskIds = tasks.map((task) => task._id);
 
-      
+
       await TaskLog.deleteMany({ task: { $in: taskIds } });
 
-   
+
       await Task.deleteMany({ project: { $in: projectIds } });
 
       await Project.deleteMany({ _id: { $in: projectIds } });

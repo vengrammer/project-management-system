@@ -318,11 +318,6 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
                 key={item._id}
                 className={`flex w-full gap-1 ${ownMessage ? "justify-end" : "justify-start"}`}
             >
-                {(ownMessage && !item.isOriginal) && (
-                    <div className="flex items-center cursor-pointer  ">
-                        <Trash2 onClick={() => handleDeleteReply(item?._id)} className="hover:text-[#fd3410] text-[#cb0a03]" />
-                    </div>
-                )}
                 <div
                     className={`flex max-w-[80%] min-w-0 flex-col gap-2 rounded-3xl px-4 py-3 shadow-sm ${ownMessage
                         ? "rounded-br-md bg-blue-500 text-white"
@@ -389,10 +384,21 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
                                                     : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a3040] dark:hover:bg-[#313a4f]"
                                                     }`}
                                             >
-                                                <p className="truncate font-medium text-gray-900 dark:text-slate-100">{message?.message}</p>
-                                                <p className="truncate text-xs text-slate-600 dark:text-slate-300">
-                                                    Sender: {message.sender?.fullname ?? "Unknown sender"}
-                                                </p>
+                                                <div className="flex flex-row justify-between w-full">
+                                                    <div>
+                                                        <p className="truncate flex-1 font-medium text-gray-900 dark:text-slate-100">{message?.message}</p>
+                                                        <p className="truncate flex-1 text-xs text-slate-600 dark:text-slate-300">
+                                                            Sender: {message.sender?.fullname ?? "Unknown sender"}
+                                                        </p>
+                                                    </div>
+                                                    {/* <div className="cursor-pointer ">
+                                                        <Trash2 onClick={() => console.log("sample")}  className="cursor-pointer hover:text-[#ff0000] text-[#fd0277] rounded-full"/>
+                                                    </div> */}
+                                                    
+                                                </div>
+
+
+
                                                 <p className="self-end text-xs text-slate-500 dark:text-slate-400">
                                                     {formatDate(message.createdAt)}
                                                 </p>
