@@ -259,14 +259,14 @@ export default function PmSideBar() {
 
             <li>
               <Link
-                to="/projectmanager/archive"
+                to="/projectmanager/archiveprojectmgnt"
                 className={` ${linkDesign} ${
-                  isActive("/projectmanager/archive") ? `${active}` : ""
+                  isActive("/projectmanager/archiveprojectmgnt") ? `${active}` : ""
                 }`}
                 onClick={() => setIsOpen(false)}
               >
                 <Archive size={20} />
-                <span>Archive</span>
+                <span>Archive Project/Mgnt</span>
               </Link>
             </li>
           </ul>

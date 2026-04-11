@@ -30,6 +30,7 @@ import PmFormEditProjectModal from "./PmFormEditProjectModal";
 import EditProjectmgnt from "./EditProjectmgnt";
 import { useSelector } from "react-redux";
 import AddNewProjectMgntDepartment from "./AddNewProjectMgntDepartment";
+import ViewProjectInProjectMgnt from "../ViewProjectInProjectMgnt";
 
 export const GET_THE_PROJECTMGNT = gql`
   query ProjectMgnt($projectMgntId: ID!) {
@@ -305,6 +306,9 @@ function ProjectmgntDetails() {
   const [openEditProjectMgnt, setOpenEditProjectMgnt] = useState(false);
 
   const [openAddDepartment, setOpenAddDepartment] = useState(false);
+
+  const [openView, setOpenView] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
 
 
   const handleViewManagers = (department) => {
@@ -786,6 +790,7 @@ function ProjectmgntDetails() {
                           type="button"
                           className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700"
                           title="View"
+                          onClick={() => { setOpenView(true); setSelectedProjectId(project.id); }}
                         >
                           <Eye size={18} />
                         </button>
@@ -998,6 +1003,14 @@ function ProjectmgntDetails() {
         setOpen={setOpenAddDepartment}
         refetchQueries={[{ query: GET_THE_PROJECTMGNT, variables: { projectMgntId: id } }]}
       />}
+
+      {openView && <ViewProjectInProjectMgnt
+        isOpen={openView}
+        setIsOpen={setOpenView}
+        projectId={selectedProjectId}
+      />}
+
+
     </div>
   );
 }

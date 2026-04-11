@@ -318,11 +318,6 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
                 key={item._id}
                 className={`flex w-full gap-1 ${ownMessage ? "justify-end" : "justify-start"}`}
             >
-                {(ownMessage && !item.isOriginal) && (
-                    <div className="flex items-center cursor-pointer  ">
-                        <Trash2 onClick={() => handleDeleteReply(item?._id)} className="hover:text-[#fd3410] text-[#cb0a03]" />
-                    </div>
-                )}
                 <div
                     className={`flex max-w-[80%] min-w-0 flex-col gap-2 rounded-3xl px-4 py-3 shadow-sm ${ownMessage
                         ? "rounded-br-md bg-blue-500 text-white"
@@ -396,9 +391,9 @@ function ViewMentions({ open = false, setOpen, datemention, initialSelectedMessa
                                                             Sender: {message.sender?.fullname ?? "Unknown sender"}
                                                         </p>
                                                     </div>
-                                                    <div className="cursor-pointer ">
-                                                        <EllipsisVertical onClick={() => console.log("sample")}  className="cursor-pointer hover:bg-[#4c00fe] rounded-full"/>
-                                                    </div>
+                                                    {/* <div className="cursor-pointer ">
+                                                        <Trash2 onClick={() => console.log("sample")}  className="cursor-pointer hover:text-[#ff0000] text-[#fd0277] rounded-full"/>
+                                                    </div> */}
                                                     
                                                 </div>
 

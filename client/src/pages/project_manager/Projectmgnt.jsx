@@ -112,6 +112,9 @@ const UPDATE_PROJECTMGNT = gql`
 `
 
 function Projectmgnt() {
+    const [searchText, setSearchText] = useState("");
+    const [filterStatus, setFilterStatus] = useState("All");
+
     const auth = useSelector((state) => state.auth);
     const userId = auth.user?.id;
 
@@ -166,7 +169,7 @@ function Projectmgnt() {
         projectMgnts = dataAdminProjectMgnt?.projectMgnts || [];
     }
 
-    console.log("projectMgnts",projectMgnts)
+
 
     const [deleteProjectMgnt] = useMutation(DELETE_PROJECTMGNT, {
         onCompleted: async () => {
@@ -241,9 +244,9 @@ function Projectmgnt() {
                     const { data } = await updateProjectMgnt({
                         variables: { updateProjectMgntId: id, isArchive: true },
                     });
-                }catch (error) {
+                } catch (error) {
                     console.error("Error archiving project:");
-                }   
+                }
             }
         })
     }
@@ -281,6 +284,17 @@ function Projectmgnt() {
                 return "bg-gray-100 text-gray-600 dark:bg-gray-500/10 dark:text-gray-400";
         }
     };
+
+    const filteredProjects = projectMgnts.filter((project) => {
+        const search = searchText.toLowerCase();
+        const matchesSearch =
+            project.title?.toLowerCase().includes(search) ||
+            project.departments?.some((d) => d.name?.toLowerCase().includes(search));
+        const matchesStatus =
+            filterStatus === "All" ||
+            project.status?.toLowerCase() === filterStatus.toLowerCase();
+        return matchesSearch && matchesStatus;
+    });
 
     //dropdown for the managers and departments
     function Dropdown({ items, defaultLabel }) {
@@ -347,32 +361,49 @@ function Projectmgnt() {
                 transition={{ duration: 0.8, ease: "easeInOut" }}
                 className="bg-white border-2 dark:bg-[#222732] rounded-lg shadow dark:shadow-[0_2px_20px_rgba(0,0,0,0.5)] w-full h-full flex flex-col">
                 {/*This is the add new program model*/}
-                
-                   {openAddProgram && <AddNewProgram open={openAddProgram} setOpen={setOpenAddProgram} />} 
-                
-                
+
+                {openAddProgram && <AddNewProgram open={openAddProgram} setOpen={setOpenAddProgram} />}
+
+
 
                 <div className="flex flex-col flex-1 gap-3">
                     <header className="flex flex-row justify-between py-4 px-4">
                         <div className="p-3  dark:text-green-400 text-blue-600 text-2xl font-extrabold rounded-4xl">| <span className="dark:text-white text-black">Project management</span></div>
                         <div className="flex justify-center items-center  pr-8">
-                            { pm && <button
+                            {pm && <button
                                 onClick={() => setOpenAddProgram(true)}
                                 className="bg-[#03c01c] text-black cursor-pointer hover:scale-120 duration-200 px-4 p-2 rounded-lg flex gap-2"><Plus /> Project/mgnt</button>}
                         </div>
                     </header>
-                    <div className="flex mx-4">
+                    <div className="flex flex-col sm:flex-row gap-2 mx-4">
                         <input
                             type="text"
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
                             placeholder="Search by title or department..."
-                            className="w-full px-4 py-2 rounded-lg text-sm
-                            border border-gray-300 dark:border-[#2a3040]
-                            bg-white dark:bg-[#1a1f2b]
-                            text-gray-800 dark:text-slate-200
-                            placeholder-gray-400 dark:placeholder-slate-600
-                            focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#31f64b]/40
-                            transition-colors duration-150"
+                            className="flex-1 px-4 py-2 rounded-lg text-sm
+        border border-gray-300 dark:border-[#2a3040]
+        bg-white dark:bg-[#1a1f2b]
+        text-gray-800 dark:text-slate-200
+        placeholder-gray-400 dark:placeholder-slate-600
+        focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#31f64b]/40
+        transition-colors duration-150"
                         />
+                        <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="px-4 py-2 rounded-lg text-sm
+        border border-gray-300 dark:border-[#2a3040]
+        bg-white dark:bg-[#1a1f2b]
+        text-gray-800 dark:text-slate-200
+        focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#31f64b]/40
+        transition-colors duration-150 cursor-pointer"
+                        >
+                            <option value="All">All Status</option>
+                            <option value="not started">Not Started</option>
+                            <option value="in progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
                     </div>
                     {/*Main */}
                     <main className="flex flex-col flex-1 min-h-0">
@@ -393,12 +424,12 @@ function Projectmgnt() {
 
                         {/* ── Rows ── */}
                         <div className="divide-y divide-gray-200 dark:divide-[#2a3040] max-h-full overflow-hidde">
-                            {projectMgnts.length === 0 ? (
+                            {filteredProjects === 0 ? (
                                 <div className="px-6 py-8 text-center  text-gray-500 dark:text-slate-500">
                                     No projects found
                                 </div>
                             ) : (
-                                projectMgnts.map((project) => (
+                                filteredProjects.map((project) => (
                                     <div
                                         key={project._id}
                                         className={`transition-colors p-4 lg:px-6 lg:py-4 border

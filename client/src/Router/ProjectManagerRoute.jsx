@@ -17,6 +17,7 @@ import ProjectmgntDetails from "@/pages/project_manager/ProjectmgntDetails";
 //all component of project manager
 import ProjectManagerDashboard from "@/pages/project_manager/ProjectManagerDashboard";
 import Program from "@/pages/project_manager/Projectmgnt";
+import ArchiveProjectMgnt from "@/pages/ArchiveProjectMgnt";
 
 function ProjectManagerRoute() {
     return (
@@ -32,7 +33,8 @@ function ProjectManagerRoute() {
                     <Route path="notification" element={<Notification />} />
                     <Route path="calendarmentions/:id?" element={<CalendaMentions />} />
                     <Route path="profile" element={<Profile />} />
-                    <Route path="archive" element={<ArchiveAdminEmployeeManager />} />
+                    <Route path="archiveprojectmgnt" element={<ArchiveProjectMgnt />} />
+                    <Route></Route>
                 </Route>
                 <Route path="projectmgntdetails/:id" element={<ProjectmgntDetails />} />
                 <Route path="*" element={<NotFound />} />
