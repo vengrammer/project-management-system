@@ -216,20 +216,20 @@ export default function PmSideBar() {
             
           </div>
           <ul className="space-y-2">
-            <li>
-              <Link
-                to="/projectmanager/dashboard"
-                className={`${linkDesign} ${
-                  isActive("/projectmanager/dashboard")
-                    ? `${active}`
-                    : ""
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <LayoutDashboard size={20} />
-                <span>Dashboard</span>
-              </Link>
-            </li>
+          {/* <li>
+            <Link
+              to="/projectmanager/dashboard"
+              className={`${linkDesign} ${
+                isActive("/projectmanager/dashboard")
+                  ? `${active}`
+                  : ""
+              }`}
+              onClick={() => setIsOpen(false)}
+            >
+              <LayoutDashboard size={20} />
+              <span>Dashboard</span>
+            </Link>
+          </li> */}
 
             <li>
               <Link

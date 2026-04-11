@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Archive, Eye, Trash2, CalendarArrowUp, CalendarArrowDown, Plus, ChevronDown, Loader } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import AddNewProgram from "./AddNewProgram";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
@@ -350,6 +350,9 @@ function Projectmgnt() {
         } else if (manager) {
             navigate(`/manager/projectmgntdetails/${projectmgnt}`);
         }
+        else {
+            navigate(`/admin/projectmgntdetails/${projectmgnt}`);
+        }
 
     }
 
@@ -530,23 +533,25 @@ function Projectmgnt() {
                                                     <Eye size={18} className="hidden lg:inline" />
                                                 </button>
 
-                                                <button
-                                                    title="Archive"
-                                                    onClick={() => handleArchive(project?._id)}
-                                                    className="flex-1 lg:flex-none cursor-pointer bg-gray-500 hover:bg-gray-600 text-white dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
-                                                >
-                                                    <span className="lg:hidden">Archive</span>
-                                                    <Archive size={18} className="hidden lg:inline" />
-                                                </button>
+                                                {pm && (
+                                                    <Fragment>
+                                                        <button
+                                                            title="Archive"
+                                                            onClick={() => handleArchive(project?._id)}
+                                                            className="flex-1 lg:flex-none cursor-pointer bg-gray-500 hover:bg-gray-600 text-white dark:bg-[#31f64b] dark:text-black dark:font-bold dark:hover:bg-[#28d940] py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
+                                                        >
+                                                            <span className="lg:hidden">Archive</span>
+                                                            <Archive size={18} className="hidden lg:inline" />
+                                                        </button>
 
-                                                <button
-                                                    onClick={() => handleDelete(project?._id)}
-                                                    title="Delete"
-                                                    className="flex-1 lg:flex-none cursor-pointer bg-red-600 hover:bg-red-700 dark:bg-red-600/90 dark:hover:bg-red-500 text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
-                                                >
-                                                    <span className="lg:hidden">Delete</span>
-                                                    <Trash2 size={17} className="hidden lg:inline" />
-                                                </button>
+                                                        <button
+                                                            onClick={() => handleDelete(project?._id)}
+                                                            title="Delete"
+                                                            className="flex-1 lg:flex-none cursor-pointer bg-red-600 hover:bg-red-700 dark:bg-red-600/90 dark:hover:bg-red-500 text-white py-2 lg:py-1.5 lg:px-1.5 rounded-md text-sm font-medium transition-all duration-150"
+                                                        >
+                                                            <span className="lg:hidden">Delete</span>
+                                                            <Trash2 size={17} className="hidden lg:inline" />
+                                                        </button> </Fragment>)}
                                             </div>
 
                                         </div>

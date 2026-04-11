@@ -192,6 +192,7 @@ function ProjectmgntDetails() {
   const userRoute = location.pathname.includes("/manager") ? "/manager" : "/projectmanager";
   const isManagerRoute = location.pathname.includes("/manager");
   const isPm = location.pathname.includes("/projectmanager");
+  const isAdmin = location.pathname.includes("/admin");
 
   const handelBack = () => {
     navigate(`${userRoute}/projectmgnt`)
@@ -588,7 +589,7 @@ function ProjectmgntDetails() {
               </div>
               {/* Progress bar */}
               <div className="flex flex-col flex-1  w-full h-full">
-                {!isManagerRoute && <div className="flex lg:justify-end gap-3">
+                {isPm && <div className="flex lg:justify-end gap-3">
                   <button
                     onClick={() => setIsOpen(true)}
                     className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-semibold transition-all duration-150
@@ -745,14 +746,14 @@ function ProjectmgntDetails() {
                   </p>
                 </div>
                 <div>
-                  <div className="flex gap-3 flex-wrap">
+                  {(isPm || isManagerRoute) &&<div className="flex gap-3 flex-wrap">
                     <div className="">
                       <PmFormAddProjectModal
                         onProjectAdded={refetchProjectMgnt}
                         projectMgntId={id}
                       />
                     </div>
-                  </div>
+                  </div>}
                 </div>
               </header>
               {/* Projects list */}
@@ -785,7 +786,7 @@ function ProjectmgntDetails() {
                         </div>
                       </div>
 
-                      {((project?.projectManager?.id === userId || isPm)) && <div className="flex items-start gap-2">
+                      {((project?.projectManager?.id === userId || isPm )) && <div className="flex items-start gap-2">
                         <button
                           type="button"
                           className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700"
@@ -903,7 +904,7 @@ function ProjectmgntDetails() {
                     {projectmgnt?.departments?.length || 0} total departments
                   </p>
                 </div>
-                {!isManagerRoute && <div>
+                {isPm && <div>
                   <div className="flex gap-3 flex-wrap">
                     <button
                       onClick={() => setOpenAddDepartment(true)}
@@ -925,7 +926,7 @@ function ProjectmgntDetails() {
                       <p>{department.name}</p>
                     </div>
 
-                    <div className="flex items-start gap-2">
+                    {!isAdmin && <div className="flex items-start gap-2">
                       <button
                         onClick={() => handleViewManagers(department)}
                         type="button"
@@ -952,9 +953,7 @@ function ProjectmgntDetails() {
                         >
                           <Trash2 size={18} />
                         </button> </Fragment>}
-
-
-                    </div>
+                    </div>}
                   </div>
                   {/* for the managers and projects count*/}
                   <div className="flex flex-1 flex-row items-center gap-4">

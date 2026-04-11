@@ -14,6 +14,7 @@ import Profile from "@/pages/admin/Profile";
 import ProtectedRoute from "./ProtectedRoute";
 import Notification from "@/pages/admin/Notification";
 import Projectmgnt from "@/pages/project_manager/Projectmgnt";
+import ProjectmgntDetails from "@/pages/project_manager/ProjectmgntDetails";
 
 
 function HomeRoute() {
@@ -33,9 +34,12 @@ function HomeRoute() {
           <Route path="archive" element={<ArchiveAdminEmployeeManager />} />
           <Route path="notification" element={<Notification />} />
           <Route path="profile" element={<Profile />} />
+          
         </Route>
         <Route path="*" element={<NotFound />} />
+         <Route path="projectmgntdetails/:id" element={<ProjectmgntDetails />} />
         <Route path="projectdetails/:id" element={<ProjectDetailsPage />} />
+
         <Route
           path="archive/projectdetails/:id"
           element={<ProjectDetailsPage />}
