@@ -1,6 +1,6 @@
 import LandingPageLayout from "@/landing/LandingPageLayout.jsx"
 import { Routes, Route, Navigate } from "react-router-dom"
-import NotFound from "@/components/Notfound"
+import NotFound from "@/components/NotFound"
 import LandingPageHome from "@/pages/admin/LandingPageHome";
 import { useSelector } from "react-redux";
 

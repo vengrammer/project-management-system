@@ -16,6 +16,7 @@ import { useSelector } from "react-redux";
 import { Loader } from "lucide-react";
 import DarkModeProvider from "./hooks/DarkModeProvider";
 import ProjectManagerRoute from "./Router/ProjectManagerRoute";
+
 const CURRENT_USER = gql`
   query CurrentUser {
     currentUser {
