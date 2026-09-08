@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import NotFound from "@/components/Notfound";
+import NotFound from "@/components/NotFound";
 // import ProjectTable from "@/pages/admin/ProjectTable";
 import PmSidebar from "@/layout/PmSidebar";
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";

@@ -2,77 +2,143 @@ import express from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
 import cors from "cors";
-import { typeDefs, resolvers } from "./graphql/index.js";
 import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-dotenv.config();
+import { typeDefs, resolvers } from "./graphql/index.js";
 
-//for websocket
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/use/ws";
 import { makeExecutableSchema } from "@graphql-tools/schema";
-import http from "http"
-import User from "./model/user.model.js";
+import http from "http";
+
+dotenv.config();
+
 const app = express();
 
-//use the typedefs and resolver fromm graphql/index.js
+// =========================
+// GraphQL Schema
+
+
 const schema = makeExecutableSchema({
   typeDefs,
   resolvers,
 });
 
-// create apollo server
+// =========================
+// Apollo Server
+
+
 const server = new ApolloServer({
   schema,
 });
 
 await server.start();
-app.use(express.json());
 
-// use the graphql endpoint
+// =========================
+// CORS
+
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://projectmanagement-client-pbe5.onrender.com",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
+// =========================
+// Body Parser
+
+app.use(bodyParser.json());
+
+// =========================
+// GraphQL
+
+
 app.use(
   "/graphql",
-  cors(""),
-  bodyParser.json(),
   expressMiddleware(server, {
     context: async ({ req }) => {
       const token = req.headers.authorization?.split(" ")[1];
 
       if (token) {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        return { user: decoded };
+        try {
+          const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET,
+          );
+
+          return {
+            user: decoded,
+          };
+        } catch (error) {
+          console.error("Invalid token:", error);
+        }
       }
+
       return {};
     },
   }),
 );
 
-//web scoket
+// =========================
+// HTTP Server
+
+
 const httpServer = http.createServer(app);
 
-// create websocket server
+// =========================
+// WebSocket Server
+
+
 const wsServer = new WebSocketServer({
   server: httpServer,
   path: "/graphql",
 });
 
-// attach graphql websocket
+//=========================
+ //GraphQL WebSocket
+
+
 useServer(
   {
     schema,
-    context: async (ctx) => {
-      const token = ctx.connectionParams?.authorization?.split(" ")[1];
 
-      if (token) {
+    context: async (ctx) => {
+      const auth =
+        ctx.connectionParams?.authorization ||
+        ctx.connectionParams?.Authorization;
+
+      if (auth) {
         try {
+          const token = auth.replace("Bearer ", "");
+
           const decoded = jwt.verify(
-            token.replace("Bearer ", ""),
+            token,
             process.env.JWT_SECRET,
           );
-          return { user: decoded };
-        } catch {
-          return {};
+
+          return {
+            user: decoded,
+          };
+        } catch (error) {
+          console.error("Invalid WebSocket token:", error);
         }
       }
 
