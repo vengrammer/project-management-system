@@ -41,7 +41,7 @@ await server.start();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://projectmanagement-client-pbe5.onrender.com",
+  "https://projectmanagement-client-pbe5.onrender.com/graphql",
 ];
 
 app.use(
