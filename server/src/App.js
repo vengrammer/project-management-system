@@ -30,24 +30,40 @@ const server = new ApolloServer({
 await server.start();
 app.use(express.json());
 
-// use the graphql endpoint
+
+//allowed origins for cors
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://projectmanagement-client-pbe5.onrender.com",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+app.use(bodyParser.json());
+
 app.use(
   "/graphql",
-  cors({
-    origin: "https://projectmanagement-client-pbe5.onrender.com",
-  }),
-  bodyParser.json(),
   expressMiddleware(server, {
     context: async ({ req }) => {
       const token = req.headers.authorization?.split(" ")[1];
 
       if (token) {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        return { user: decoded };
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          return { user: decoded };
+        } catch (error) {
+          console.error("Invalid token:", error);
+        }
       }
+
       return {};
     },
-  }),
+  })
 );
 
 //web scoket
