@@ -33,7 +33,9 @@ app.use(express.json());
 // use the graphql endpoint
 app.use(
   "/graphql",
-  cors(""),
+  cors({
+    origin: "https://projectmanagement-client-pbe5.onrender.com",
+  }),
   bodyParser.json(),
   expressMiddleware(server, {
     context: async ({ req }) => {
